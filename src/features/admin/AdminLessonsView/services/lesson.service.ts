@@ -1,0 +1,3 @@
+import api from '@/shared/services/api'
+import type { CourseOption, Lesson, LessonPayload } from '../type/lesson'
+export const adminLessonService = { async getAll() { return (await api.get<Lesson[]>('/lessons')).data }, async getCourses() { return (await api.get<CourseOption[]>('/courses')).data }, async create(payload: LessonPayload) { return (await api.post<Lesson>('/lessons', payload)).data }, async update(id: string | number, payload: LessonPayload) { return (await api.put<Lesson>(`/lessons/${id}`, payload)).data }, async remove(id: string | number) { await api.delete(`/lessons/${id}`) } }
