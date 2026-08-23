@@ -1,13 +1,7 @@
 <script setup lang="ts">
-import { useModal } from '@/composables/useModal'
+import { useModal } from '@/shared/composables/useModal'
 
-const {
-  isOpen,
-  title,
-  component,
-  props,
-  closeModal
-} = useModal()
+const { isOpen, title, component, props, closeModal } = useModal()
 </script>
 
 <template>
@@ -20,27 +14,17 @@ const {
       <div
         class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4 border border-slate-200"
       >
-        <div
-          class="flex items-center justify-between border-b border-slate-100 pb-3"
-        >
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
           <h3 class="text-lg font-bold text-slate-900">
             {{ title }}
           </h3>
 
-          <button
-            type="button"
-            class="text-slate-400 hover:text-slate-600"
-            @click="closeModal"
-          >
+          <button type="button" class="text-slate-400 hover:text-slate-600" @click="closeModal">
             ✕
           </button>
         </div>
 
-        <component
-          :is="component"
-          v-bind="props"
-          @close="closeModal"
-        />
+        <component :is="component" v-bind="props" @close="closeModal" />
       </div>
     </div>
   </Teleport>

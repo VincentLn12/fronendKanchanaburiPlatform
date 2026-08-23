@@ -50,7 +50,7 @@
   "teachers": [
     {
       "id": "teacher-1",
-      "name": "ดร. วิไลลักษณ์ แสนดี",
+      "name": "ดร. วิไลลักษณ์ แสนดี111",
       "email": "wilailak@elearn.com",
       "specialty": "Vue.js และ Web Development",
       "bio": "ผู้เชี่ยวชาญด้านการพัฒนาเว็บไซต์และการออกแบบหลักสูตรออนไลน์ ประสบการณ์สอนกว่า 10 ปี",
@@ -947,8 +947,45 @@
       "paymentMethod": "บัตรเครดิต / เดบิต",
       "status": "ชำระเงินสำเร็จ",
       "createdAt": "2026-08-13T14:37:41.419Z"
+    },
+    {
+      "id": "ord_513527",
+      "userId": "admin01",
+      "userName": "Admin User",
+      "userEmail": "admin@gmail.com",
+      "courseId": "9",
+      "courseTitle": "UI/UX Design Masterclass ด้วย Figma",
+      "courseImage": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSYNN0vEil-DWD9a3CWCBkZxReKCJyyfH9apBb27ZFfdw&s=10",
+      "price": 690,
+      "paymentMethod": "PromptPay QR",
+      "status": "ชำระเงินสำเร็จ",
+      "createdAt": "2026-08-14T14:41:08.446Z"
+    },
+    {
+      "id": "ord_778478",
+      "userId": "admin01",
+      "userName": "Admin User",
+      "userEmail": "admin@gmail.com",
+      "courseId": "5",
+      "courseTitle": "Tailwind CSS & Modern Responsive Web Design",
+      "courseImage": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSI4R3dVwwHkV9FsJYUJIGRej9HEp8OBcsAsFbAk9GMqTUeZgXPoi2YdGo&s=10",
+      "price": 490,
+      "paymentMethod": "บัตรเครดิต / เดบิต",
+      "status": "ชำระเงินสำเร็จ",
+      "createdAt": "2026-08-15T01:28:56.520Z"
     }
   ],
   "wishlists": [],
-  "reviews": []
+  "reviews": [
+    {
+      "id": "rev_1786757272204",
+      "courseId": "1",
+      "userId": "admin01",
+      "userName": "Admin User",
+      "userAvatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=150",
+      "rating": 5,
+      "comment": "ยนยย",
+      "createdAt": "2026-08-15T01:27:52.204Z"
+    }
+  ]
 }
