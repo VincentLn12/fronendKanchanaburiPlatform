@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { getAdminShops, updateShopStatus } from '../api/adminShopApi'
-import type { Shop } from '../../shared/types/shop'
+import type { Shop } from '@/features/shops/shared/types/shop'
 import AppSelect from '@/components/common/input/AppSelect.vue'
 import AppTextField from '@/components/common/input/AppTextField.vue'
 import { getApiErrorMessage } from '@/features/auth/api/getApiErrorMessage'

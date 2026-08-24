@@ -1,5 +1,5 @@
 import http from '@/shared/api/http'
-import type { Shop } from '../../shared/types/shop'
+import type { Shop } from '@/features/shops/shared/types/shop'
 
 export async function getAdminShops() {
   const { data } = await http.get<Shop[]>('/shops/admin')

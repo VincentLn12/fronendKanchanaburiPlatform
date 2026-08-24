@@ -102,15 +102,16 @@ const router = createRouter({
     },
     {
       path: '/admin',
-      component: () => import('@/features/shops/admin/views/AdminLayout.vue'),
+      component: () => import('@/features/admin/views/AdminLayout.vue'),
       meta: { requiresAuth: true, requiresAdmin: true },
       children: [
         { path: '', redirect: '/admin/shops' },
         {
           path: 'shops',
           name: 'admin-shops',
-          component: () => import('@/features/shops/admin/views/AdminShopListView.vue'),
+          component: () => import('@/features/admin/views/AdminShopListView.vue'),
         },
+        { path: 'categories', name: 'admin-shop-categories', component: () => import('@/features/admin/views/AdminShopCategoriesView.vue') },
       ],
     },
   ],
