@@ -13,3 +13,12 @@ export async function login(email: string, password: string) {
   const { data } = await authApi.post<LoginResponse>('/login', { email, password })
   return data
 }
+
+export async function register(email: string, password: string) {
+  await authApi.post('/register', { email, password })
+}
+
+export async function getCurrentUser(token: string) {
+  const { data } = await authApi.get<{ id: string; name: string; email: string; role: string }>('/account/me', { headers: { Authorization: `Bearer ${token}` } })
+  return data
+}

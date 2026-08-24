@@ -1,6 +1,6 @@
 import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
-import { login } from '../api/authApi'
+import { getCurrentUser, login } from '../api/authApi'
 
 export interface AuthUser {
   id: string
@@ -28,7 +28,8 @@ function readUser(token: string | null): AuthUser | null {
 
 export const useAuthStore = defineStore('auth', () => {
   const token = ref(localStorage.getItem('accessToken'))
-  const user = ref<AuthUser | null>(readUser(token.value))
+  const savedUser = localStorage.getItem('authUser')
+  const user = ref<AuthUser | null>(readUser(token.value) ?? (savedUser ? JSON.parse(savedUser) as AuthUser : null))
   const isLoggedIn = computed(() => Boolean(token.value))
 
   async function signIn(email: string, password: string) {
@@ -37,6 +38,8 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = readUser(data.accessToken)
     localStorage.setItem('accessToken', data.accessToken)
     if (data.refreshToken) localStorage.setItem('refreshToken', data.refreshToken)
+    user.value = await getCurrentUser(data.accessToken)
+    localStorage.setItem('authUser', JSON.stringify(user.value))
   }
 
   function logout() {
@@ -44,6 +47,7 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = null
     localStorage.removeItem('accessToken')
     localStorage.removeItem('refreshToken')
+    localStorage.removeItem('authUser')
   }
 
   return { token, user, isLoggedIn, signIn, logout }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ValidationRule } from 'vuetify'
+type ValidationRule = (value: unknown) => boolean | string
 
 interface Props {
   label?: string
@@ -27,19 +27,5 @@ const model = defineModel<string | null>()
 </script>
 
 <template>
-  <v-textarea
-    v-model="model"
-    :label="label"
-    :placeholder="placeholder"
-    :disabled="disabled"
-    :readonly="readonly"
-    :clearable="clearable"
-    :rows="rows"
-    :auto-grow="autoGrow"
-    :rules="rules"
-    variant="outlined"
-    density="comfortable"
-    hide-details="auto"
-    v-bind="$attrs"
-  />
+  <label class="block space-y-1"><span v-if="label" class="text-sm font-medium text-slate-700">{{ label }}</span><textarea v-model="model" :placeholder="placeholder" :disabled="disabled" :readonly="readonly" :rows="rows" class="w-full rounded-xl border border-slate-300 px-3 py-2.5 outline-none focus:border-indigo-500 disabled:bg-slate-100" v-bind="$attrs" /></label>
 </template>

@@ -48,6 +48,9 @@
 
       <!-- Desktop Actions -->
       <div class="hidden items-center gap-3 md:flex">
+        <RouterLink v-if="auth.user?.role === 'Admin'" to="/admin/shops" class="login-button">Admin</RouterLink>
+        <RouterLink v-if="auth.isLoggedIn" to="/cart" class="login-button">ตะกร้า</RouterLink>
+        <RouterLink v-if="auth.isLoggedIn" to="/my-shop" class="login-button">ร้านของฉัน</RouterLink>
         <!-- Create Content -->
         <RouterLink to="/create" class="create-button">
           <svg
@@ -122,6 +125,9 @@
         </div>
 
         <div class="mt-5 flex flex-col gap-3 border-t border-slate-100 pt-5">
+          <RouterLink v-if="auth.user?.role === 'Admin'" to="/admin/shops" class="login-button w-full justify-center" @click="closeMenu">Admin</RouterLink>
+          <RouterLink v-if="auth.isLoggedIn" to="/cart" class="login-button w-full justify-center" @click="closeMenu">ตะกร้าสินค้า</RouterLink>
+          <RouterLink v-if="auth.isLoggedIn" to="/my-shop" class="login-button w-full justify-center" @click="closeMenu">ร้านของฉัน</RouterLink>
           <RouterLink to="/create" class="create-button w-full justify-center" @click="closeMenu">
             <svg
               class="h-4 w-4"

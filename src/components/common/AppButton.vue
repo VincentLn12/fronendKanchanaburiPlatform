@@ -21,16 +21,7 @@ withDefaults(defineProps<Props>(), {
 </script>
 
 <template>
-  <v-btn
-    :color="color"
-    :variant="variant"
-    :size="size"
-    :loading="loading"
-    :disabled="disabled"
-    :block="block"
-    :type="type"
-    v-bind="$attrs"
-  >
+  <button :type="type" :disabled="disabled || loading" class="rounded-xl bg-indigo-600 px-4 py-2 font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-60" :class="{ 'w-full': block }" v-bind="$attrs">
     <slot />
-  </v-btn>
+  </button>
 </template>

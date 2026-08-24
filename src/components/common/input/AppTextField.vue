@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useField } from 'vee-validate'
-import type { ValidationRule } from 'vuetify'
+type ValidationRule = (value: unknown) => boolean | string
 
 interface Props {
   name?: string
@@ -52,20 +52,9 @@ const displayError = computed(() => {
 </script>
 
 <template>
-  <v-text-field
-    v-model="fieldValue"
-    :label="label"
-    :type="type"
-    :placeholder="placeholder"
-    :disabled="disabled"
-    :readonly="readonly"
-    :clearable="clearable"
-    :rules="rules"
-    :maxlength="maxlength"
-    :error-messages="displayError"
-    variant="outlined"
-    density="comfortable"
-    hide-details="auto"
-    v-bind="$attrs"
-  />
+  <label class="block space-y-1">
+    <span v-if="label" class="text-sm font-medium text-slate-700">{{ label }}</span>
+    <input v-model="fieldValue" :type="type" :placeholder="placeholder" :disabled="disabled" :readonly="readonly" :maxlength="maxlength" class="w-full rounded-xl border border-slate-300 px-3 py-2.5 outline-none focus:border-indigo-500 disabled:bg-slate-100" v-bind="$attrs" />
+    <span v-if="displayError" class="text-sm text-red-600">{{ displayError }}</span>
+  </label>
 </template>
