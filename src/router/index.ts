@@ -109,9 +109,11 @@ const router = createRouter({
         {
           path: 'shops',
           name: 'admin-shops',
-          component: () => import('@/features/admin/views/AdminShopListView.vue'),
+          component: () => import('@/features/admin/shops/views/AdminShopListView.vue'),
         },
-        { path: 'categories', name: 'admin-shop-categories', component: () => import('@/features/admin/views/AdminShopCategoriesView.vue') },
+        { path: 'categories', name: 'admin-shop-categories', component: () => import('@/features/admin/shop-categories/views/AdminShopCategoriesView.vue') },
+        { path: 'categories/new', name: 'admin-shop-category-new', component: () => import('@/features/admin/shop-categories/views/AdminShopCategoryFormView.vue') },
+        { path: 'categories/:id/edit', name: 'admin-shop-category-edit', component: () => import('@/features/admin/shop-categories/views/AdminShopCategoryFormView.vue') },
       ],
     },
   ],

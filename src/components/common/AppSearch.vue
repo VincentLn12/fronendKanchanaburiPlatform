@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import AppTextField from './input/AppTextField.vue'
 
 interface Props {
   placeholder?: string
@@ -58,12 +59,9 @@ function clearSearch() {
         </svg>
       </div>
 
-      <!-- Custom Styled Input -->
-      <input
+      <AppTextField
         v-model="model"
-        type="text"
         :placeholder="placeholder"
-        class="w-full bg-slate-50/80 hover:bg-slate-50 focus:bg-white text-slate-800 placeholder-slate-400 text-sm font-medium rounded-xl pl-10 pr-10 py-2.5 outline-none border border-slate-200/60 focus:border-indigo-500/40 transition-all duration-200"
         @focus="isFocused = true"
         @blur="isFocused = false"
       />

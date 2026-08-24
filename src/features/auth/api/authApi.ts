@@ -14,6 +14,11 @@ export async function login(email: string, password: string) {
   return data
 }
 
+export async function refreshAccessToken(refreshToken: string) {
+  const { data } = await authApi.post<LoginResponse>('/refresh', { refreshToken })
+  return data
+}
+
 export async function register(email: string, password: string) {
   await authApi.post('/register', { email, password })
 }
