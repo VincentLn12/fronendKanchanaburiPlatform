@@ -1,6 +1,7 @@
 <script setup lang="ts">
+// Merchant area - Emerald Nature Product List Management View
 import axios from 'axios'
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { removeProduct, getProducts } from '../api/productApi'
 import { getMyShop } from '../api/shopApi'
 import type { Product } from '../../shared/types/product'
@@ -9,7 +10,9 @@ import { useSwal } from '@/plugins/sweetalert'
 
 const products = ref<Product[]>([])
 const hasShop = ref(false)
+const shopId = ref<string>('')
 const loading = ref(true)
+const searchQuery = ref('')
 const swal = useSwal()
 const apiOrigin = (import.meta.env.VITE_API_URL ?? 'https://localhost:7289/api').replace(/\/api$/, '')
 
@@ -17,40 +20,241 @@ function imageUrl(url?: string) {
   return url?.startsWith('/') ? `${apiOrigin}${url}` : url
 }
 
+const filteredProducts = computed(() => {
+  if (!searchQuery.value.trim()) return products.value
+  const q = searchQuery.value.toLowerCase()
+  return products.value.filter(
+    (p) => p.productName.toLowerCase().includes(q) || (p.description && p.description.toLowerCase().includes(q))
+  )
+})
+
 async function load() {
   loading.value = true
   try {
     const shop = await getMyShop()
     hasShop.value = true
+    shopId.value = shop.shopId
     products.value = (await getProducts()).filter((product) => product.shopId === shop.shopId)
   } catch (error) {
-    if (!axios.isAxiosError(error) || error.response?.status !== 404) await swal.error('โหลดสินค้าไม่สำเร็จ', getApiErrorMessage(error, 'กรุณาลองใหม่'))
-  } finally { loading.value = false }
+    if (!axios.isAxiosError(error) || error.response?.status !== 404) {
+      await swal.error('โหลดสินค้าไม่สำเร็จ', getApiErrorMessage(error, 'กรุณาลองใหม่อีกครั้ง'))
+    }
+  } finally {
+    loading.value = false
+  }
 }
 
 async function closeProduct(product: Product) {
-  const result = await swal.confirm(`ปิดการขาย ${product.productName}?`, 'ข้อมูลสินค้าจะไม่ถูกลบ')
+  const result = await swal.confirm(`ปิดการขาย ${product.productName}?`, 'สินค้าจะไม่แสดงต่อสาธารณะบนแพลตฟอร์ม แต่ข้อมูลจะยังคงอยู่ในระบบ')
   if (!result.isConfirmed) return
   try {
     await removeProduct(product.productId)
     products.value = products.value.filter((item) => item.productId !== product.productId)
     await swal.success('ปิดการขายสินค้าแล้ว')
-  } catch (error) { await swal.error('ดำเนินการไม่สำเร็จ', getApiErrorMessage(error, 'กรุณาลองใหม่')) }
+  } catch (error) {
+    await swal.error('ดำเนินการไม่สำเร็จ', getApiErrorMessage(error, 'กรุณาลองใหม่อีกครั้ง'))
+  }
 }
 
 onMounted(load)
 </script>
 
 <template>
-  <div class="mx-auto w-full max-w-7xl 2xl:max-w-[1600px]">
-    <div v-if="loading" class="h-1 animate-pulse rounded bg-indigo-600" />
+  <div class="mx-auto w-full max-w-7xl space-y-6 py-2">
+    <!-- Skeleton Loading -->
+    <div v-if="loading" class="space-y-6">
+      <div class="h-24 w-full animate-pulse rounded-3xl bg-slate-200/70"></div>
+      <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div v-for="i in 6" :key="i" class="h-64 animate-pulse rounded-3xl bg-slate-200/70"></div>
+      </div>
+    </div>
+
     <template v-else-if="hasShop">
-      <div class="mb-8 flex flex-wrap items-end justify-between gap-4"><div><p class="font-semibold text-indigo-600">จัดการร้านค้า</p><h1 class="mt-1 text-3xl font-bold text-slate-900">สินค้า</h1><p class="mt-2 text-slate-500">ทั้งหมด {{ products.length }} รายการที่กำลังขาย</p></div><RouterLink to="/my-shop/products/new" class="rounded-xl bg-indigo-600 px-5 py-3 font-semibold text-white shadow-sm hover:bg-indigo-700">+ เพิ่มสินค้า</RouterLink></div>
-      <div v-if="products.length === 0" class="rounded-2xl border border-dashed border-slate-300 bg-white p-14 text-center text-slate-500">ยังไม่มีสินค้า <RouterLink to="/my-shop/products/new" class="font-semibold text-indigo-600">เพิ่มสินค้าแรก</RouterLink></div>
-      <div v-else class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        <article v-for="product in products" :key="product.productId" class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"><img v-if="product.imageUrl" :src="imageUrl(product.imageUrl)" :alt="product.productName" class="h-44 w-full object-cover" /><div v-else class="flex h-44 items-center justify-center bg-slate-100 text-slate-400">ไม่มีรูปสินค้า</div><div class="p-5"><h2 class="truncate text-lg font-bold text-slate-900">{{ product.productName }}</h2><p class="mt-2 line-clamp-2 min-h-10 text-sm text-slate-500">{{ product.description || '-' }}</p><p class="mt-4 text-lg font-bold text-indigo-600">{{ Number(product.price).toLocaleString('th-TH') }} บาท</p><div class="mt-5 flex gap-3 border-t border-slate-100 pt-4"><RouterLink :to="`/my-shop/products/${product.productId}/edit`" class="font-semibold text-indigo-600">แก้ไข</RouterLink><button class="font-semibold text-red-600" @click="closeProduct(product)">ปิดขาย</button></div></div></article>
+      <!-- Header Banner Card -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm">
+        <div class="flex items-center gap-3.5">
+          <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-100">
+            <i class="mdi mdi-package-variant-closed text-2xl"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h1 class="text-xl font-extrabold text-slate-900">จัดการรายการสินค้า</h1>
+              <span class="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-bold text-emerald-700">
+                {{ products.length }} รายการ
+              </span>
+            </div>
+            <p class="text-xs text-slate-500">จัดการข้อมูล ราคาสินค้า ปริมาณในคลัง และการเปิด/ปิดขาย</p>
+          </div>
+        </div>
+
+        <RouterLink
+          to="/my-shop/products/new"
+          class="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-600/25 transition hover:bg-emerald-700 active:scale-95"
+        >
+          <i class="mdi mdi-plus-circle text-lg"></i>
+          <span>+ เพิ่มสินค้าใหม่</span>
+        </RouterLink>
+      </div>
+
+      <!-- Search Filter Bar -->
+      <div v-if="products.length > 0" class="flex flex-col sm:flex-row items-center justify-between gap-4 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs">
+        <div class="relative w-full sm:w-80">
+          <input
+            v-model="searchQuery"
+            type="text"
+            placeholder="ค้นหาชื่อหรือรายละเอียดสินค้า..."
+            class="w-full rounded-xl border border-slate-200 bg-slate-50 pl-9 pr-4 py-2 text-xs outline-none focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+          />
+          <i class="mdi mdi-magnify absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-base"></i>
+          <button
+            v-if="searchQuery"
+            class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+            @click="searchQuery = ''"
+          >
+            <i class="mdi mdi-close-circle text-sm"></i>
+          </button>
+        </div>
+
+        <div class="text-xs text-slate-500 font-medium">
+          แสดง {{ filteredProducts.length }} จากทั้งหมด {{ products.length }} รายการ
+        </div>
+      </div>
+
+      <!-- Empty State: No Products -->
+      <div
+        v-if="products.length === 0"
+        class="my-8 flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-slate-200 bg-white py-16 px-6 text-center shadow-sm"
+      >
+        <div class="flex h-20 w-20 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 mb-4">
+          <i class="mdi mdi-package-variant text-4xl"></i>
+        </div>
+        <h2 class="text-xl font-bold text-slate-800">ยังไม่มีสินค้าในร้านค้าของคุณ</h2>
+        <p class="mt-2 max-w-md text-sm text-slate-500">
+          เริ่มต้นเพิ่มรายการสินค้าชิ้นแรกของคุณเพื่อให้ลูกค้าสามารถเข้ามาเลือกซื้อได้เลยทันที
+        </p>
+        <RouterLink
+          to="/my-shop/products/new"
+          class="mt-6 inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-600/20 transition hover:bg-emerald-700 active:scale-95"
+        >
+          <i class="mdi mdi-plus-circle"></i>
+          <span>เพิ่มสินค้าชิ้นแรก</span>
+        </RouterLink>
+      </div>
+
+      <!-- No Search Results -->
+      <div
+        v-else-if="filteredProducts.length === 0"
+        class="rounded-3xl border border-slate-200 bg-white p-12 text-center text-slate-500 shadow-sm"
+      >
+        <i class="mdi mdi-magnify-remove text-4xl text-slate-300 mb-2 block"></i>
+        ไม่พบสินค้าที่ตรงกับคำค้นหา "{{ searchQuery }}"
+      </div>
+
+      <!-- Product Grid (Cards layout) -->
+      <div v-else class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <article
+          v-for="product in filteredProducts"
+          :key="product.productId"
+          class="group flex flex-col overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-emerald-300 hover:shadow-md"
+        >
+          <!-- Product Image Container -->
+          <div class="relative h-48 w-full overflow-hidden bg-slate-100">
+            <img
+              v-if="product.imageUrl"
+              :src="imageUrl(product.imageUrl)"
+              :alt="product.productName"
+              class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+            <div v-else class="flex h-full w-full flex-col items-center justify-center bg-slate-100 text-slate-400">
+              <i class="mdi mdi-image-off-outline text-4xl opacity-50"></i>
+              <span class="mt-1 text-xs font-semibold">ไม่มีรูปภาพ</span>
+            </div>
+
+            <!-- Floating Price Badge -->
+            <div class="absolute bottom-3 left-3">
+              <span class="inline-flex items-center rounded-xl bg-slate-900/85 px-3 py-1 text-xs font-extrabold text-white backdrop-blur-md border border-white/20 shadow-md">
+                ฿ {{ Number(product.price).toLocaleString('th-TH') }}
+              </span>
+            </div>
+
+            <!-- Floating Stock Badge -->
+            <div class="absolute top-3 right-3">
+              <span
+                v-if="product.quantity > 0"
+                class="inline-flex items-center gap-1 rounded-full bg-emerald-500/90 px-2.5 py-0.5 text-[10px] font-bold text-white backdrop-blur-md shadow-xs"
+              >
+                คงเหลือ {{ product.quantity }} ชิ้น
+              </span>
+              <span
+                v-else
+                class="inline-flex items-center gap-1 rounded-full bg-rose-500/90 px-2.5 py-0.5 text-[10px] font-bold text-white backdrop-blur-md shadow-xs"
+              >
+                สินค้าหมด
+              </span>
+            </div>
+          </div>
+
+          <!-- Product Details Body -->
+          <div class="flex flex-1 flex-col p-5">
+            <h2 class="text-base font-bold text-slate-900 group-hover:text-emerald-700 transition-colors line-clamp-1">
+              {{ product.productName }}
+            </h2>
+
+            <p class="mt-1.5 flex-1 line-clamp-2 text-xs text-slate-500 leading-relaxed">
+              {{ product.description || 'ไม่มีรายละเอียดสินค้า' }}
+            </p>
+
+            <!-- Action Buttons Bar -->
+            <div class="mt-5 flex items-center justify-between border-t border-slate-100 pt-3 text-xs">
+              <RouterLink
+                :to="`/products/${product.productId}`"
+                target="_blank"
+                class="inline-flex items-center gap-1 font-semibold text-slate-500 hover:text-emerald-600"
+                title="ดูหน้าสินค้าลูกค้า"
+              >
+                <i class="mdi mdi-eye-outline text-sm"></i>
+                <span>ดูสินค้า</span>
+              </RouterLink>
+
+              <div class="flex items-center gap-2">
+                <RouterLink
+                  :to="`/my-shop/products/${product.productId}/edit`"
+                  class="inline-flex items-center gap-1 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-1.5 font-bold text-emerald-700 hover:bg-emerald-600 hover:text-white transition"
+                >
+                  <i class="mdi mdi-pencil-outline text-xs"></i>
+                  <span>แก้ไข</span>
+                </RouterLink>
+
+                <button
+                  class="inline-flex items-center gap-1 rounded-xl border border-rose-100 bg-rose-50 px-3 py-1.5 font-bold text-rose-600 hover:bg-rose-600 hover:text-white transition"
+                  @click="closeProduct(product)"
+                >
+                  <i class="mdi mdi-close-circle-outline text-xs"></i>
+                  <span>ปิดขาย</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </article>
       </div>
     </template>
-    <div v-else class="rounded-2xl border border-dashed border-slate-300 bg-white p-14 text-center text-slate-500">กรุณา <RouterLink to="/my-shop" class="font-semibold text-indigo-600">สร้างร้าน</RouterLink> ก่อนจัดการสินค้า</div>
+
+    <!-- State: Merchant Has No Shop Yet -->
+    <div v-else class="my-8 flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-slate-200 bg-white py-16 px-6 text-center shadow-sm">
+      <div class="flex h-20 w-20 items-center justify-center rounded-full bg-amber-50 text-amber-600 mb-4">
+        <i class="mdi mdi-store-plus-outline text-4xl"></i>
+      </div>
+      <h2 class="text-xl font-bold text-slate-800">กรุณาสร้างร้านค้าก่อนจัดการสินค้า</h2>
+      <p class="mt-2 max-w-md text-sm text-slate-500">
+        คุณจำเป็นต้องตั้งค่าข้อมูลร้านค้าเบื้องต้นก่อนจึงจะสามารถลงรายการสินค้าสำหรับวางจำหน่ายได้
+      </p>
+      <RouterLink
+        to="/my-shop"
+        class="mt-6 inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-600/20 hover:bg-emerald-700"
+      >
+        <i class="mdi mdi-store-cog"></i>
+        <span>ไปยังหน้าตั้งค่าร้านค้า</span>
+      </RouterLink>
+    </div>
   </div>
 </template>

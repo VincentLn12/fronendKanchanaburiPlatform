@@ -1,9 +1,15 @@
 import http from '@/shared/api/http'
-import type { District, Shop, ShopCategory, ShopFormData, SubDistrict } from '../../shared/types/shop'
+import type {
+  District,
+  Shop,
+  ShopCategory,
+  ShopFormData,
+  SubDistrict,
+} from '../../shared/types/shop'
 
 export async function getShopCategories() {
-  const { data } = await http.get<ShopCategory[]>('/shop-categories')
-  return data.filter((item) => item.status === 'Active')
+  const { data } = await http.get<{ items: ShopCategory[] }>('/shop-categories', { params: { page: 1, pageSize: 100 } })
+  return data.items.filter((item) => item.status === 'Active')
 }
 
 export async function getDistricts() {
@@ -36,4 +42,11 @@ export async function closeShop(id: string) {
 
 export async function updateShopStatus(id: string, status: string) {
   await http.patch(`/shops/${id}/status`, { status })
+}
+
+export async function uploadShopCoverImage(id: string, file: File) {
+  const formData = new FormData()
+  formData.append('file', file)
+  const { data } = await http.post<Shop>(`/shops/${id}/cover-image`, formData)
+  return data
 }

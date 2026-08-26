@@ -44,18 +44,22 @@
           >{{ asShop(item).status }}</span
         ></template
       ><template #cell-actions="{ item }"
+        ><div class="flex items-center gap-3"><RouterLink
+          :to="`/admin/shops/${asShop(item).shopId}/products`"
+          class="whitespace-nowrap font-semibold text-indigo-600"
+          >ดูสินค้า</RouterLink
         ><AppSelect
           :model-value="asShop(item).status"
           :items="statusOptions"
           :disabled="updatingId === asShop(item).shopId"
-          @update:model-value="changeStatus(asShop(item), String($event))" /></template
+          @update:model-value="changeStatus(asShop(item), String($event))" /></div></template
     ></AppDataTable>
   </main>
 </template>
 
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
-import { getAdminShops, updateShopStatus, type PagedResult } from '../api/adminShopApi'
+import { getAdminShops, updateShopStatus } from '../api/adminShopApi'
 import type { Shop } from '@/features/shops/shared/types/shop'
 import AppSelect from '@/components/common/input/AppSelect.vue'
 import AppTextField from '@/components/common/input/AppTextField.vue'
@@ -65,6 +69,7 @@ import AppDataTable, {
 } from '@/components/common/AppDataTable.vue'
 import { getApiErrorMessage } from '@/features/auth/api/getApiErrorMessage'
 import { useSwal } from '@/plugins/sweetalert'
+import type { PagedResult } from '@/shared/interface/PagedResult'
 
 const shops = ref<Shop[]>([])
 const search = ref('')

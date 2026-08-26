@@ -1,7 +1,15 @@
 <script setup lang="ts">
+// Merchant area - Emerald Nature Add/Edit Product Form View with Image Previews
 import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { createProduct, getProduct, getProductCategories, updateProduct, uploadCoverImage, uploadDetailImages, getProductStock, setProductStock } from '../api/productApi'
+import {
+  createProduct,
+  getProduct,
+  getProductCategories,
+  updateProduct,
+  uploadCoverImage,
+  uploadDetailImages,
+} from '../api/productApi'
 import { getMyShop } from '../api/shopApi'
 import type { ProductFormData, ProductCategory } from '../../shared/types/product'
 import AppSelect from '@/components/common/input/AppSelect.vue'
@@ -18,25 +26,54 @@ const loading = ref(true)
 const saving = ref(false)
 const swal = useSwal()
 const id = route.params.id as string | undefined
-const form = ref<ProductFormData>({ shopId: '', productCategoryId: null, productName: '', description: '', price: null, imageUrl: '', status: 'Active' })
+
+const apiOrigin = (import.meta.env.VITE_API_URL ?? 'https://localhost:7289/api').replace(/\/api$/, '')
+
+function imageUrl(url?: string) {
+  if (!url) return undefined
+  return url.startsWith('/') ? `${apiOrigin}${url}` : url
+}
+
+const form = ref<ProductFormData>({
+  shopId: '',
+  productCategoryId: null,
+  productName: '',
+  description: '',
+  price: null,
+  quantity: 0,
+  imageUrl: '',
+  status: 'Active',
+})
 const coverFile = ref<File | null>(null)
 const detailFiles = ref<File[]>([])
-const stockQuantity = ref(0)
+
+const existingCoverUrl = ref<string | null>(null)
+const existingDetailImages = ref<string[]>([])
 
 async function submit() {
-  if (!form.value.productName || !form.value.productCategoryId || form.value.price === null || form.value.price < 0) { await swal.warning('กรอกข้อมูลไม่ครบ', 'กรุณากรอกชื่อสินค้า หมวดหมู่ และราคา'); return }
+  if (
+    !form.value.productName ||
+    !form.value.productCategoryId ||
+    form.value.price === null ||
+    form.value.price < 0
+  ) {
+    await swal.warning('กรอกข้อมูลไม่ครบถ้วน', 'กรุณากรอกชื่อสินค้า หมวดหมู่ และราคาให้ถูกต้อง')
+    return
+  }
   saving.value = true
   try {
     const payload = { ...form.value, price: Number(form.value.price) }
     const productId = id ?? (await createProduct(payload)).productId
     if (id) await updateProduct(id, payload)
-    await setProductStock(productId, Number(stockQuantity.value))
     if (coverFile.value) await uploadCoverImage(productId, coverFile.value)
     if (detailFiles.value.length) await uploadDetailImages(productId, detailFiles.value)
-    await swal.success(id ? 'บันทึกสินค้าแล้ว' : 'เพิ่มสินค้าแล้ว')
+    await swal.success(id ? 'อัปเดตข้อมูลสินค้าเรียบร้อย' : 'เพิ่มสินค้าใหม่เรียบร้อยแล้ว')
     await router.push('/my-shop/products')
-  } catch (error) { await swal.error('บันทึกสินค้าไม่สำเร็จ', getApiErrorMessage(error, 'กรุณาลองใหม่')) }
-  finally { saving.value = false }
+  } catch (error) {
+    await swal.error('บันทึกสินค้าไม่สำเร็จ', getApiErrorMessage(error, 'กรุณาลองใหม่อีกครั้ง'))
+  } finally {
+    saving.value = false
+  }
 }
 
 onMounted(async () => {
@@ -46,30 +83,219 @@ onMounted(async () => {
     form.value.shopId = shop.shopId
     if (id) {
       const product = await getProduct(id)
-      if (product.shopId !== shop.shopId) { await router.replace('/my-shop/products'); return }
-      form.value = { shopId: product.shopId, productCategoryId: product.productCategoryId, productName: product.productName, description: product.description ?? '', price: product.price, imageUrl: product.imageUrl ?? '', status: product.status }
-      stockQuantity.value = await getProductStock(id)
+      if (product.shopId !== shop.shopId) {
+        await router.replace('/my-shop/products')
+        return
+      }
+      form.value = {
+        shopId: product.shopId,
+        productCategoryId: product.productCategoryId,
+        productName: product.productName,
+        description: product.description ?? '',
+        price: product.price,
+        quantity: product.quantity,
+        imageUrl: product.imageUrl ?? '',
+        status: product.status,
+      }
+      existingCoverUrl.value = product.imageUrl ?? null
+      existingDetailImages.value = product.detailImages ?? []
     }
-  } catch (error) { await swal.error('โหลดข้อมูลไม่สำเร็จ', getApiErrorMessage(error, 'กรุณาลองใหม่')); await router.replace('/my-shop/products') }
-  finally { loading.value = false }
+  } catch (error) {
+    await swal.error('โหลดข้อมูลไม่สำเร็จ', getApiErrorMessage(error, 'กรุณาลองใหม่อีกครั้ง'))
+    await router.replace('/my-shop/products')
+  } finally {
+    loading.value = false
+  }
 })
 </script>
 
 <template>
-  <div class="mx-auto w-full max-w-3xl 2xl:max-w-5xl">
-    <div v-if="loading" class="h-1 animate-pulse rounded bg-indigo-600" />
-    <form v-else class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm" @submit.prevent="submit">
-      <div class="mb-7 flex items-center justify-between"><div><p class="font-semibold text-indigo-600">จัดการสินค้า</p><h1 class="mt-1 text-2xl font-bold text-slate-900">{{ id ? 'แก้ไขสินค้า' : 'เพิ่มสินค้าใหม่' }}</h1></div><RouterLink to="/my-shop/products" class="text-sm font-semibold text-slate-500 hover:text-indigo-600">← กลับรายการ</RouterLink></div>
-      <div class="space-y-5">
-        <AppTextField v-model="form.productName" label="ชื่อสินค้า" />
-        <div class="grid gap-5 sm:grid-cols-2"><AppSelect v-model="form.productCategoryId" label="หมวดหมู่" :items="categories" item-title="categoryName" item-value="productCategoryId" placeholder="เลือกหมวดหมู่" clearable /><AppTextField v-model="form.price" label="ราคา" type="number" min="0" /></div>
-        <AppTextField v-model="stockQuantity" label="จำนวนสินค้าในสต็อก" type="number" min="0" />
-        <AppFileInput label="รูปหน้าปกสินค้า" @change="coverFile = $event[0] ?? null" />
-        <p v-if="coverFile" class="-mt-3 text-sm text-slate-500">เลือกรูป: {{ coverFile.name }}</p>
-        <AppFileInput label="รูปรายละเอียดสินค้า (เลือกได้สูงสุด 8 รูปต่อครั้ง)" multiple @change="detailFiles = $event.slice(0, 8)" />
-        <p v-if="detailFiles.length" class="-mt-3 text-sm text-slate-500">เลือกรูปแล้ว {{ detailFiles.length }} รูป</p>
-        <AppTextarea v-model="form.description" label="รายละเอียด" />
-        <div class="flex justify-end gap-3 border-t border-slate-100 pt-5"><RouterLink to="/my-shop/products" class="rounded-xl px-4 py-3 font-semibold text-slate-600">ยกเลิก</RouterLink><button type="submit" class="rounded-xl bg-indigo-600 px-5 py-3 font-semibold text-white disabled:opacity-60" :disabled="saving">{{ saving ? 'กำลังบันทึก...' : 'บันทึกสินค้า' }}</button></div>
+  <div class="mx-auto w-full max-w-4xl space-y-6 py-2">
+    <!-- Skeleton Loading -->
+    <div v-if="loading" class="space-y-6">
+      <div class="h-20 w-full animate-pulse rounded-3xl bg-slate-200/70"></div>
+      <div class="h-96 w-full animate-pulse rounded-3xl bg-slate-200/70"></div>
+    </div>
+
+    <form v-else class="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-sm" @submit.prevent="submit">
+      <!-- Form Header -->
+      <div class="flex items-center justify-between border-b border-slate-100 bg-slate-50/50 p-6 sm:px-8">
+        <div class="flex items-center gap-3.5">
+          <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-100">
+            <i :class="['mdi text-2xl', id ? 'mdi-pencil-box-outline' : 'mdi-plus-box-outline']"></i>
+          </div>
+          <div>
+            <h1 class="text-xl font-extrabold text-slate-900">
+              {{ id ? 'แก้ไขข้อมูลสินค้า' : 'เพิ่มสินค้าใหม่ลงร้านค้า' }}
+            </h1>
+            <p class="text-xs text-slate-500">กรอกรายละเอียดสินค้า ราคา สต็อกสินค้า และรูปภาพ</p>
+          </div>
+        </div>
+
+        <RouterLink
+          to="/my-shop/products"
+          class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200 transition"
+        >
+          <i class="mdi mdi-arrow-left text-sm"></i>
+          <span>ย้อนกลับ</span>
+        </RouterLink>
+      </div>
+
+      <!-- Form Body -->
+      <div class="space-y-8 p-6 sm:p-8 lg:p-10">
+        <!-- Section 1: General Specs -->
+        <div class="space-y-6">
+          <div class="flex items-center gap-2 border-b border-slate-100 pb-3">
+            <i class="mdi mdi-package-variant-closed text-emerald-600 text-xl"></i>
+            <h2 class="text-base font-bold text-slate-900">ข้อมูลสินค้าหลัก</h2>
+          </div>
+
+          <AppTextField
+            v-model="form.productName"
+            label="ชื่อสินค้า *"
+            placeholder="ระบุชื่อสินค้าของคุณ"
+          />
+
+          <div class="grid gap-6 sm:grid-cols-2">
+            <AppSelect
+              v-model="form.productCategoryId"
+              label="หมวดหมู่สินค้า *"
+              :items="categories"
+              item-title="categoryName"
+              item-value="productCategoryId"
+              placeholder="เลือกหมวดหมู่สินค้า"
+              clearable
+            />
+            <AppTextField
+              v-model="form.price"
+              label="ราคาสินค้า (บาท) *"
+              type="number"
+              min="0"
+              placeholder="เช่น 150"
+            />
+          </div>
+
+          <AppTextField
+            v-model="form.quantity"
+            label="จำนวนสินค้าในคลังสต็อก (ชิ้น) *"
+            type="number"
+            min="0"
+            placeholder="ระบุจำนวนคงเหลือ"
+          />
+        </div>
+
+        <!-- Section 2: Product Images (With Existing Images Preview) -->
+        <div class="space-y-6 pt-2">
+          <div class="flex items-center gap-2 border-b border-slate-100 pb-3">
+            <i class="mdi mdi-image-multiple-outline text-emerald-600 text-xl"></i>
+            <h2 class="text-base font-bold text-slate-900">รูปภาพสินค้า</h2>
+          </div>
+
+          <!-- Cover Image Upload & Existing Preview -->
+          <div class="rounded-2xl border border-slate-200 bg-slate-50/60 p-5 space-y-4">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-500">1. รูปหน้าปกหลักของสินค้า</span>
+              <span v-if="existingCoverUrl" class="text-xs font-semibold text-emerald-700">มีรูปเดิมในระบบ</span>
+            </div>
+
+            <!-- Existing Cover Image Preview Display -->
+            <div v-if="existingCoverUrl" class="flex flex-col sm:flex-row items-start sm:items-center gap-4 rounded-xl border border-emerald-200/80 bg-emerald-50/50 p-3.5">
+              <div class="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-slate-200 border border-slate-200">
+                <img :src="imageUrl(existingCoverUrl)" alt="รูปหน้าปกปัจจุบัน" class="h-full w-full object-cover" />
+              </div>
+              <div class="space-y-1 text-xs">
+                <span class="font-bold text-emerald-800 flex items-center gap-1">
+                  <i class="mdi mdi-image-check text-emerald-600 text-sm"></i>
+                  รูปหน้าปกปัจจุบันของสินค้า
+                </span>
+                <p class="text-slate-500">หากต้องการเปลี่ยน ให้เลือกไฟล์ใหม่ด้านล่าง</p>
+              </div>
+            </div>
+
+            <AppFileInput
+              :label="existingCoverUrl ? 'อัปโหลดรูปหน้าปกใหม่ (เลือกไฟล์เมื่อต้องการเปลี่ยน)' : 'อัปโหลดรูปหน้าปกหลักของสินค้า'"
+              @change="coverFile = $event[0] ?? null"
+            />
+            <p v-if="coverFile" class="text-xs font-semibold text-emerald-700 flex items-center gap-1">
+              <i class="mdi mdi-check-circle-outline"></i>
+              เลือกไฟล์ใหม่แล้ว: {{ coverFile.name }}
+            </p>
+          </div>
+
+          <!-- Detail Images Upload & Existing Preview -->
+          <div class="rounded-2xl border border-slate-200 bg-slate-50/60 p-5 space-y-4">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-500">2. รูปภาพรายละเอียดสินค้าเพิ่มเติม</span>
+              <span v-if="existingDetailImages.length > 0" class="text-xs font-semibold text-emerald-700">
+                มีรูปเดิม {{ existingDetailImages.length }} รูป
+              </span>
+            </div>
+
+            <!-- Existing Detail Images Grid Preview -->
+            <div v-if="existingDetailImages.length > 0" class="space-y-2 rounded-xl border border-emerald-200/80 bg-emerald-50/50 p-4">
+              <span class="text-xs font-bold text-emerald-800 flex items-center gap-1 mb-2">
+                <i class="mdi mdi-images text-emerald-600 text-sm"></i>
+                รูปรายละเอียดปัจจุบัน ({{ existingDetailImages.length }} รูป):
+              </span>
+
+              <div class="flex flex-wrap gap-3">
+                <div
+                  v-for="(img, index) in existingDetailImages"
+                  :key="index"
+                  class="relative h-20 w-20 overflow-hidden rounded-xl bg-slate-200 border border-slate-200 group"
+                >
+                  <img :src="imageUrl(img)" :alt="`รูปรายละเอียด ${index + 1}`" class="h-full w-full object-cover transition-transform group-hover:scale-105" />
+                  <span class="absolute bottom-1 right-1 rounded-md bg-slate-900/70 px-1 py-0.5 text-[9px] font-bold text-white backdrop-blur-xs">
+                    #{{ index + 1 }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <AppFileInput
+              label="อัปโหลดรูปภาพรายละเอียดเพิ่มเติม (เลือกได้สูงสุด 8 รูปต่อครั้ง)"
+              multiple
+              @change="detailFiles = $event.slice(0, 8)"
+            />
+            <p v-if="detailFiles.length" class="text-xs font-semibold text-emerald-700 flex items-center gap-1">
+              <i class="mdi mdi-check-circle-outline"></i>
+              เลือกไฟล์ใหม่แล้วทั้งหมด {{ detailFiles.length }} รูป
+            </p>
+          </div>
+        </div>
+
+        <!-- Section 3: Description -->
+        <div class="space-y-6 pt-2">
+          <div class="flex items-center gap-2 border-b border-slate-100 pb-3">
+            <i class="mdi mdi-text-box-search-outline text-emerald-600 text-xl"></i>
+            <h2 class="text-base font-bold text-slate-900">รายละเอียดสินค้าเพิ่มเติม</h2>
+          </div>
+
+          <AppTextarea
+            v-model="form.description"
+            label="คำอธิบายรายละเอียดสินค้า"
+            placeholder="ระบุส่วนผสม ประโยชน์ วิธีใช้งาน หรือข้อมูลสำคัญของสินค้า..."
+          />
+        </div>
+
+        <!-- Action Bar Footer -->
+        <div class="flex items-center justify-end gap-3 border-t border-slate-100 pt-6">
+          <RouterLink
+            to="/my-shop/products"
+            class="rounded-2xl border border-slate-200 bg-slate-50 px-6 py-3 text-sm font-bold text-slate-600 hover:bg-slate-100 transition"
+          >
+            ยกเลิก
+          </RouterLink>
+
+          <button
+            type="submit"
+            class="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-8 py-3.5 text-sm font-bold text-white shadow-lg shadow-emerald-600/25 transition hover:bg-emerald-700 active:scale-95 disabled:opacity-60"
+            :disabled="saving"
+          >
+            <i class="mdi mdi-content-save-outline text-lg" :class="{ 'animate-spin mdi-loading': saving }"></i>
+            <span>{{ saving ? 'กำลังบันทึก...' : id ? 'บันทึกการแก้ไข' : 'ยืนยันเพิ่มสินค้า' }}</span>
+          </button>
+        </div>
       </div>
     </form>
   </div>

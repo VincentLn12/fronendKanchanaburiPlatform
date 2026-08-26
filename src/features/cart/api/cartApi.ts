@@ -7,6 +7,7 @@ export interface CartItem {
   productName: string
   imageUrl?: string
   quantity: number
+  availableQuantity: number
   unitPrice: number
   subtotal: number
 }
@@ -29,7 +30,16 @@ export async function updateCartItem(id: string, quantity: number) {
 export async function removeCartItem(id: string) {
   await http.delete(`/cart/items/${id}`)
 }
-export async function checkout(shopId: string) {
-  const { data } = await http.post('/orders/checkout', { shopId, shippingFee: 0 })
+export interface CheckoutData {
+  shopId: string
+  shippingMethod: 'Delivery' | 'Pickup'
+  shippingFee: number
+  receiverName?: string
+  receiverPhone?: string
+  shippingAddress?: string
+}
+
+export async function checkout(checkoutData: CheckoutData) {
+  const { data } = await http.post('/orders/checkout', checkoutData)
   return data
 }

@@ -2,10 +2,12 @@
 export interface Product {
   productId: string
   shopId: string
+  shopName?: string
   productCategoryId: string
   productName: string
   description?: string
   price: number
+  quantity: number
   imageUrl?: string
   status: string
   detailImages?: string[]
@@ -19,6 +21,7 @@ export interface ProductFormData {
   productName: string
   description: string
   price: number | null
+  quantity: number | null
   imageUrl: string
   status: string
 }

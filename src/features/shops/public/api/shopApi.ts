@@ -12,8 +12,8 @@ export async function getShop(id: string) {
 }
 
 export async function getShopCategories() {
-  const { data } = await http.get<ShopCategory[]>('/shop-categories')
-  return data.filter((item) => item.status === 'Active')
+  const { data } = await http.get<{ items: ShopCategory[] }>('/shop-categories', { params: { page: 1, pageSize: 100 } })
+  return data.items.filter((item) => item.status === 'Active')
 }
 
 export async function getDistricts() {

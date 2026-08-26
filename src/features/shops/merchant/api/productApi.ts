@@ -12,8 +12,8 @@ export async function getProduct(id: string) {
 }
 
 export async function getProductCategories() {
-  const { data } = await http.get<ProductCategory[]>('/product-categories')
-  return data.filter((item) => item.status === 'Active')
+  const { data } = await http.get<{ items: ProductCategory[] }>('/product-categories', { params: { page: 1, pageSize: 100 } })
+  return data.items.filter((item) => item.status === 'Active')
 }
 
 export async function createProduct(data: ProductFormData) {
@@ -40,13 +40,4 @@ export async function uploadDetailImages(id: string, files: File[]) {
   const formData = new FormData()
   files.forEach((file) => formData.append('files', file))
   await http.post(`/products/${id}/detail-images`, formData)
-}
-
-export async function getProductStock(productId: string) {
-  const { data } = await http.get<Array<{ variantId?: string; quantity: number }>>(`/product-stocks/product/${productId}`)
-  return data.find((stock) => !stock.variantId)?.quantity ?? 0
-}
-
-export async function setProductStock(productId: string, quantity: number) {
-  await http.put('/product-stocks', { productId, quantity, variantId: null })
 }

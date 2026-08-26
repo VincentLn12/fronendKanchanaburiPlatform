@@ -54,7 +54,16 @@ const displayError = computed(() => {
 <template>
   <label class="block space-y-1">
     <span v-if="label" class="text-sm font-medium text-slate-700">{{ label }}</span>
-    <input v-model="fieldValue" :type="type" :placeholder="placeholder" :disabled="disabled" :readonly="readonly" :maxlength="maxlength" class="w-full rounded-xl border border-slate-300 px-3 py-2.5 outline-none focus:border-indigo-500 disabled:bg-slate-100" v-bind="$attrs" />
+    <input
+      v-model="fieldValue"
+      :type="type"
+      :placeholder="placeholder"
+      :disabled="disabled"
+      :readonly="readonly"
+      :maxlength="maxlength"
+      class="w-full rounded-xl border border-slate-300 px-3 py-2.5 outline-none focus:border-indigo-500 disabled:bg-slate-100"
+      v-bind="$attrs"
+    />
     <span v-if="displayError" class="text-sm text-red-600">{{ displayError }}</span>
   </label>
 </template>

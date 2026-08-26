@@ -10,6 +10,7 @@ export interface Shop {
   phone?: string
   email?: string
   address?: string
+  coverImageUrl?: string
   status: string
   categoryName?: string
   districtName?: string
