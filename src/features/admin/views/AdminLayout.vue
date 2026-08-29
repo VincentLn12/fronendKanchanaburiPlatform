@@ -35,6 +35,33 @@ function logout() {
           class="block rounded-xl px-4 py-3 font-semibold hover:bg-white/10"
           active-class="bg-indigo-600"
           >หมวดหมู่สินค้า</RouterLink
+        ><RouterLink
+          to="/admin/content-categories"
+          class="block rounded-xl px-4 py-3 font-semibold hover:bg-white/10"
+          active-class="bg-indigo-600"
+          >หมวดหมู่คอนเทนต์</RouterLink
+        ><RouterLink
+          to="/admin/tags"
+          class="block rounded-xl px-4 py-3 font-semibold hover:bg-white/10"
+          active-class="bg-indigo-600"
+          >แท็กคอนเทนต์</RouterLink
+        ><RouterLink
+          to="/admin/contents"
+          class="block rounded-xl px-4 py-3 font-semibold hover:bg-white/10"
+          active-class="bg-indigo-600"
+          >จัดการคอนเทนต์</RouterLink
+        >
+        <RouterLink
+          to="/admin/schedules"
+          class="block rounded-xl px-4 py-3 font-semibold hover:bg-white/10"
+          active-class="bg-indigo-600"
+          >กำหนดการกิจกรรม</RouterLink
+        >
+        <RouterLink
+          to="/admin/reports"
+          class="block rounded-xl px-4 py-3 font-semibold hover:bg-white/10"
+          active-class="bg-indigo-600"
+          ><i class="mdi mdi-flag-outline mr-1" />รายการรายงาน</RouterLink
         >
       </nav>
       <div class="mt-auto border-t border-white/10 pt-4">

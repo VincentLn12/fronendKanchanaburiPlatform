@@ -61,8 +61,13 @@
           </span>
         </RouterLink>
 
+        <RouterLink v-if="auth.isLoggedIn" to="/profile" class="login-button gap-1.5">
+          <i class="mdi mdi-account-circle-outline text-lg text-emerald-700"></i>
+          <span>โปรไฟล์</span>
+        </RouterLink>
+
         <!-- Create Content Button -->
-        <RouterLink to="/create" class="create-button">
+        <RouterLink :to="auth.isLoggedIn ? '/create' : '/login'" class="create-button">
           <i class="mdi mdi-plus-circle-outline text-lg"></i>
           <span>สร้างคอนเทนต์</span>
         </RouterLink>
@@ -159,6 +164,16 @@
 
           <RouterLink
             v-if="auth.isLoggedIn"
+            to="/profile"
+            class="login-button w-full justify-center gap-2"
+            @click="closeMenu"
+          >
+            <i class="mdi mdi-account-circle-outline text-lg text-emerald-700"></i>
+            <span>โปรไฟล์ของฉัน</span>
+          </RouterLink>
+
+          <RouterLink
+            v-if="auth.isLoggedIn"
             to="/my-shop"
             class="login-button w-full justify-center gap-2"
             @click="closeMenu"
@@ -167,7 +182,7 @@
             <span>ร้านของฉัน</span>
           </RouterLink>
 
-          <RouterLink to="/create" class="create-button w-full justify-center gap-2" @click="closeMenu">
+          <RouterLink :to="auth.isLoggedIn ? '/create' : '/login'" class="create-button w-full justify-center gap-2" @click="closeMenu">
             <i class="mdi mdi-plus-circle-outline text-lg"></i>
             <span>สร้างคอนเทนต์</span>
           </RouterLink>

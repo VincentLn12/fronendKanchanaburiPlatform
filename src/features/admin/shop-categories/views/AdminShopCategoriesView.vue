@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { deleteCategory, getCategories, type ShopCategory } from '../api/adminShopCategoryApi'
-import AppDataTable, { type DataTableColumn, type DataTablePagination } from '@/components/common/AppDataTable.vue'
+import AppDataTable, {
+  type DataTableColumn,
+  type DataTablePagination,
+} from '@/components/common/AppDataTable.vue'
 
 const categories = ref<ShopCategory[]>([])
 const loading = ref(true)
@@ -16,10 +19,18 @@ const columns: DataTableColumn[] = [
 async function load() {
   loading.value = true
   try {
-    const result = await getCategories({ page: pagination.value.page, pageSize: pagination.value.pageSize })
+    const result = await getCategories({
+      page: pagination.value.page,
+      pageSize: pagination.value.pageSize,
+    })
     if (Array.isArray(result)) {
       categories.value = result
-      pagination.value = { page: 1, pageSize: result.length || 10, totalCount: result.length, totalPages: 1 }
+      pagination.value = {
+        page: 1,
+        pageSize: result.length || 10,
+        totalCount: result.length,
+        totalPages: 1,
+      }
     } else {
       categories.value = result.items
       pagination.value = result

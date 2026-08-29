@@ -19,6 +19,8 @@
       <AppTextField v-model="search" placeholder="ค้นหาชื่อร้าน" /><AppSelect
         v-model="status"
         :items="statusOptions"
+        item-title="label"
+        item-value="value"
         placeholder="ทุกสถานะ"
         clearable
       />
@@ -37,11 +39,13 @@
           :class="
             asShop(item).status === 'Active'
               ? 'bg-emerald-100 text-emerald-700'
-              : asShop(item).status === 'Suspended'
+              : ['Rejected', 'Suspended'].includes(asShop(item).status)
                 ? 'bg-red-100 text-red-700'
+                : asShop(item).status === 'PendingApproval'
+                  ? 'bg-amber-100 text-amber-700'
                 : 'bg-slate-100 text-slate-700'
           "
-          >{{ asShop(item).status }}</span
+          >{{ statusLabel(asShop(item).status) }}</span
         ></template
       ><template #cell-actions="{ item }"
         ><div class="flex items-center gap-3"><RouterLink
@@ -51,6 +55,8 @@
         ><AppSelect
           :model-value="asShop(item).status"
           :items="statusOptions"
+          item-title="label"
+          item-value="value"
           :disabled="updatingId === asShop(item).shopId"
           @update:model-value="changeStatus(asShop(item), String($event))" /></div></template
     ></AppDataTable>
@@ -78,7 +84,14 @@ const loading = ref(true)
 const updatingId = ref<string | null>(null)
 const pagination = ref<DataTablePagination>({ page: 1, pageSize: 10, totalCount: 0, totalPages: 0 })
 const swal = useSwal()
-const statusOptions = ['Active', 'Inactive', 'Suspended', 'Closed']
+const statusOptions = [
+  { value: 'PendingApproval', label: 'รออนุมัติ' },
+  { value: 'Active', label: 'เปิดใช้งาน' },
+  { value: 'Rejected', label: 'ไม่อนุมัติ' },
+  { value: 'Inactive', label: 'ปิดใช้งาน' },
+  { value: 'Suspended', label: 'ระงับการใช้งาน' },
+  { value: 'Closed', label: 'ปิดร้าน' },
+]
 const columns: DataTableColumn[] = [
   { key: 'shopName', label: 'ร้านค้า', class: 'font-semibold text-slate-900' },
   { key: 'ownerUserId', label: 'เจ้าของ', class: 'text-sm text-slate-600' },
@@ -111,7 +124,7 @@ function changePage(page: number) {
 }
 async function changeStatus(shop: Shop, nextStatus: string) {
   if (nextStatus === shop.status) return
-  const result = await swal.confirm(`เปลี่ยนสถานะเป็น ${nextStatus}?`, shop.shopName)
+  const result = await swal.confirm(`เปลี่ยนสถานะเป็น ${statusLabel(nextStatus)}?`, shop.shopName)
   if (!result.isConfirmed) return
   updatingId.value = shop.shopId
   try {
@@ -126,6 +139,10 @@ async function changeStatus(shop: Shop, nextStatus: string) {
 }
 function asShop(item: object): Shop {
   return item as Shop
+}
+
+function statusLabel(value: string) {
+  return statusOptions.find((option) => option.value === value)?.label ?? value
 }
 
 watch([search, status], () => {

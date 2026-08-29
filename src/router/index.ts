@@ -1,5 +1,17 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import axios from 'axios'
 import { useAuthStore } from '@/features/auth/stores/auth'
+import http from '@/shared/api/http'
+
+async function requireActiveShop() {
+  try {
+    const { data } = await http.get<{ status: string }>('/shops/mine')
+    return data.status === 'Active' ? true : { name: 'shop-application' }
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response?.status === 404) return { name: 'shop-application' }
+    return { name: 'home' }
+  }
+}
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -40,6 +52,30 @@ const router = createRouter({
       component: () => import('@/features/shops/public/views/ShopDetailView.vue'),
     },
     {
+      path: '/contents',
+      name: 'contents',
+      component: () => import('@/features/contents/public/views/ContentListView.vue'),
+    },
+    { path: '/contents/:id', name: 'content-detail', component: () => import('@/features/contents/public/views/ContentDetailView.vue') },
+    {
+      path: '/create',
+      name: 'content-create',
+      component: () => import('@/features/contents/user/views/UserContentFormView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/my-contents',
+      name: 'my-contents',
+      component: () => import('@/features/contents/user/views/MyContentsView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/my-contents/:id/edit',
+      name: 'my-content-edit',
+      component: () => import('@/features/contents/user/views/UserContentFormView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
       path: '/products/:id',
       name: 'product-detail',
       component: () => import('@/features/shops/public/views/ProductDetailView.vue'),
@@ -69,9 +105,22 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: '/profile',
+      name: 'profile',
+      component: () => import('@/features/profile/views/ProfileView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/shop-application',
+      name: 'shop-application',
+      component: () => import('@/features/shops/merchant/views/ShopApplicationView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
       path: '/my-shop',
       component: () => import('@/features/shops/merchant/views/ShopManageLayout.vue'),
       meta: { requiresAuth: true },
+      beforeEnter: requireActiveShop,
       children: [
         {
           path: '',
@@ -118,6 +167,19 @@ const router = createRouter({
         { path: 'product-categories', name: 'admin-product-categories', component: () => import('@/features/admin/product-categories/views/AdminProductCategoriesView.vue') },
         { path: 'product-categories/new', name: 'admin-product-category-new', component: () => import('@/features/admin/product-categories/views/AdminProductCategoryFormView.vue') },
         { path: 'product-categories/:id/edit', name: 'admin-product-category-edit', component: () => import('@/features/admin/product-categories/views/AdminProductCategoryFormView.vue') },
+        { path: 'content-categories', name: 'admin-content-categories', component: () => import('@/features/admin/content-categories/views/AdminContentCategoriesView.vue') },
+        { path: 'content-categories/new', name: 'admin-content-category-new', component: () => import('@/features/admin/content-categories/views/AdminContentCategoryFormView.vue') },
+        { path: 'content-categories/:id/edit', name: 'admin-content-category-edit', component: () => import('@/features/admin/content-categories/views/AdminContentCategoryFormView.vue') },
+        { path: 'tags', name: 'admin-tags', component: () => import('@/features/admin/tags/views/AdminTagsView.vue') },
+        { path: 'tags/new', name: 'admin-tag-new', component: () => import('@/features/admin/tags/views/AdminTagFormView.vue') },
+        { path: 'tags/:id/edit', name: 'admin-tag-edit', component: () => import('@/features/admin/tags/views/AdminTagFormView.vue') },
+        { path: 'contents', name: 'admin-contents', component: () => import('@/features/admin/contents/views/AdminContentsView.vue') },
+        { path: 'contents/new', name: 'admin-content-new', component: () => import('@/features/admin/contents/views/AdminContentFormView.vue') },
+        { path: 'contents/:id/edit', name: 'admin-content-edit', component: () => import('@/features/admin/contents/views/AdminContentFormView.vue') },
+        { path: 'schedules', name: 'admin-schedules', component: () => import('@/features/admin/schedules/views/AdminSchedulesView.vue') },
+        { path: 'schedules/new', name: 'admin-schedule-new', component: () => import('@/features/admin/schedules/views/AdminScheduleFormView.vue') },
+        { path: 'schedules/:id/edit', name: 'admin-schedule-edit', component: () => import('@/features/admin/schedules/views/AdminScheduleFormView.vue') },
+        { path: 'reports', name: 'admin-reports', component: () => import('@/features/admin/reports/views/AdminReportsView.vue') },
       ],
     },
   ],

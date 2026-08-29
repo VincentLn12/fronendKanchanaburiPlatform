@@ -18,8 +18,24 @@ const defaultOptions: SweetAlertOptions = {
   cancelButtonText: 'ยกเลิก',
 }
 
+const notificationDuration: Record<SweetAlertIcon, number> = {
+  success: 2200,
+  error: 4000,
+  warning: 3500,
+  info: 2800,
+  question: 2800,
+}
+
 const show = (icon: SweetAlertIcon, title: string, text?: string) =>
-  Swal.fire({ ...defaultOptions, icon, title, text })
+  Swal.fire({
+    ...defaultOptions,
+    icon,
+    title,
+    text,
+    showConfirmButton: false,
+    timer: notificationDuration[icon],
+    timerProgressBar: true,
+  })
 
 export const appSwal: AppSwal = {
   fire: (options) => Swal.mixin(defaultOptions).fire(options),
