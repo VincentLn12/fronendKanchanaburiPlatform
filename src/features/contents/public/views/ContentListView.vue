@@ -226,43 +226,46 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="min-h-screen bg-[#f8faf9] text-slate-800 pb-16">
-    <!-- HERO BANNER SECTION -->
-    <section class="relative bg-slate-900 text-white min-h-[320px] sm:min-h-[360px] flex items-center justify-center overflow-hidden">
+    <!-- HERO BANNER SECTION (PROMINENT COVER IMAGE) -->
+    <section class="relative bg-[#0d3831] text-white min-h-[420px] sm:min-h-[450px] flex items-center justify-center overflow-hidden border-b-4 border-emerald-500 shadow-2xl">
       <img
         :src="heroCoverImage"
         alt="สำรวจคอนเทนต์กาญจนบุรี"
-        class="absolute inset-0 w-full h-full object-cover opacity-60 scale-105"
+        class="absolute inset-0 w-full h-full object-cover object-center opacity-85 sm:opacity-90 brightness-105 contrast-105 transition duration-700 hover:scale-105"
       />
-      <div class="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-900/50 to-slate-950/40"></div>
+      <div class="absolute inset-0 bg-gradient-to-t from-[#0d3831] via-[#0d3831]/40 to-slate-950/20"></div>
 
       <div class="relative z-10 mx-auto max-w-4xl px-4 text-center py-12 sm:py-16">
-        <h1 class="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-white drop-shadow-md">
-          สำรวจคอนเทนต์กาญจนบุรี
-        </h1>
-        <p class="mt-3 text-sm sm:text-base text-emerald-100/90 max-w-xl mx-auto font-normal">
-          ค้นพบเรื่องราว วัฒนธรรม ภูมิปัญญา และความงดงามของท้องถิ่น
-        </p>
+        <div class="backdrop-blur-md bg-[#0d3831]/60 p-6 sm:p-10 rounded-3xl border border-white/25 shadow-2xl space-y-4">
+          <h1 class="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-white drop-shadow-xl">
+            สำรวจคอนเทนต์กาญจนบุรี
+          </h1>
+          <p class="text-xs sm:text-base text-emerald-100 max-w-xl mx-auto font-medium leading-relaxed drop-shadow-md">
+            ค้นพบเรื่องราว วัฒนธรรม ภูมิปัญญา และความงดงามของท้องถิ่น
+          </p>
 
-        <!-- Search Bar -->
-        <div class="mt-7 mx-auto max-w-2xl">
-          <form @submit.prevent="load" class="flex items-center gap-2 rounded-2xl bg-white p-2 shadow-2xl shadow-emerald-950/30">
-            <div class="flex-1 flex items-center px-3 gap-2">
-              <i class="mdi mdi-magnify text-slate-400 text-xl"></i>
-              <input
-                v-model="search"
-                type="text"
-                placeholder="ค้นหาคอนเทนต์..."
-                class="w-full bg-transparent text-slate-800 text-sm sm:text-base focus:outline-none placeholder:text-slate-400"
-                @keyup.enter="load"
-              />
-            </div>
-            <button
-              type="submit"
-              class="shrink-0 px-7 py-3 rounded-xl bg-[#1c4d3e] hover:bg-[#14392e] text-white font-medium text-sm transition-all duration-200 shadow-md flex items-center justify-center gap-2"
-            >
-              <span>ค้นหา</span>
-            </button>
-          </form>
+          <!-- Search Bar -->
+          <div class="pt-2 mx-auto max-w-2xl">
+            <form @submit.prevent="load" class="flex items-center gap-2 rounded-2xl bg-white p-2 shadow-2xl border-2 border-emerald-400">
+              <div class="flex-1 flex items-center px-3 gap-2">
+                <i class="mdi mdi-magnify text-[#0d3831] text-2xl"></i>
+                <input
+                  v-model="search"
+                  type="text"
+                  placeholder="ค้นหาคอนเทนต์..."
+                  class="w-full bg-transparent text-slate-900 font-bold text-xs sm:text-sm focus:outline-none placeholder:text-slate-400"
+                  @keyup.enter="load"
+                />
+              </div>
+              <button
+                type="submit"
+                class="shrink-0 px-7 py-3 rounded-xl bg-[#0d3831] hover:bg-[#1c4d3e] text-white font-black text-xs sm:text-sm transition duration-200 shadow-md flex items-center justify-center gap-1.5 active:scale-95"
+              >
+                <i class="mdi mdi-magnify text-base"></i>
+                <span>ค้นหา</span>
+              </button>
+            </form>
+          </div>
         </div>
       </div>
     </section>

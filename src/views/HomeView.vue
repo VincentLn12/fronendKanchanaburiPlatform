@@ -93,25 +93,26 @@ onMounted(loadHomeData)
 <template>
   <div class="min-h-screen bg-[#f8faf9] text-slate-800">
     <!-- HERO BANNER SECTION -->
-    <section class="relative bg-slate-900 text-white min-h-[500px] lg:min-h-[540px] flex items-center justify-center overflow-hidden">
-      <!-- Background Image -->
+    <section class="relative bg-[#0d3831] text-white min-h-[520px] lg:min-h-[560px] flex items-center justify-center overflow-hidden border-b-4 border-emerald-500 shadow-2xl">
+      <!-- Background Image (Prominent & Vivid) -->
       <img
         :src="heroCoverImage"
         alt="สะพานข้ามแม่น้ำแคว กาญจนบุรี"
-        class="absolute inset-0 w-full h-full object-cover object-center opacity-60 scale-105"
+        class="absolute inset-0 w-full h-full object-cover object-center opacity-85 sm:opacity-90 brightness-105 contrast-105 transition duration-700 hover:scale-105"
       />
-      <div class="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-900/60 to-slate-950/40"></div>
+      <div class="absolute inset-0 bg-gradient-to-t from-[#0d3831] via-[#0d3831]/40 to-slate-950/20"></div>
 
-      <!-- Hero Content -->
-      <div class="relative z-10 mx-auto max-w-4xl px-4 text-center py-20">
-        <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight leading-tight text-white drop-shadow-md">
-          ค้นพบเรื่องราว วิถีชุมชน<br />
-          และภูมิปัญญาท้องถิ่นกาญจนบุรี
-        </h1>
-        <p class="mt-4 text-sm sm:text-base md:text-lg text-emerald-100/90 max-w-2xl mx-auto font-normal drop-shadow">
-          แหล่งรวมเรื่องราว วัฒนธรรม ร้านค้า และสินค้าท้องถิ่น<br class="hidden sm:inline" />
-          จากชุมชนสู่ชุมชน เพื่อคนกาญจนบุรี
-        </p>
+      <!-- Hero Glass Content Frame -->
+      <div class="relative z-10 mx-auto max-w-4xl px-4 text-center py-16">
+        <div class="backdrop-blur-md bg-[#0d3831]/60 p-6 sm:p-10 rounded-3xl border border-white/25 shadow-2xl space-y-4">
+          <h1 class="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-tight text-white drop-shadow-xl">
+            ค้นพบเรื่องราว วิถีชุมชน<br />
+            และภูมิปัญญาท้องถิ่นกาญจนบุรี
+          </h1>
+          <p class="text-xs sm:text-base md:text-lg text-emerald-100 max-w-2xl mx-auto font-medium leading-relaxed drop-shadow-md">
+            แหล่งรวมเรื่องราว วัฒนธรรม ร้านค้า และสินค้าท้องถิ่น<br class="hidden sm:inline" />
+            จากชุมชนสู่ชุมชน เพื่อคนกาญจนบุรี
+          </p>
 
         <!-- Search Input Bar -->
         <div class="mt-8 mx-auto max-w-2xl">
@@ -131,6 +132,7 @@ onMounted(loadHomeData)
               <span>ค้นหา</span>
             </button>
           </form>
+        </div>
         </div>
       </div>
     </section>

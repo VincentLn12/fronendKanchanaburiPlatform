@@ -19,3 +19,23 @@ export async function getPublicProduct(id: string) {
   const { data } = await http.get<Product>(`/products/${id}`)
   return data
 }
+
+export interface ProductReview {
+  reviewId: string
+  userName: string
+  rating: number
+  comment: string
+  reply?: string | null
+  createdAt: string
+}
+
+export interface ProductReviews {
+  totalCount: number
+  averageRating: number
+  reviews: ProductReview[]
+}
+
+export async function getProductReviews(productId: string) {
+  const { data } = await http.get<ProductReviews>(`/product-reviews/${productId}`)
+  return data
+}
