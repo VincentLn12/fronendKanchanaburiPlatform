@@ -1,89 +1,117 @@
 <!-- Footer -->
 <template>
-  <footer
-    class="bg-slate-900 text-slate-400 py-16 border-t border-slate-800 relative z-10"
-  >
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-      <div class="grid gap-12 md:grid-cols-12">
-        <div class="md:col-span-4 space-y-5">
-          <RouterLink to="/" class="flex items-center gap-3">
-            <span
-              class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-cyan-500 to-indigo-600 shadow-lg shadow-indigo-600/35"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="1.4em"
-                height="1.4em"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.5"
-                class="text-white"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"
-                />
+  <footer class="relative z-10 bg-[#0d3831] text-emerald-100/80 pt-14 pb-8 overflow-hidden">
+    <!-- Subtle River Kwai Bridge Silhouette Overlay Background -->
+    <div class="absolute inset-0 pointer-events-none opacity-5 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white via-transparent to-transparent"></div>
+
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
+      <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-12 pb-12 border-b border-emerald-800/40">
+        <!-- Col 1: About Project -->
+        <div class="lg:col-span-4 space-y-4">
+          <div class="flex items-center gap-3">
+            <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-400 text-slate-900 shadow-md">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 fill-current" viewBox="0 0 24 24">
+                <path d="M12 2L9.5 7H14.5L12 2ZM12 7.5L8.5 13H15.5L12 7.5ZM12 13.5L7 20H17L12 13.5ZM5 21H19V22H5V21Z" />
               </svg>
-            </span>
-            <span class="text-xl font-black text-white tracking-tight"
-              >E-Learning</span
-            >
-          </RouterLink>
-          <p class="text-sm leading-relaxed text-slate-400">
-            สร้างเสริมประสบการณ์การเรียนรู้ที่แตกต่าง
-            เพื่อพัฒนาทักษะและยกระดับชีวิตการทำงานอย่างยั่งยืน
+            </div>
+            <div class="flex flex-col">
+              <span class="text-lg font-bold text-white leading-tight">เกี่ยวกับโครงการ</span>
+            </div>
+          </div>
+          <p class="text-xs sm:text-sm leading-relaxed text-emerald-100/70 max-w-sm">
+            แพลตฟอร์มท่องเที่ยวเชิงวัฒนธรรม แหล่งรวมเรื่องราว วัฒนธรรม ร้านค้า และสินค้าท้องถิ่น จากชุมชนสู่ชุมชน เพื่อคนกาญจนบุรี
           </p>
+          <!-- Social Icons -->
+          <div class="flex items-center gap-2 pt-2">
+            <a href="#" class="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-900/60 text-emerald-200 hover:bg-amber-400 hover:text-slate-900 transition">
+              <i class="mdi mdi-facebook text-lg"></i>
+            </a>
+            <a href="#" class="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-900/60 text-emerald-200 hover:bg-amber-400 hover:text-slate-900 transition">
+              <i class="mdi mdi-instagram text-lg"></i>
+            </a>
+            <a href="#" class="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-900/60 text-emerald-200 hover:bg-amber-400 hover:text-slate-900 transition">
+              <i class="mdi mdi-youtube text-lg"></i>
+            </a>
+            <a href="#" class="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-900/60 text-emerald-200 hover:bg-amber-400 hover:text-slate-900 transition">
+              <i class="mdi mdi-web text-lg"></i>
+            </a>
+          </div>
         </div>
 
-        <div class="md:col-span-2 space-y-4">
-          <h4 class="text-xs font-bold text-white uppercase tracking-widest">
-            เมนูหลัก
+        <!-- Col 2: Quick Links -->
+        <div class="lg:col-span-2 space-y-3">
+          <h4 class="text-sm font-bold text-white tracking-wide">
+            ลิงก์ด่วน
           </h4>
-          <ul class="space-y-3 text-sm">
+          <ul class="space-y-2 text-xs sm:text-sm">
             <li>
-              <RouterLink
-                to="/"
-                class="hover:text-white transition-colors duration-200"
-                >หน้าแรก</RouterLink
-              >
+              <RouterLink to="/" class="hover:text-amber-400 transition-colors">หน้าแรก</RouterLink>
             </li>
             <li>
-              <RouterLink
-                to="/courses"
-                class="hover:text-white transition-colors duration-200"
-                >คอร์สทั้งหมด</RouterLink
-              >
+              <RouterLink to="/contents" class="hover:text-amber-400 transition-colors">คอนเทนต์</RouterLink>
+            </li>
+            <li>
+              <RouterLink to="/contents" class="hover:text-amber-400 transition-colors">กิจกรรม</RouterLink>
+            </li>
+            <li>
+              <RouterLink to="/shops" class="hover:text-amber-400 transition-colors">ร้านค้า</RouterLink>
+            </li>
+            <li>
+              <RouterLink to="/shops" class="hover:text-amber-400 transition-colors">สินค้า</RouterLink>
             </li>
           </ul>
         </div>
 
-        <div class="md:col-span-3 space-y-4">
-          <h4 class="text-xs font-bold text-white uppercase tracking-widest">
-            เกี่ยวกับเรา
+        <!-- Col 3: Help -->
+        <div class="lg:col-span-3 space-y-3">
+          <h4 class="text-sm font-bold text-white tracking-wide">
+            ช่วยเหลือ
           </h4>
-          <p class="text-sm text-slate-400">
-            แพลตฟอร์มการเรียนรู้ออนไลน์ที่มุ่งเน้นเนื้อหาคุณภาพสูง อัปเดตตามเทคโนโลยีใหม่ล่าสุด
-          </p>
+          <ul class="space-y-2 text-xs sm:text-sm">
+            <li>
+              <a href="#" class="hover:text-amber-400 transition-colors">คำถามที่พบบ่อย</a>
+            </li>
+            <li>
+              <a href="#" class="hover:text-amber-400 transition-colors">วิธีการใช้งาน</a>
+            </li>
+            <li>
+              <a href="#" class="hover:text-amber-400 transition-colors">ติดต่อเรา</a>
+            </li>
+            <li>
+              <a href="#" class="hover:text-amber-400 transition-colors">แจ้งปัญหา</a>
+            </li>
+          </ul>
         </div>
 
-        <div class="md:col-span-3 space-y-4">
-          <h4 class="text-xs font-bold text-white uppercase tracking-widest">
-            ติดต่อผู้ดูแล
+        <!-- Col 4: Contact Us -->
+        <div class="lg:col-span-3 space-y-3">
+          <h4 class="text-sm font-bold text-white tracking-wide">
+            ติดต่อเรา
           </h4>
-          <p class="text-sm text-slate-400">
-            อีเมล: support@elearn.com<br />
-            เวลาทำการ: จันทร์ - ศุกร์ 09:00 - 18:00 น.
-          </p>
+          <ul class="space-y-2.5 text-xs sm:text-sm">
+            <li class="flex items-center gap-2.5">
+              <i class="mdi mdi-phone text-emerald-300"></i>
+              <span>034-123-456</span>
+            </li>
+            <li class="flex items-center gap-2.5">
+              <i class="mdi mdi-email-outline text-emerald-300"></i>
+              <span>info@kanchanaburi-platform.go.th</span>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <i class="mdi mdi-map-marker-outline text-emerald-300 mt-0.5"></i>
+              <span class="leading-snug">ศาลากลางจังหวัดกาญจนบุรี อ.เมืองกาญจนบุรี จ.กาญจนบุรี 71000</span>
+            </li>
+          </ul>
         </div>
       </div>
 
-      <div
-        class="mt-12 pt-8 border-t border-slate-800 flex flex-col md:flex-row items-center justify-between text-xs text-slate-500 gap-4"
-      >
-        <p>© 2026 E-Learn Platform. All rights reserved.</p>
-        <p class="text-slate-400">ออกแบบและพัฒนาด้วย Vue 3 & Tailwind CSS</p>
+      <!-- Bottom Bar -->
+      <div class="pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-emerald-200/60 gap-3">
+        <p>© 2024 Kanchanaburi Cultural Platform. All rights reserved.</p>
+        <div class="flex items-center gap-6">
+          <a href="#" class="hover:text-white transition">นโยบายความเป็นส่วนตัว</a>
+          <a href="#" class="hover:text-white transition">เงื่อนไขการใช้งาน</a>
+        </div>
       </div>
     </div>
   </footer>

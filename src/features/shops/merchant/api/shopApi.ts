@@ -50,3 +50,10 @@ export async function uploadShopCoverImage(id: string, file: File) {
   const { data } = await http.post<Shop>(`/shops/${id}/cover-image`, formData)
   return data
 }
+
+export async function uploadShopBackgroundImage(id: string, file: File) {
+  const formData = new FormData()
+  formData.append('file', file)
+  const { data } = await http.post<Shop>(`/shops/${id}/background-image`, formData)
+  return data
+}

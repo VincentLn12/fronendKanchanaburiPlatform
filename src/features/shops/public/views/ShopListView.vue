@@ -1,20 +1,38 @@
 <script setup lang="ts">
-// Public storefront - Emerald Nature Redesign for Kanchanaburi Shops Directory
-import { onMounted, ref, computed } from 'vue'
-import { getDistricts, getShopCategories, getShops } from '../api/shopApi'
-import type { District, Shop, ShopCategory } from '../../shared/types/shop'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import L from 'leaflet'
+import 'leaflet/dist/leaflet.css'
+import { getDistricts, getShopCategories, getShops, getSubDistricts } from '../api/shopApi'
+import { getPublicProducts } from '../api/productApi'
+import type { District, Shop, ShopCategory, SubDistrict } from '../../shared/types/shop'
+import type { Product } from '../../shared/types/product'
 import { getApiErrorMessage } from '@/features/auth/api/getApiErrorMessage'
 import { useSwal } from '@/plugins/sweetalert'
 import AppTextField from '@/components/common/input/AppTextField.vue'
 import AppSelect from '@/components/common/input/AppSelect.vue'
+import heroCoverImage from '@/assets/รูปปก.png'
 
 const shops = ref<Shop[]>([])
 const categories = ref<ShopCategory[]>([])
 const districts = ref<District[]>([])
+const subDistricts = ref<SubDistrict[]>([])
+const products = ref<Product[]>([])
+
 const search = ref('')
 const categoryId = ref<string | null>(null)
 const districtId = ref<string | null>(null)
-const loading = ref(false)
+const subDistrictId = ref<string | null>(null)
+const sortBy = ref<'latest' | 'popular' | 'title'>('latest')
+
+const viewMode = ref<'grid' | 'list'>('grid')
+const showMap = ref(true)
+
+const page = ref(1)
+const pageSize = ref(6)
+const totalCount = ref(0)
+const totalPages = ref(1)
+const loading = ref(true)
+
 const swal = useSwal()
 const apiOrigin = (import.meta.env.VITE_API_URL ?? 'https://localhost:7289/api').replace(/\/api$/, '')
 
@@ -22,23 +40,108 @@ function imageUrl(url?: string) {
   return url?.startsWith('/') ? `${apiOrigin}${url}` : url
 }
 
+interface CategoryPill {
+  id: string | null
+  name: string
+  icon: string
+  imageUrl?: string
+  bgColor: string
+  iconColor: string
+}
+
+function categoryImageUrl(categoryId: string) {
+  return `${apiOrigin}/api/shop-categories/${categoryId}/image`
+}
+
+// Generate category pills directly from API categories
+const topCategoryPills = computed<CategoryPill[]>(() => {
+  const list: CategoryPill[] = [
+    { id: null, name: 'ทั้งหมด', icon: 'mdi-view-grid-outline', bgColor: '#ecfdf5', iconColor: '#059669' },
+  ]
+  const colors = [
+    { bgColor: '#fef3c7', iconColor: '#d97706', icon: 'mdi-pottery-clay-outline' },
+    { bgColor: '#fae8ff', iconColor: '#c026d3', icon: 'mdi-texture-box' },
+    { bgColor: '#fef9c3', iconColor: '#ca8a04', icon: 'mdi-food-variant' },
+    { bgColor: '#ffe4e6', iconColor: '#e11d48', icon: 'mdi-gift-outline' },
+    { bgColor: '#e6fffa', iconColor: '#0d9488', icon: 'mdi-leaf-circle-outline' },
+    { bgColor: '#f1f5f9', iconColor: '#64748b', icon: 'mdi-store-outline' },
+  ]
+  categories.value.forEach((cat, idx) => {
+    const theme = colors[idx % colors.length] ?? colors[0]!
+    list.push({
+      id: cat.shopCategoryId,
+      name: cat.categoryName,
+      icon: theme.icon,
+      imageUrl: cat.hasImage ? categoryImageUrl(cat.shopCategoryId) : undefined,
+      bgColor: theme.bgColor,
+      iconColor: theme.iconColor,
+    })
+  })
+  return list
+})
+
+// Sort options
+const sortOptions = [
+  { id: 'latest', title: 'ล่าสุด' },
+  { id: 'popular', title: 'ยอดนิยม' },
+  { id: 'title', title: 'ตัวอักษร' },
+]
+
+// Popular Shops computed from real API shops
+const popularShops = computed(() => {
+  return shops.value.slice(0, 4)
+})
+
+// Helper for shop cover images
+function getShopCoverImage(shop: Shop, index: number) {
+  if (shop.coverImageUrl) return imageUrl(shop.coverImageUrl)
+  const covers = [
+    'https://images.unsplash.com/photo-1606744888344-493238951221?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&w=800&q=80',
+  ]
+  return covers[index % covers.length]
+}
+
+function getShopProducts(shopId: string) {
+  return products.value.filter((product) => product.shopId === shopId).slice(0, 3)
+}
+
 async function loadShops() {
   loading.value = true
   try {
-    shops.value = await getShops({
+    const data = await getShops({
       search: search.value || undefined,
       categoryId: categoryId.value || undefined,
       districtId: districtId.value || undefined,
+      subDistrictId: subDistrictId.value || undefined,
     })
+    shops.value = data || []
+    totalCount.value = shops.value.length
+    totalPages.value = Math.max(1, Math.ceil(totalCount.value / pageSize.value))
+    renderShopMarkers()
   } catch (error) {
+    shops.value = []
+    totalCount.value = 0
+    totalPages.value = 1
+    renderShopMarkers()
     await swal.error('โหลดร้านค้าไม่สำเร็จ', getApiErrorMessage(error, 'กรุณาลองใหม่อีกครั้ง'))
   } finally {
     loading.value = false
   }
 }
 
-function selectCategory(catId: string | null) {
+async function changeDistrict() {
+  subDistrictId.value = null
+  subDistricts.value = districtId.value ? await getSubDistricts(districtId.value) : []
+  await loadShops()
+}
+
+function selectCategoryPill(catId: string | null) {
   categoryId.value = catId
+  page.value = 1
   loadShops()
 }
 
@@ -46,184 +149,221 @@ function clearFilters() {
   search.value = ''
   categoryId.value = null
   districtId.value = null
+  subDistrictId.value = null
+  subDistricts.value = []
+  sortBy.value = 'latest'
+  page.value = 1
   loadShops()
 }
 
-const activeFiltersCount = computed(() => {
-  let count = 0
-  if (search.value.trim()) count++
-  if (categoryId.value) count++
-  if (districtId.value) count++
-  return count
-})
+function setPage(p: number) {
+  if (p < 1 || p > totalPages.value) return
+  page.value = p
+  loadShops()
+}
 
-const selectedCategoryName = computed(() => {
-  if (!categoryId.value) return null
-  return categories.value.find((c) => c.shopCategoryId === categoryId.value)?.categoryName
-})
+// Leaflet Map Initialization
+const mapContainer = ref<HTMLElement | null>(null)
+let mapInstance: L.Map | null = null
+let shopMarkerLayer: L.LayerGroup | null = null
 
-const selectedDistrictName = computed(() => {
-  if (!districtId.value) return null
-  return districts.value.find((d) => d.districtId === districtId.value)?.districtName
-})
+const shopsWithLocation = computed(() => shops.value.filter(
+  (shop) => shop.latitude != null && shop.longitude != null,
+))
+
+function escapePopupText(value: string) {
+  return value.replace(/[&<>'"]/g, (character) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;',
+  }[character] ?? character))
+}
+
+function renderShopMarkers() {
+  if (!mapInstance || !shopMarkerLayer) return
+
+  const markerLayer = shopMarkerLayer
+  markerLayer.clearLayers()
+  const bounds: L.LatLngTuple[] = []
+
+  shopsWithLocation.value.forEach((shop) => {
+    const latitude = shop.latitude!
+    const longitude = shop.longitude!
+    const icon = L.divIcon({
+      className: 'custom-shop-marker',
+      html: '<div class="flex h-9 w-9 items-center justify-center rounded-full border-2 border-white bg-[#1c4d3e] text-white shadow-xl"><i class="mdi mdi-store text-lg"></i></div>',
+      iconSize: [36, 36],
+      iconAnchor: [18, 18],
+    })
+    const area = [shop.subDistrictName ? `ต.${shop.subDistrictName}` : null, shop.districtName ? `อ.${shop.districtName}` : null]
+      .filter(Boolean)
+      .join(' ')
+    L.marker([latitude, longitude], { icon })
+      .bindPopup(`<b>${escapePopupText(shop.shopName)}</b>${area ? `<br><span>${escapePopupText(area)}</span>` : ''}`)
+      .addTo(markerLayer)
+    bounds.push([latitude, longitude])
+  })
+
+  if (bounds.length > 1) {
+    mapInstance.fitBounds(bounds, { padding: [32, 32], maxZoom: 13 })
+  } else if (bounds.length === 1) {
+    mapInstance.setView(bounds[0]!, 13)
+  } else {
+    mapInstance.setView([14.35, 98.9], 9)
+  }
+}
+
+function initMap() {
+  if (!mapContainer.value || mapInstance) return
+
+  mapInstance = L.map(mapContainer.value, {
+    scrollWheelZoom: false,
+    zoomControl: false,
+  }).setView([14.35, 98.9], 9)
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 18,
+    attribution: '&copy; OpenStreetMap',
+  }).addTo(mapInstance)
+
+  L.control.zoom({ position: 'bottomright' }).addTo(mapInstance)
+  shopMarkerLayer = L.layerGroup().addTo(mapInstance)
+  renderShopMarkers()
+}
 
 onMounted(async () => {
   try {
-    ;[categories.value, districts.value] = await Promise.all([getShopCategories(), getDistricts()])
+    const [shopCategories, locationDistricts, publicProducts] = await Promise.all([
+      getShopCategories(), getDistricts(), getPublicProducts(),
+    ])
+    categories.value = shopCategories
+    districts.value = locationDistricts
+    products.value = publicProducts
   } catch {
-    /* filter option load fail silent fallback */
+    /* fallback silent */
   }
   await loadShops()
+
+  await nextTick()
+  initMap()
+})
+
+watch(showMap, async (visible) => {
+  if (!visible) {
+    mapInstance?.remove()
+    mapInstance = null
+    shopMarkerLayer = null
+    return
+  }
+
+  await nextTick()
+  initMap()
+  mapInstance?.invalidateSize()
+})
+
+onBeforeUnmount(() => {
+  if (mapInstance) {
+    mapInstance.remove()
+    mapInstance = null
+    shopMarkerLayer = null
+  }
 })
 </script>
 
 <template>
-  <div class="min-h-screen bg-slate-50/60 pb-20">
-    <!-- Hero Header Banner Section (Emerald Nature Theme) -->
-    <section class="relative overflow-hidden bg-gradient-to-br from-emerald-950 via-teal-950 to-slate-900 py-16 text-white sm:py-20">
-      <!-- Background Ambient Glow Decorative Orbs -->
-      <div class="pointer-events-none absolute -left-20 -top-20 h-80 w-80 rounded-full bg-emerald-500/20 blur-3xl"></div>
-      <div class="pointer-events-none absolute -right-20 -bottom-20 h-96 w-96 rounded-full bg-teal-400/20 blur-3xl"></div>
-      <div class="pointer-events-none absolute top-1/2 left-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-400/10 blur-2xl"></div>
+  <div class="min-h-screen bg-[#f8faf9] text-slate-800 pb-16">
+    <!-- HERO BANNER SECTION -->
+    <section class="relative bg-slate-900 text-white min-h-[320px] sm:min-h-[360px] flex items-center justify-center overflow-hidden">
+      <img
+        :src="heroCoverImage"
+        alt="สำรวจร้านค้าท้องถิ่นกาญจนบุรี"
+        class="absolute inset-0 w-full h-full object-cover opacity-60 scale-105"
+      />
+      <div class="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-900/50 to-slate-950/40"></div>
 
-      <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="flex flex-col items-center text-center">
-          <!-- Tag Pill -->
-          <div class="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-500/15 px-4 py-1.5 text-xs font-semibold tracking-wide text-emerald-200 backdrop-blur-md">
-            <i class="mdi mdi-leaf-circle-outline text-emerald-300 text-sm"></i>
-            <span>ตลาดออนไลน์เมืองกาญจน์ • Emerald Nature Directory</span>
-          </div>
+      <!-- Top Right Button: ดูบนแผนที่ -->
+      <div class="absolute top-6 right-6 z-20">
+        <button
+          type="button"
+          class="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white text-slate-800 font-bold text-xs shadow-lg hover:bg-slate-100 transition"
+          @click="showMap = true"
+        >
+          <i class="mdi mdi-map-marker-outline text-[#1c4d3e] text-base"></i>
+          <span>ดูบนแผนที่</span>
+        </button>
+      </div>
 
-          <h1 class="mt-4 text-3xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl">
-            สัมผัสร้านค้าเด็ด <span class="bg-gradient-to-r from-emerald-200 via-teal-200 to-lime-300 bg-clip-text text-transparent">&amp; ของดีเมืองกาญจน์</span>
-          </h1>
+      <!-- Hero Content -->
+      <div class="relative z-10 mx-auto max-w-4xl px-4 text-center py-12 sm:py-16">
+        <h1 class="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-white drop-shadow-md">
+          สำรวจร้านค้าท้องถิ่นกาญจนบุรี
+        </h1>
+        <p class="mt-3 text-sm sm:text-base text-emerald-100/90 max-w-xl mx-auto font-normal">
+          สนับสนุนสินค้าชุมชน ของดีท้องถิ่น และภูมิปัญญาไทย
+        </p>
 
-          <p class="mt-4 max-w-2xl text-base text-emerald-100/80 sm:text-lg">
-            รวบรวมร้านค้าท้องถิ่น สินค้าหัตถกรรม อาหารพื้นบ้าน และของฝากจากธรรมชาติทั่วกาญจนบุรี ครบจบในที่เดียว
-          </p>
-
-          <!-- Stat Badges Bar -->
-          <div class="mt-8 flex flex-wrap justify-center gap-6 sm:gap-10 border-t border-emerald-800/40 pt-6">
-            <div class="flex items-center gap-3">
-              <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-300">
-                <i class="mdi mdi-store text-xl"></i>
-              </div>
-              <div class="text-left">
-                <div class="text-lg font-bold text-white">{{ shops.length }}+</div>
-                <div class="text-xs text-emerald-200/70">ร้านค้าในระบบ</div>
-              </div>
+        <!-- Search Bar -->
+        <div class="mt-7 mx-auto max-w-2xl">
+          <form @submit.prevent="loadShops" class="flex items-center gap-2 rounded-2xl bg-white p-2 shadow-2xl shadow-emerald-950/30">
+            <div class="flex-1 flex items-center px-3 gap-2">
+              <i class="mdi mdi-magnify text-slate-400 text-xl"></i>
+              <input
+                v-model="search"
+                type="text"
+                placeholder="ค้นหาร้านค้า เช่น ผ้าทอ, ของฝาก, อาหารพื้นบ้าน..."
+                class="w-full bg-transparent text-slate-800 text-sm sm:text-base focus:outline-none placeholder:text-slate-400"
+                @keyup.enter="loadShops"
+              />
             </div>
-
-            <div class="flex items-center gap-3">
-              <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-500/20 text-teal-300">
-                <i class="mdi mdi-map-marker-radius text-xl"></i>
-              </div>
-              <div class="text-left">
-                <div class="text-lg font-bold text-white">{{ districts.length > 0 ? districts.length : 13 }}</div>
-                <div class="text-xs text-emerald-200/70">อำเภอครอบคลุม</div>
-              </div>
-            </div>
-
-            <div class="flex items-center gap-3">
-              <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-lime-500/20 text-lime-300">
-                <i class="mdi mdi-shield-check text-xl"></i>
-              </div>
-              <div class="text-left">
-                <div class="text-lg font-bold text-white">100%</div>
-                <div class="text-xs text-emerald-200/70">ร้านค้าผ่านการยืนยัน</div>
-              </div>
-            </div>
-          </div>
+            <button
+              type="submit"
+              class="shrink-0 px-7 py-3 rounded-xl bg-[#1c4d3e] hover:bg-[#14392e] text-white font-medium text-sm transition-all duration-200 shadow-md flex items-center justify-center gap-2"
+            >
+              <span>ค้นหา</span>
+            </button>
+          </form>
         </div>
       </div>
     </section>
 
-    <!-- Main Content Area -->
-    <main class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 -mt-8 relative z-10">
-      <!-- Search & Filter Card -->
-      <section class="rounded-3xl border border-emerald-100/80 bg-white p-5 sm:p-7 shadow-xl shadow-emerald-950/5 backdrop-blur-xl">
-        <!-- Quick Category Tabs (Horizontal Scrollable) -->
-        <div class="mb-6 border-b border-slate-100 pb-5">
-          <div class="flex items-center justify-between mb-3">
-            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">หมวดหมู่ร้านค้ายอดนิยม</span>
-            <span v-if="categoryId" class="text-xs font-medium text-emerald-600 cursor-pointer hover:underline" @click="selectCategory(null)">
-              แสดงทั้งหมด
-            </span>
-          </div>
-
-          <div class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-            <button
-              class="flex shrink-0 items-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold transition-all duration-200"
-              :class="categoryId === null
-                ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/25'
-                : 'bg-emerald-50/70 text-slate-600 hover:bg-emerald-100/70 hover:text-emerald-900'"
-              @click="selectCategory(null)"
+    <!-- CATEGORY PILLS BAR (FLOATING CARD FROM API) -->
+    <section class="relative z-20 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 -mt-8 sm:-mt-10">
+      <div class="rounded-3xl bg-white p-4 sm:p-5 shadow-xl shadow-slate-900/5 border border-slate-100">
+        <div class="flex items-center gap-3 overflow-x-auto pb-1 scrollbar-none">
+          <button
+            v-for="cat in topCategoryPills"
+            :key="cat.name"
+            type="button"
+            class="group flex flex-col items-center p-2.5 rounded-2xl transition-all duration-200 shrink-0 min-w-[90px]"
+            :class="categoryId === cat.id ? 'bg-emerald-50/80 ring-2 ring-[#1c4d3e]' : 'hover:bg-slate-50'"
+            @click="selectCategoryPill(cat.id)"
+          >
+            <div
+              class="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl transition duration-300 group-hover:scale-105 shadow-xs"
+              :style="{ backgroundColor: cat.bgColor, color: cat.iconColor }"
             >
-              <i class="mdi mdi-view-grid-outline"></i>
-              <span>ทั้งหมด</span>
-            </button>
-
-            <button
-              v-for="cat in categories"
-              :key="cat.shopCategoryId"
-              class="flex shrink-0 items-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold transition-all duration-200"
-              :class="categoryId === cat.shopCategoryId
-                ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/25'
-                : 'bg-emerald-50/70 text-slate-600 hover:bg-emerald-100/70 hover:text-emerald-900'"
-              @click="selectCategory(cat.shopCategoryId)"
-            >
-              <i class="mdi mdi-tag-outline"></i>
-              <span>{{ cat.categoryName }}</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Inputs Grid -->
-        <div class="grid gap-4 md:grid-cols-12 items-end">
-          <!-- Search Input -->
-          <div class="md:col-span-5">
-            <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500">
-              <i class="mdi mdi-magnify text-emerald-600 mr-1"></i>ค้นหาชื่อร้านค้า
-            </label>
-            <div class="relative">
-              <AppTextField
-                v-model="search"
-                placeholder="พิมพ์ชื่อร้านค้า หรือคีย์เวิร์ด..."
-                class="w-full"
-                @keyup.enter="loadShops"
+              <img
+                v-if="cat.imageUrl"
+                :src="cat.imageUrl"
+                :alt="`หมวดหมู่${cat.name}`"
+                class="h-full w-full object-cover"
               />
-              <button
-                v-if="search"
-                class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                title="ล้างคำค้นหา"
-                @click="search = ''; loadShops()"
-              >
-                <i class="mdi mdi-close-circle text-lg"></i>
-              </button>
+              <i v-else :class="['mdi text-2xl', cat.icon]"></i>
             </div>
-          </div>
+            <span class="mt-2 text-xs font-semibold text-slate-700 group-hover:text-[#1c4d3e] whitespace-nowrap">
+              {{ cat.name }}
+            </span>
+          </button>
+        </div>
+      </div>
+    </section>
 
-          <!-- Category Select -->
-          <div class="md:col-span-3">
-            <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500">
-              <i class="mdi mdi-shape-outline text-emerald-600 mr-1"></i>หมวดหมู่
-            </label>
-            <AppSelect
-              v-model="categoryId"
-              :items="categories"
-              item-title="categoryName"
-              item-value="shopCategoryId"
-              placeholder="ทุกหมวดหมู่"
-              clearable
-              @change="loadShops"
-            />
-          </div>
-
-          <!-- District Select -->
-          <div class="md:col-span-3">
-            <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500">
-              <i class="mdi mdi-map-marker-outline text-emerald-600 mr-1"></i>อำเภอ/เขต
-            </label>
+    <!-- MAIN CONTAINER -->
+    <main class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-8 pb-12 space-y-8">
+      <!-- FILTER PANEL CARD -->
+      <section class="rounded-3xl bg-white p-5 sm:p-6 border border-slate-200/80 shadow-xs space-y-4">
+        <!-- Dropdowns Row (4 Filter Fields) -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3.5 items-end">
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">อำเภอ</label>
             <AppSelect
               v-model="districtId"
               :items="districts"
@@ -231,190 +371,267 @@ onMounted(async () => {
               item-value="districtId"
               placeholder="ทุกอำเภอ"
               clearable
-              @change="loadShops"
+              @update:model-value="changeDistrict"
             />
           </div>
 
-          <!-- Action Buttons -->
-          <div class="md:col-span-1 flex gap-2">
-            <button
-              class="flex h-11 w-full items-center justify-center gap-1.5 rounded-xl bg-emerald-600 font-bold text-white shadow-lg shadow-emerald-600/25 transition hover:bg-emerald-700 hover:shadow-emerald-600/35 active:scale-95 disabled:opacity-60"
-              :disabled="loading"
-              title="ค้นหา"
-              @click="loadShops"
-            >
-              <i class="mdi mdi-magnify text-xl" :class="{ 'animate-spin mdi-loading': loading }"></i>
-            </button>
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">ตำบล</label>
+            <AppSelect
+              v-model="subDistrictId"
+              :items="subDistricts"
+              item-title="subDistrictName"
+              item-value="subDistrictId"
+              placeholder="ทุกตำบล"
+              :disabled="!districtId"
+              clearable
+              @update:model-value="loadShops"
+            />
+          </div>
 
-            <button
-              v-if="activeFiltersCount > 0"
-              class="flex h-11 shrink-0 px-3 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-600 font-semibold transition hover:bg-slate-100"
-              title="ล้างเงื่อนไขการค้นหา"
-              @click="clearFilters"
-            >
-              <i class="mdi mdi-refresh text-lg"></i>
-            </button>
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">ประเภทร้านค้า</label>
+            <AppSelect
+              v-model="categoryId"
+              :items="categories"
+              item-title="categoryName"
+              item-value="shopCategoryId"
+              placeholder="ทุกประเภท"
+              clearable
+              @update:model-value="loadShops"
+            />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">เรียงตาม</label>
+            <AppSelect
+              v-model="sortBy"
+              :items="sortOptions"
+              item-title="title"
+              item-value="id"
+              placeholder="ล่าสุด"
+            />
           </div>
         </div>
+      </section>
 
-        <!-- Active Filter Pills Bar -->
-        <div v-if="activeFiltersCount > 0" class="mt-4 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-3 text-xs text-slate-600">
-          <span class="font-medium text-slate-500">ตัวกรองที่เลือก:</span>
+      <!-- RESULTS TOOLBAR & DISPLAY CONTROLS -->
+      <section class="flex flex-wrap items-center justify-between gap-4">
+        <div class="text-lg font-bold text-slate-900">
+          พบ <span class="text-[#1c4d3e] font-black">{{ totalCount }}</span> ร้านค้า
+        </div>
 
-          <span v-if="search" class="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-2.5 py-1 text-emerald-800 font-medium border border-emerald-200">
-            <i class="mdi mdi-magnify text-xs"></i> "{{ search }}"
-            <button class="hover:text-emerald-950" @click="search = ''; loadShops()"><i class="mdi mdi-close"></i></button>
-          </span>
+        <div class="flex items-center gap-3">
+          <div class="flex items-center rounded-xl bg-white border border-slate-200 p-1 shadow-xs">
+            <button
+              type="button"
+              class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition"
+              :class="viewMode === 'grid' ? 'bg-[#1c4d3e] text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100'"
+              @click="viewMode = 'grid'"
+            >
+              <i class="mdi mdi-view-grid-outline"></i>
+              <span>ตาราง</span>
+            </button>
+            <button
+              type="button"
+              class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition"
+              :class="viewMode === 'list' ? 'bg-[#1c4d3e] text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100'"
+              @click="viewMode = 'list'"
+            >
+              <i class="mdi mdi-format-list-bulleted"></i>
+              <span>รายการ</span>
+            </button>
+          </div>
 
-          <span v-if="selectedCategoryName" class="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-2.5 py-1 text-emerald-800 font-medium border border-emerald-200">
-            <i class="mdi mdi-tag-outline text-xs"></i> {{ selectedCategoryName }}
-            <button class="hover:text-emerald-950" @click="categoryId = null; loadShops()"><i class="mdi mdi-close"></i></button>
-          </span>
-
-          <span v-if="selectedDistrictName" class="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-2.5 py-1 text-emerald-800 font-medium border border-emerald-200">
-            <i class="mdi mdi-map-marker-outline text-xs"></i> {{ selectedDistrictName }}
-            <button class="hover:text-emerald-950" @click="districtId = null; loadShops()"><i class="mdi mdi-close"></i></button>
-          </span>
-
-          <button class="ml-auto text-xs font-semibold text-emerald-600 hover:text-emerald-800" @click="clearFilters">
-            ล้างทั้งหมด ({{ activeFiltersCount }})
+          <button
+            type="button"
+            class="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 text-xs font-bold shadow-xs hover:border-[#1c4d3e] hover:text-[#1c4d3e] transition"
+            @click="showMap = !showMap"
+          >
+            <i class="mdi mdi-map-marker-outline text-base"></i>
+            <span>{{ showMap ? 'ซ่อนแผนที่' : 'แผนที่' }}</span>
           </button>
         </div>
       </section>
 
-      <!-- Status Header Bar -->
-      <div class="my-6 flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <h2 class="text-xl font-bold text-slate-900">รายชื่อร้านค้า</h2>
-          <span class="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-bold text-emerald-800">
-            {{ loading ? '...' : shops.length }} ร้าน
-          </span>
-        </div>
-      </div>
-
-      <!-- Loading State Skeleton -->
-      <div v-if="loading" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        <div v-for="i in 6" :key="i" class="animate-pulse overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-          <div class="h-52 w-full bg-slate-200"></div>
-          <div class="p-6 space-y-3">
-            <div class="h-4 w-1/3 rounded bg-slate-200"></div>
-            <div class="h-6 w-3/4 rounded bg-slate-200"></div>
-            <div class="h-4 w-full rounded bg-slate-200"></div>
-            <div class="h-4 w-2/3 rounded bg-slate-200"></div>
-            <div class="pt-4 border-t border-slate-100 flex justify-between">
-              <div class="h-4 w-1/4 rounded bg-slate-200"></div>
-              <div class="h-4 w-1/4 rounded bg-slate-200"></div>
-            </div>
+      <!-- SHOPS GRID & SIDEBAR SPLIT AREA -->
+      <section class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <!-- Shop Cards Column -->
+        <div :class="showMap ? 'lg:col-span-7' : 'lg:col-span-12'">
+          <div v-if="loading" class="grid gap-5" :class="showMap ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3'">
+            <div v-for="i in 6" :key="i" class="animate-pulse rounded-2xl bg-white border border-slate-200 h-72"></div>
           </div>
-        </div>
-      </div>
 
-      <!-- Empty State -->
-      <div
-        v-else-if="shops.length === 0"
-        class="my-10 flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-slate-200 bg-white py-16 px-6 text-center shadow-sm"
-      >
-        <div class="flex h-20 w-20 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 mb-4">
-          <i class="mdi mdi-store-search-outline text-4xl"></i>
-        </div>
-        <h3 class="text-xl font-bold text-slate-800">ไม่พบร้านค้าที่คุณกำลังค้นหา</h3>
-        <p class="mt-2 max-w-md text-sm text-slate-500">
-          ลองปรับเปลี่ยนคำค้นหา หรือล้างตัวกรองหมวดหมู่และอำเภอเพื่อดูร้านค้าทั้งหมดที่มีในกาญจนบุรี
-        </p>
-        <button
-          class="mt-6 inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-600/20 transition hover:bg-emerald-700 active:scale-95"
-          @click="clearFilters"
-        >
-          <i class="mdi mdi-refresh"></i>
-          <span>ล้างตัวกรองทั้งหมด</span>
-        </button>
-      </div>
-
-      <!-- Shops Grid -->
-      <section v-else class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        <RouterLink
-          v-for="shop in shops"
-          :key="shop.shopId"
-          :to="`/shops/${shop.shopId}`"
-          class="group relative flex flex-col overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-emerald-400 hover:shadow-xl hover:shadow-emerald-600/10"
-        >
-          <!-- Card Image Section -->
-          <div class="relative h-52 w-full overflow-hidden bg-slate-100">
-            <img
-              v-if="shop.coverImageUrl"
-              :src="imageUrl(shop.coverImageUrl)"
-              :alt="shop.shopName"
-              class="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-108"
-            />
-            <div
-              v-else
-              class="flex h-full w-full flex-col items-center justify-center bg-gradient-to-br from-emerald-600 via-teal-700 to-slate-900 p-6 text-center text-white"
+          <!-- Shops Grid View -->
+          <div
+            v-else-if="shops.length"
+            class="grid gap-5"
+            :class="showMap ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3'"
+          >
+            <RouterLink
+              v-for="(shop, idx) in shops"
+              :key="shop.shopId"
+              :to="`/shops/${shop.shopId}`"
+              class="group bg-white rounded-2xl overflow-hidden border border-slate-200/80 shadow-xs hover:shadow-lg hover:-translate-y-1 transition duration-300 flex flex-col justify-between"
             >
-              <i class="mdi mdi-storefront text-5xl opacity-40"></i>
-              <span class="mt-2 text-sm font-semibold tracking-wide text-emerald-100 opacity-90">
-                {{ shop.categoryName || 'ร้านค้าเมืองกาญจน์' }}
-              </span>
-            </div>
+              <div>
+                <!-- Cover Image Container -->
+                <div class="relative aspect-16/10 overflow-hidden bg-slate-900">
+                  <img
+                    :src="getShopCoverImage(shop, idx)"
+                    :alt="shop.shopName"
+                    class="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                  />
+                  <!-- Top Badge -->
+                  <div class="absolute top-2.5 left-2.5">
+                    <span class="px-2.5 py-1 rounded-md text-[11px] font-bold bg-[#1c4d3e] text-white shadow-md">
+                      {{ shop.categoryName || 'ร้านค้าแนะนำ' }}
+                    </span>
+                  </div>
+                </div>
 
-            <!-- Gradient Overlay for Contrast -->
-            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/75 via-transparent to-black/20 opacity-80 group-hover:opacity-60 transition-opacity"></div>
+                <!-- Text Body -->
+                <div class="p-4 pt-4 space-y-2">
+                  <h3 class="font-bold text-slate-900 text-base group-hover:text-[#1c4d3e] transition line-clamp-1">
+                    {{ shop.shopName }}
+                  </h3>
+                  <div class="flex items-center gap-2 text-xs text-slate-500">
+                    <span>{{ shop.categoryName || 'สินค้าชุมชน' }}</span>
+                    <span>•</span>
+                    <span class="flex items-center gap-1"><i class="mdi mdi-map-marker text-slate-400"></i>{{ shop.districtName || shop.address || 'กาญจนบุรี' }}</span>
+                  </div>
+                  <p class="text-xs text-slate-500 line-clamp-2 leading-relaxed">
+                    {{ shop.description || 'ยินดีต้อนรับสู่ร้านค้าท้องถิ่นคุณภาพ พร้อมให้บริการสินค้าหลากหลายในจังหวัดกาญจนบุรี' }}
+                  </p>
 
-            <!-- Top Floating Category Chip -->
-            <div class="absolute top-3 left-3">
-              <span class="inline-flex items-center gap-1 rounded-full bg-slate-900/60 px-3 py-1 text-xs font-semibold text-white backdrop-blur-md border border-white/20">
-                <i class="mdi mdi-tag-outline text-emerald-300"></i>
-                {{ shop.categoryName ?? 'ทั่วไป' }}
-              </span>
-            </div>
-
-            <!-- Top Floating Verified Badge -->
-            <div class="absolute top-3 right-3">
-              <span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500/90 text-white shadow-md backdrop-blur-md" title="ร้านค้าได้รับการยืนยัน">
-                <i class="mdi mdi-check-decagram text-base"></i>
-              </span>
-            </div>
-
-            <!-- Bottom Floating District Tag on Image -->
-            <div class="absolute bottom-3 left-3 flex items-center gap-1 text-xs font-medium text-white/90">
-              <i class="mdi mdi-map-marker text-emerald-400"></i>
-              <span>{{ shop.districtName ?? shop.address ?? 'กาญจนบุรี' }}</span>
-            </div>
-          </div>
-
-          <!-- Card Content Body -->
-          <div class="flex flex-1 flex-col p-6">
-            <!-- Shop Name -->
-            <h3 class="text-xl font-bold text-slate-900 group-hover:text-emerald-700 transition-colors line-clamp-1">
-              {{ shop.shopName }}
-            </h3>
-
-            <!-- Description -->
-            <p class="mt-2.5 flex-1 line-clamp-2 text-sm text-slate-600 leading-relaxed">
-              {{ shop.description || 'ยินดีต้อนรับสู่ร้านค้าท้องถิ่นคุณภาพ พร้อมให้บริการสินค้าหลากหลายในจังหวัดกาญจนบุรี' }}
-            </p>
-
-            <!-- Metadata & Action Bar -->
-            <div class="mt-6 flex items-center justify-between border-t border-slate-100 pt-4">
-              <!-- Contact Info snippet -->
-              <div class="flex items-center gap-2 text-xs font-medium text-slate-500">
-                <i v-if="shop.phone" class="mdi mdi-phone-outline text-emerald-600"></i>
-                <span>{{ shop.phone || 'เปิดให้บริการ' }}</span>
+                  <!-- Real products from this shop (up to 3) -->
+                  <div v-if="getShopProducts(shop.shopId).length" class="grid grid-cols-3 gap-1.5 pt-2">
+                    <div
+                      v-for="product in getShopProducts(shop.shopId)"
+                      :key="product.productId"
+                      class="relative aspect-square overflow-hidden rounded-lg border border-slate-100 bg-slate-100"
+                      :title="product.productName"
+                    >
+                      <img
+                        v-if="product.imageUrl"
+                        :src="imageUrl(product.imageUrl)"
+                        :alt="product.productName"
+                        class="h-full w-full object-cover"
+                      />
+                      <div v-else class="flex h-full w-full items-center justify-center text-slate-400">
+                        <i class="mdi mdi-image-outline text-xl"></i>
+                      </div>
+                      <span class="absolute inset-x-0 bottom-0 truncate bg-slate-950/65 px-1.5 py-1 text-[9px] font-medium text-white">
+                        {{ product.productName }}
+                      </span>
+                    </div>
+                  </div>
+                  <div v-else class="mt-2 rounded-lg border border-dashed border-slate-200 bg-slate-50 px-3 py-2 text-center text-[11px] text-slate-400">
+                    ยังไม่มีสินค้าวางขาย
+                  </div>
+                </div>
               </div>
 
-              <!-- Visit Button CTA -->
-              <span class="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 group-hover:text-emerald-800">
-                เข้าชมร้านค้า
-                <i class="mdi mdi-arrow-right text-sm transition-transform group-hover:translate-x-1"></i>
-              </span>
+              <!-- Footer Meta Info -->
+              <div class="px-4 pb-4 pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+                <span class="text-slate-500 font-medium"><i class="mdi mdi-phone-outline text-emerald-600 mr-1"></i>{{ shop.phone || 'เปิดให้บริการ' }}</span>
+                <span class="px-3 py-1 rounded-lg bg-[#1c4d3e] text-white font-bold text-[11px] group-hover:bg-[#14392e] transition">
+                  เข้าชมร้านค้า
+                </span>
+              </div>
+            </RouterLink>
+          </div>
+
+          <div v-else class="rounded-3xl border-2 border-dashed border-slate-200 bg-white p-12 text-center">
+            <i class="mdi mdi-store-search-outline text-5xl text-slate-300"></i>
+            <h3 class="mt-3 text-lg font-bold text-slate-800">ไม่พบร้านค้าที่ค้นหา</h3>
+            <p class="text-xs text-slate-500 mt-1">ลองเปลี่ยนคำค้นหา หรือล้างตัวกรอง</p>
+            <button class="mt-4 px-5 py-2.5 rounded-xl bg-[#1c4d3e] text-white font-bold text-xs" @click="clearFilters">
+              ล้างตัวกรองทั้งหมด
+            </button>
+          </div>
+
+          <!-- PAGINATION -->
+          <div v-if="totalPages > 1" class="mt-8 flex items-center justify-center gap-2">
+            <button
+              type="button"
+              class="h-9 w-9 flex items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 hover:bg-slate-100 disabled:opacity-40"
+              :disabled="page === 1"
+              @click="setPage(page - 1)"
+            >
+              <i class="mdi mdi-chevron-left text-lg"></i>
+            </button>
+
+            <button
+              v-for="p in totalPages"
+              :key="p"
+              type="button"
+              class="h-9 w-9 flex items-center justify-center rounded-full font-bold text-xs transition"
+              :class="page === p ? 'bg-[#1c4d3e] text-white shadow-md' : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'"
+              @click="setPage(p)"
+            >
+              {{ p }}
+            </button>
+
+            <button
+              type="button"
+              class="h-9 w-9 flex items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 hover:bg-slate-100 disabled:opacity-40"
+              :disabled="page === totalPages"
+              @click="setPage(page + 1)"
+            >
+              <i class="mdi mdi-chevron-right text-lg"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Right Sidebar (Interactive Map & Popular Shops Card) -->
+        <div v-if="showMap" class="lg:col-span-5 sticky top-24 space-y-5">
+          <!-- Interactive Map Container -->
+          <div class="rounded-3xl bg-white border border-slate-200/80 shadow-md p-3.5 overflow-hidden space-y-3">
+            <div class="flex items-center justify-between px-1">
+              <span class="text-xs font-bold text-slate-800">แผนที่ร้านค้า</span>
+              <span class="text-[11px] text-slate-500">6 อำเภอ</span>
+            </div>
+            <div ref="mapContainer" class="h-[360px] w-full rounded-2xl overflow-hidden bg-emerald-50/40 relative z-10 border border-slate-100"></div>
+          </div>
+
+          <!-- Popular Shops Card (Connected to Real API) -->
+          <div v-if="popularShops.length" class="rounded-3xl bg-white border border-slate-200/80 p-5 shadow-xs space-y-4">
+            <div class="flex items-center justify-between">
+              <h3 class="font-bold text-slate-900 text-base">ร้านค้ายอดนิยม</h3>
+              <button type="button" class="text-xs font-semibold text-slate-500 hover:text-[#1c4d3e]" @click="clearFilters">ดูทั้งหมด ></button>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <RouterLink
+                v-for="(pop, popIdx) in popularShops"
+                :key="pop.shopId"
+                :to="`/shops/${pop.shopId}`"
+                class="group bg-white rounded-xl overflow-hidden border border-slate-200 p-2 shadow-2xs hover:shadow-md transition"
+              >
+                <div class="aspect-16/10 rounded-lg overflow-hidden bg-slate-100 mb-2">
+                  <img :src="getShopCoverImage(pop, popIdx)" :alt="pop.shopName" class="w-full h-full object-cover group-hover:scale-105 transition" />
+                </div>
+                <h4 class="font-bold text-slate-900 text-xs line-clamp-1 group-hover:text-[#1c4d3e]">{{ pop.shopName }}</h4>
+                <div class="flex items-center gap-1 text-[10px] text-amber-500 font-bold mt-1">
+                  <i class="mdi mdi-star"></i>
+                  <span>4.8 (120 รีวิว)</span>
+                </div>
+              </RouterLink>
             </div>
           </div>
-        </RouterLink>
+        </div>
       </section>
+
     </main>
   </div>
 </template>
 
 <style scoped>
+:deep(.custom-shop-marker) {
+  background: transparent;
+  border: none;
+}
 .scrollbar-none::-webkit-scrollbar {
   display: none;
 }

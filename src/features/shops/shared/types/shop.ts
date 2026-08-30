@@ -11,13 +11,18 @@ export interface Shop {
   email?: string
   address?: string
   coverImageUrl?: string
+  backgroundImageUrl?: string
+  openingTime?: string
+  closingTime?: string
+  latitude?: number | null
+  longitude?: number | null
   status: string
   categoryName?: string
   districtName?: string
   subDistrictName?: string
 }
 
-export interface ShopCategory { shopCategoryId: string; categoryName: string; status: string }
+export interface ShopCategory { shopCategoryId: string; categoryName: string; status: string; hasImage?: boolean }
 export interface District { districtId: string; districtName: string }
 export interface SubDistrict { subDistrictId: string; districtId: string; subDistrictName: string; postalCode?: string }
 
@@ -30,4 +35,8 @@ export interface ShopFormData {
   phone: string
   email: string
   address: string
+  openingTime: string
+  closingTime: string
+  latitude: number | null
+  longitude: number | null
 }

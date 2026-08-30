@@ -11,6 +11,7 @@ import {
   getSubDistricts,
   updateShop,
   updateShopStatus,
+  uploadShopBackgroundImage,
   uploadShopCoverImage,
 } from '../api/shopApi'
 import type {
@@ -23,6 +24,7 @@ import type {
 import AppSelect from '@/components/common/input/AppSelect.vue'
 import AppTextField from '@/components/common/input/AppTextField.vue'
 import AppTextarea from '@/components/common/input/AppTextarea.vue'
+import LocationPickerMap from '@/components/common/map/LocationPickerMap.vue'
 import { getApiErrorMessage } from '@/features/auth/api/getApiErrorMessage'
 import { useSwal } from '@/plugins/sweetalert'
 
@@ -33,6 +35,8 @@ const subDistricts = ref<SubDistrict[]>([])
 const loading = ref(true)
 const saving = ref(false)
 const uploadingCover = ref(false)
+const uploadingBackground = ref(false)
+const restoringLocation = ref(false)
 const swal = useSwal()
 const apiOrigin = (import.meta.env.VITE_API_URL ?? 'https://localhost:7289/api').replace(/\/api$/, '')
 
@@ -45,6 +49,10 @@ const form = ref<ShopFormData>({
   phone: '',
   email: '',
   address: '',
+  openingTime: '',
+  closingTime: '',
+  latitude: null,
+  longitude: null,
 })
 
 function applyShop(data: Shop) {
@@ -58,6 +66,10 @@ function applyShop(data: Shop) {
     phone: data.phone ?? '',
     email: data.email ?? '',
     address: data.address ?? '',
+    openingTime: data.openingTime ?? '',
+    closingTime: data.closingTime ?? '',
+    latitude: data.latitude ?? null,
+    longitude: data.longitude ?? null,
   }
 }
 
@@ -78,7 +90,7 @@ async function loadSubDistricts(districtId: string | null, keepValue = false) {
 watch(
   () => form.value.districtId,
   (value, oldValue) => {
-    if (value && value !== oldValue) loadSubDistricts(value)
+    if (!restoringLocation.value && value && value !== oldValue) void loadSubDistricts(value)
   },
 )
 
@@ -98,7 +110,11 @@ async function submit() {
       await updateShop(shop.value.shopId, form.value)
       await swal.success('บันทึกข้อมูลร้านแล้ว', 'ข้อมูลร้านค้าของคุณได้รับการอัปเดตเรียบร้อยแล้ว')
     } else {
-      applyShop(await createShop(form.value))
+      const createdShop = await createShop(form.value)
+      restoringLocation.value = true
+      applyShop(createdShop)
+      await loadSubDistricts(createdShop.districtId, true)
+      restoringLocation.value = false
       await swal.success('สร้างร้านสำเร็จ', 'ขอยินดีต้อนรับสู่แพลตฟอร์มร้านค้าเมืองกาญจน์!')
     }
   } catch (error) {
@@ -151,13 +167,33 @@ async function uploadCoverImage(event: Event) {
   }
 }
 
+async function uploadBackgroundImage(event: Event) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file || !shop.value) return
+
+  uploadingBackground.value = true
+  try {
+    shop.value = await uploadShopBackgroundImage(shop.value.shopId, file)
+    await swal.success('อัปโหลดรูปพื้นหลังร้านแล้ว')
+  } catch (error) {
+    await swal.error('อัปโหลดรูปไม่สำเร็จ', getApiErrorMessage(error, 'รองรับไฟล์ภาพ JPG, PNG, WEBP ขนาดไม่เกิน 5 MB'))
+  } finally {
+    input.value = ''
+    uploadingBackground.value = false
+  }
+}
+
 onMounted(async () => {
   try {
     ;[categories.value, districts.value] = await Promise.all([getShopCategories(), getDistricts()])
     try {
       const myShop = await getMyShop()
+      // Keep the saved sub-district while loading the dependent dropdown data.
+      restoringLocation.value = true
       applyShop(myShop)
       await loadSubDistricts(myShop.districtId, true)
+      restoringLocation.value = false
     } catch (error) {
       if (!axios.isAxiosError(error) || error.response?.status !== 404) throw error
     }
@@ -228,7 +264,7 @@ onMounted(async () => {
               placeholder="ระบุชื่อร้านค้าของคุณ"
             />
 
-            <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div class="max-w-xl">
               <AppSelect
                 v-model="form.shopCategoryId"
                 label="หมวดหมู่ร้านค้า *"
@@ -237,26 +273,6 @@ onMounted(async () => {
                 item-value="shopCategoryId"
                 placeholder="เลือกหมวดหมู่ร้าน"
                 clearable
-              />
-              <AppSelect
-                v-model="form.districtId"
-                label="เขต / อำเภอ *"
-                :items="districts"
-                item-title="districtName"
-                item-value="districtId"
-                placeholder="เลือกเขต / อำเภอ"
-                clearable
-              />
-              <AppSelect
-                v-model="form.subDistrictId"
-                label="ตำบล / แขวง *"
-                :items="subDistricts"
-                item-title="subDistrictName"
-                item-value="subDistrictId"
-                placeholder="เลือกตำบล / แขวง"
-                clearable
-                :disabled="!form.districtId"
-                class="sm:col-span-2 lg:col-span-1"
               />
             </div>
 
@@ -306,11 +322,11 @@ onMounted(async () => {
             </div>
           </div>
 
-          <!-- Contact & Location Section -->
+          <!-- Contact & Business Hours Section -->
           <div class="space-y-6 pt-4">
             <div class="flex items-center gap-2 border-b border-slate-100 pb-3">
               <i class="mdi mdi-card-account-phone-outline text-emerald-600 text-xl"></i>
-              <h2 class="text-base font-bold text-slate-900">ช่องทางการติดต่อและที่อยู่</h2>
+              <h2 class="text-base font-bold text-slate-900">ช่องทางการติดต่อและเวลาเปิดบริการ</h2>
             </div>
 
             <div class="grid gap-6 sm:grid-cols-2">
@@ -327,11 +343,77 @@ onMounted(async () => {
               />
             </div>
 
+            <div class="grid gap-6 sm:grid-cols-2">
+              <AppTextField v-model="form.openingTime" label="เวลาเปิด" type="time" />
+              <AppTextField v-model="form.closingTime" label="เวลาปิด" type="time" />
+            </div>
+          </div>
+
+          <!-- Address & Map Section -->
+          <div class="space-y-6 pt-4">
+            <div class="flex items-center gap-2 border-b border-slate-100 pb-3">
+              <i class="mdi mdi-map-marker-radius-outline text-emerald-600 text-xl"></i>
+              <h2 class="text-base font-bold text-slate-900">ที่อยู่และตำแหน่งร้าน</h2>
+            </div>
+
+            <div class="grid gap-6 sm:grid-cols-2">
+              <AppSelect
+                v-model="form.districtId"
+                label="เขต / อำเภอ *"
+                :items="districts"
+                item-title="districtName"
+                item-value="districtId"
+                placeholder="เลือกเขต / อำเภอ"
+                clearable
+              />
+              <AppSelect
+                v-model="form.subDistrictId"
+                label="ตำบล / แขวง *"
+                :items="subDistricts"
+                item-title="subDistrictName"
+                item-value="subDistrictId"
+                placeholder="เลือกตำบล / แขวง"
+                clearable
+                :disabled="!form.districtId"
+              />
+            </div>
+
             <AppTextarea
               v-model="form.address"
               label="ที่อยู่ตั้งร้านค้าอย่างละเอียด"
               placeholder="บ้านเลขที่ อาคาร ซอย ถนน..."
             />
+
+            <section class="space-y-3">
+              <div>
+                <h3 class="font-bold text-slate-900">ตำแหน่งร้านบนแผนที่</h3>
+                <p class="text-xs text-slate-500">ค้นหาสถานที่ คลิกบนแผนที่ หรือลากหมุดเพื่อระบุตำแหน่งร้าน</p>
+              </div>
+              <LocationPickerMap v-model:latitude="form.latitude" v-model:longitude="form.longitude" />
+            </section>
+
+            <div v-if="shop" class="rounded-2xl border border-dashed border-emerald-200 bg-emerald-50/40 p-5 sm:p-6 space-y-4">
+              <div>
+                <h3 class="flex items-center gap-2 font-bold text-slate-900">
+                  <i class="mdi mdi-panorama-outline text-lg text-emerald-600"></i>
+                  รูปพื้นหลังหน้าร้าน
+                </h3>
+                <p class="mt-0.5 text-xs text-slate-500">แสดงเป็นภาพพื้นหลังส่วนหัวในหน้ารายละเอียดร้าน รองรับ JPG, PNG, WEBP ขนาดไม่เกิน 5 MB</p>
+              </div>
+              <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <div class="relative h-28 w-48 shrink-0 overflow-hidden rounded-2xl border border-slate-200 bg-slate-200 shadow-xs">
+                  <img v-if="shop.backgroundImageUrl" :src="imageUrl(shop.backgroundImageUrl)" alt="รูปพื้นหลังร้าน" class="h-full w-full object-cover" />
+                  <div v-else class="flex h-full w-full items-center justify-center text-slate-400">
+                    <i class="mdi mdi-panorama text-3xl"></i>
+                  </div>
+                </div>
+                <label class="cursor-pointer inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-emerald-600/20 hover:bg-emerald-700 transition active:scale-95">
+                  <i class="mdi mdi-upload text-base" :class="{ 'animate-spin mdi-loading': uploadingBackground }"></i>
+                  <span>{{ uploadingBackground ? 'กำลังอัปโหลด...' : 'เลือกรูปพื้นหลัง' }}</span>
+                  <input class="sr-only" type="file" accept="image/jpeg,image/png,image/webp" :disabled="uploadingBackground" @change="uploadBackgroundImage" />
+                </label>
+              </div>
+            </div>
           </div>
 
           <!-- Action Buttons Bar -->

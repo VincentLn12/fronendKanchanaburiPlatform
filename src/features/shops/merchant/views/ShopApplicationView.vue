@@ -27,7 +27,7 @@ const loading = ref(true)
 const saving = ref(false)
 const form = ref<ShopFormData>({
   shopName: '', shopCategoryId: null, districtId: null, subDistrictId: null,
-  description: '', phone: '', email: '', address: '',
+  description: '', phone: '', email: '', address: '', openingTime: '', closingTime: '', latitude: null, longitude: null,
 })
 
 function applyShop(data: Shop) {
@@ -35,7 +35,8 @@ function applyShop(data: Shop) {
   form.value = {
     shopName: data.shopName, shopCategoryId: data.shopCategoryId, districtId: data.districtId,
     subDistrictId: data.subDistrictId, description: data.description ?? '', phone: data.phone ?? '',
-    email: data.email ?? '', address: data.address ?? '',
+    email: data.email ?? '', address: data.address ?? '', openingTime: data.openingTime ?? '',
+    closingTime: data.closingTime ?? '', latitude: data.latitude ?? null, longitude: data.longitude ?? null,
   }
 }
 

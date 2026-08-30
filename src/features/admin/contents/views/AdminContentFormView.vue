@@ -30,6 +30,7 @@ const contentId = computed(() => (typeof route.params.id === 'string' ? route.pa
 const isEdit = computed(() => Boolean(contentId.value))
 const loading = ref(true)
 const saving = ref(false)
+const restoringLocation = ref(false)
 const categories = ref<ContentCategory[]>([])
 const shops = ref<Shop[]>([])
 const districts = ref<District[]>([])
@@ -67,7 +68,7 @@ async function loadSubDistricts(districtId: string | null, keepValue = false) {
 watch(
   () => form.districtId,
   (value, oldValue) => {
-    if (value && value !== oldValue) loadSubDistricts(value)
+    if (!restoringLocation.value && value && value !== oldValue) void loadSubDistricts(value)
   },
 )
 
@@ -81,6 +82,9 @@ async function load() {
     ])
     if (isEdit.value) {
       const content = await getContent(contentId.value)
+      // Prevent the district watcher from clearing the saved sub-district while
+      // the edit form is restoring its dependent dropdown options.
+      restoringLocation.value = true
       Object.assign(form, {
         title: content.title,
         summary: content.summary ?? '',
@@ -94,6 +98,7 @@ async function load() {
         status: content.status,
       })
       await loadSubDistricts(form.districtId, true)
+      restoringLocation.value = false
       selectedTagIds.value = (await getContentTags(contentId.value)).map((tag) => tag.tagId)
     }
   } catch (error) {
