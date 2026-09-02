@@ -54,9 +54,9 @@ const router = createRouter({
     {
       path: '/contents',
       name: 'contents',
-      component: () => import('@/features/contents/public/views/ContentListView.vue'),
+      component: () => import('@/features/contents/public/list/views/ContentListView.vue'),
     },
-    { path: '/contents/:id', name: 'content-detail', component: () => import('@/features/contents/public/views/ContentDetailView.vue') },
+    { path: '/contents/:id', name: 'content-detail', component: () => import('@/features/contents/public/detail/views/ContentDetailView.vue') },
     {
       path: '/create',
       name: 'content-create',
@@ -182,6 +182,8 @@ const router = createRouter({
         { path: 'reports', name: 'admin-reports', component: () => import('@/features/admin/reports/views/AdminReportsView.vue') },
       ],
     },
+    { path: '/about', redirect: '/' },
+    { path: '/:pathMatch(.*)*', redirect: '/' },
   ],
 })
 
