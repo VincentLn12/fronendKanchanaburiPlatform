@@ -2,7 +2,7 @@ import http from '@/shared/api/http'
 import type { PagedResult } from '@/shared/interface/PagedResult'
 
 export interface ContentTag { tagId: string; tagName: string; status: string }
-export interface PublicContent { contentId: string; shopId?: string; contentCategoryId: string; contentCategoryName?: string; districtId?: string; districtName?: string; subDistrictName?: string; shopName?: string; title: string; summary?: string; latitude?: number | null; longitude?: number | null; youtubeUrl?: string; status: string; publishedAt?: string; createdAt: string; tags: ContentTag[] }
+export interface PublicContent { contentId: string; shopId?: string; contentCategoryId: string; contentCategoryName?: string; districtId?: string; districtName?: string; subDistrictName?: string; shopName?: string; title: string; summary?: string; latitude?: number | null; longitude?: number | null; youtubeUrl?: string; status: string; publishedAt?: string; createdAt: string; updatedAt?: string; tags: ContentTag[] }
 export interface ContentCategory { contentCategoryId: string; categoryName: string }
 export interface District { districtId: string; districtName: string }
 export interface SubDistrict { subDistrictId: string; subDistrictName: string }

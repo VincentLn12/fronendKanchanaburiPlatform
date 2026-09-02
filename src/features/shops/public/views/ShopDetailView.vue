@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
@@ -24,10 +24,27 @@ const reviewData = ref<ShopReviews>({ totalCount: 0, averageRating: 0, reviews: 
 const loading = ref(true)
 
 const selectedCategory = ref<string | null>(null)
+const productSearchInput = ref('')
 const productSearch = ref('')
 const isFollowing = ref(false)
 
-const apiOrigin = (import.meta.env.VITE_API_URL ?? 'https://localhost:7289/api').replace(/\/api$/, '')
+let searchDebounceTimer: ReturnType<typeof setTimeout> | null = null
+watch(productSearchInput, (value) => {
+  if (searchDebounceTimer) clearTimeout(searchDebounceTimer)
+  searchDebounceTimer = setTimeout(() => {
+    productSearch.value = value
+  }, 250)
+})
+
+function clearSearch() {
+  productSearchInput.value = ''
+  productSearch.value = ''
+}
+
+const apiOrigin = (import.meta.env.VITE_API_URL ?? 'https://localhost:7289/api').replace(
+  /\/api$/,
+  '',
+)
 
 function imageUrl(url?: string) {
   if (!url) return undefined
@@ -35,31 +52,54 @@ function imageUrl(url?: string) {
 }
 
 const businessHours = computed(() => {
-  if (!shop.value?.openingTime || !shop.value?.closingTime) return 'เปิดบริการทุกวัน 08:00 - 18:00 น.'
+  if (!shop.value?.openingTime || !shop.value?.closingTime)
+    return 'เปิดบริการทุกวัน 08:00 - 18:00 น.'
   return `เปิดบริการทุกวัน ${shop.value.openingTime} - ${shop.value.closingTime} น.`
 })
 
-const hasShopLocation = computed(
-  () => shop.value?.latitude != null && shop.value.longitude != null,
-)
+// Live open/closed indicator based on shop hours (falls back to "open" if hours unknown)
+const isOpenNow = computed(() => {
+  const open = shop.value?.openingTime
+  const close = shop.value?.closingTime
+  if (!open || !close) return true
+  const toMinutes = (t: string) => {
+    const [h, m] = t.split(':').map(Number)
+    return (h || 0) * 60 + (m || 0)
+  }
+  const now = new Date()
+  const nowMinutes = now.getHours() * 60 + now.getMinutes()
+  const openMinutes = toMinutes(open)
+  const closeMinutes = toMinutes(close)
+  if (closeMinutes <= openMinutes) {
+    // overnight hours, e.g. 20:00 - 02:00
+    return nowMinutes >= openMinutes || nowMinutes <= closeMinutes
+  }
+  return nowMinutes >= openMinutes && nowMinutes <= closeMinutes
+})
+
+const hasShopLocation = computed(() => shop.value?.latitude != null && shop.value.longitude != null)
 
 const shopArea = computed(() => {
   const subDistrict = shop.value?.subDistrictName
   const district = shop.value?.districtName
-  return [
-    subDistrict ? `ต.${subDistrict}` : null,
-    district ? `อ.${district}` : null,
-    'จ.กาญจนบุรี',
-  ].filter(Boolean).join(' ')
+  return [subDistrict ? `ต.${subDistrict}` : null, district ? `อ.${district}` : null, 'จ.กาญจนบุรี']
+    .filter(Boolean)
+    .join(' ')
 })
 
-const shopAddress = computed(() => [shop.value?.address, shopArea.value].filter(Boolean).join(' · '))
+const shopAddress = computed(() =>
+  [shop.value?.address, shopArea.value].filter(Boolean).join(' · '),
+)
 
 function formatShopArea(target: Shop) {
-  return [
-    target.subDistrictName ? `ต.${target.subDistrictName}` : null,
-    target.districtName ? `อ.${target.districtName}` : null,
-  ].filter(Boolean).join(' ') || 'กาญจนบุรี'
+  return (
+    [
+      target.subDistrictName ? `ต.${target.subDistrictName}` : null,
+      target.districtName ? `อ.${target.districtName}` : null,
+    ]
+      .filter(Boolean)
+      .join(' ') || 'กาญจนบุรี'
+  )
 }
 
 function formatPrice(value: number) {
@@ -72,15 +112,33 @@ function formatPrice(value: number) {
 }
 
 function formatReviewDate(value: string) {
-  return new Intl.DateTimeFormat('th-TH', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(value))
+  return new Intl.DateTimeFormat('th-TH', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  }).format(new Date(value))
 }
 
 function reviewerInitial(name: string) {
   return name.trim().charAt(0) || 'ผ'
 }
 
-function copyShopLink() {
-  navigator.clipboard.writeText(window.location.href)
+async function copyShopLink() {
+  const shareData = {
+    title: shop.value?.shopName ?? 'ร้านค้า',
+    text: shop.value?.description ?? 'ดูร้านค้านี้',
+    url: window.location.href,
+  }
+  // Prefer native share sheet on mobile, fall back to clipboard copy on desktop
+  if (navigator.share) {
+    try {
+      await navigator.share(shareData)
+      return
+    } catch {
+      // user cancelled the share sheet — fall through to clipboard copy
+    }
+  }
+  await navigator.clipboard.writeText(window.location.href)
   void swal.success('คัดลอกลิงก์ร้านค้าแล้ว', 'นำลิงก์ไปแชร์ให้เพื่อน ๆ ได้เลย')
 }
 
@@ -92,10 +150,17 @@ function toggleFollow() {
 }
 
 const productCategories = computed(() => [
-  { id: null, name: 'ทั้งหมด' },
+  { id: null, name: 'ทั้งหมด', count: products.value.length },
   ...categories.value
-    .filter((category) => products.value.some((product) => product.productCategoryId === category.productCategoryId))
-    .map((category) => ({ id: category.productCategoryId, name: category.categoryName })),
+    .filter((category) =>
+      products.value.some((product) => product.productCategoryId === category.productCategoryId),
+    )
+    .map((category) => ({
+      id: category.productCategoryId,
+      name: category.categoryName,
+      count: products.value.filter((p) => p.productCategoryId === category.productCategoryId)
+        .length,
+    })),
 ])
 
 // Filtered products list
@@ -112,7 +177,10 @@ const filteredProducts = computed(() => {
 })
 
 function productCategoryName(productCategoryId: string) {
-  return categories.value.find((category) => category.productCategoryId === productCategoryId)?.categoryName ?? 'สินค้า'
+  return (
+    categories.value.find((category) => category.productCategoryId === productCategoryId)
+      ?.categoryName ?? 'สินค้า'
+  )
 }
 
 // Fallback image helper
@@ -137,13 +205,18 @@ function youtubeThumbnail(url?: string) {
       ? parsed.pathname.slice(1)
       : (parsed.searchParams.get('v') ?? parsed.pathname.split('/').filter(Boolean).pop())
     return id ? `https://i.ytimg.com/vi/${id}/hqdefault.jpg` : ''
-  } catch { return '' }
+  } catch {
+    return ''
+  }
 }
 
 async function getNearbyShops(currentShop: Shop) {
-  const withoutCurrentShop = (items: Shop[]) => items.filter((item) => item.shopId !== currentShop.shopId)
+  const withoutCurrentShop = (items: Shop[]) =>
+    items.filter((item) => item.shopId !== currentShop.shopId)
   if (currentShop.subDistrictId) {
-    const sameSubDistrict = withoutCurrentShop(await getShops({ subDistrictId: currentShop.subDistrictId }))
+    const sameSubDistrict = withoutCurrentShop(
+      await getShops({ subDistrictId: currentShop.subDistrictId }),
+    )
     if (sameSubDistrict.length) return sameSubDistrict.slice(0, 4)
   }
   if (currentShop.districtId) {
@@ -154,7 +227,10 @@ async function getNearbyShops(currentShop: Shop) {
 }
 
 function getNearbyShopImage(nearbyShop: Shop) {
-  return imageUrl(nearbyShop.coverImageUrl) || 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?auto=format&fit=crop&w=400&q=80'
+  return (
+    imageUrl(nearbyShop.coverImageUrl) ||
+    'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?auto=format&fit=crop&w=400&q=80'
+  )
 }
 
 // Leaflet Map Initialization
@@ -186,13 +262,18 @@ function initMap() {
 
   L.marker([lat, lng], { icon })
     .addTo(mapInstance)
-    .bindPopup(`<div class="p-1 font-bold text-slate-900">${shop.value.shopName}</div><div class="text-xs text-slate-500">${shopArea.value}</div>`)
+    .bindPopup(
+      `<div class="p-1 font-bold text-slate-900">${shop.value.shopName}</div><div class="text-xs text-slate-500">${shopArea.value}</div>`,
+    )
     .openPopup()
 }
 
 function openDirections() {
   if (shop.value?.latitude != null && shop.value.longitude != null) {
-    window.open(`https://www.google.com/maps/dir/?api=1&destination=${shop.value.latitude},${shop.value.longitude}`, '_blank')
+    window.open(
+      `https://www.google.com/maps/dir/?api=1&destination=${shop.value.latitude},${shop.value.longitude}`,
+      '_blank',
+    )
     return
   }
   const query = encodeURIComponent(`${shop.value?.shopName || ''} ${shopArea.value}`)
@@ -209,14 +290,20 @@ onMounted(async () => {
         getProductCategories(),
         getPublicContents({ shopId: shop.value.shopId, page: 1, pageSize: 3 }),
         getNearbyShops(currentShop),
-        getShopReviews(currentShop.shopId).catch(() => ({ totalCount: 0, averageRating: 0, reviews: [] })),
+        getShopReviews(currentShop.shopId).catch(() => ({
+          totalCount: 0,
+          averageRating: 0,
+          reviews: [],
+        })),
       ])
       products.value = shopProducts
       categories.value = productCategories
 
       let contentItems = contents.items || []
       if (!contentItems.length) {
-        const fallbackRes = await getPublicContents({ page: 1, pageSize: 3 }).catch(() => ({ items: [] }))
+        const fallbackRes = await getPublicContents({ page: 1, pageSize: 3 }).catch(() => ({
+          items: [],
+        }))
         contentItems = fallbackRes.items || []
       }
       shopContents.value = contentItems
@@ -224,7 +311,10 @@ onMounted(async () => {
       reviewData.value = reviews
     }
   } catch (error) {
-    await swal.error('ไม่พบร้านค้า', getApiErrorMessage(error, 'ร้านค้าอาจถูกปิดหรือไม่มีอยู่จริงในระบบ'))
+    await swal.error(
+      'ไม่พบร้านค้า',
+      getApiErrorMessage(error, 'ร้านค้าอาจถูกปิดหรือไม่มีอยู่จริงในระบบ'),
+    )
     await router.replace('/shops')
   } finally {
     loading.value = false
@@ -240,25 +330,43 @@ onBeforeUnmount(() => {
     mapInstance.remove()
     mapInstance = null
   }
+  if (searchDebounceTimer) clearTimeout(searchDebounceTimer)
 })
 </script>
 
 <template>
-  <div v-if="shop" class="min-h-screen bg-[#f8faf9] text-slate-800 pb-20">
+  <!-- LOADING SKELETON STATE -->
+  <div v-if="loading" class="min-h-screen bg-[#f8faf9] animate-pulse">
+    <div class="bg-slate-200/70 h-[340px] sm:h-[380px] w-full"></div>
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 -mt-6 relative z-20">
+      <div class="rounded-3xl bg-white h-28 shadow-xl border border-slate-100"></div>
+    </div>
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-10 space-y-6">
+      <div class="rounded-3xl bg-white h-72 border border-slate-200/80"></div>
+      <div class="rounded-3xl bg-white h-56 border border-slate-200/80"></div>
+    </div>
+  </div>
+
+  <div v-else-if="shop" class="min-h-screen bg-[#f8faf9] text-slate-800 pb-24 sm:pb-20">
     <!-- BREADCRUMB BAR -->
     <div class="bg-white border-b border-slate-200/80 py-3 shadow-2xs">
-      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-xs text-slate-500 flex items-center justify-between">
+      <div
+        class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-xs text-slate-500 flex items-center justify-between gap-3"
+      >
         <div class="flex items-center gap-2 overflow-x-auto scrollbar-none">
-          <RouterLink to="/" class="hover:text-[#1c4d3e] transition">หน้าแรก</RouterLink>
-          <i class="mdi mdi-chevron-right text-slate-300"></i>
-          <RouterLink to="/shops" class="hover:text-[#1c4d3e] transition">ร้านค้าทั้งหมด</RouterLink>
-          <i class="mdi mdi-chevron-right text-slate-300"></i>
+          <RouterLink to="/" class="hover:text-[#1c4d3e] transition shrink-0">หน้าแรก</RouterLink>
+          <i class="mdi mdi-chevron-right text-slate-300 shrink-0"></i>
+          <RouterLink to="/shops" class="hover:text-[#1c4d3e] transition shrink-0"
+            >ร้านค้าทั้งหมด</RouterLink
+          >
+          <i class="mdi mdi-chevron-right text-slate-300 shrink-0"></i>
           <span class="text-slate-900 font-bold line-clamp-1">{{ shop.shopName }}</span>
         </div>
 
         <button
           type="button"
-          class="hidden sm:flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-[#1c4d3e] transition"
+          class="hidden sm:flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-[#1c4d3e] transition shrink-0"
+          aria-label="แชร์ร้านค้านี้"
           @click="copyShopLink"
         >
           <i class="mdi mdi-share-variant-outline text-emerald-700"></i>
@@ -268,18 +376,30 @@ onBeforeUnmount(() => {
     </div>
 
     <!-- HERO HEADER SECTION (MODERN DARK EMERALD GLASSMORPHISM) -->
-    <section class="relative bg-slate-950 text-white min-h-[340px] sm:min-h-[380px] flex items-end overflow-hidden">
+    <section
+      class="relative bg-slate-950 text-white min-h-[340px] sm:min-h-[380px] flex items-end overflow-hidden"
+    >
       <!-- Background Cover Image with Ambient Overlay -->
       <img
-        :src="imageUrl(shop.backgroundImageUrl || shop.coverImageUrl) || 'https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=2000&q=80'"
-        :alt="shop.shopName"
+        :src="
+          imageUrl(shop.backgroundImageUrl || shop.coverImageUrl) ||
+          'https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=2000&q=80'
+        "
+        :alt="`ภาพปกร้าน ${shop.shopName}`"
+        loading="lazy"
         class="absolute inset-0 w-full h-full object-cover opacity-50 scale-105 transition duration-700 hover:scale-100"
       />
-      <div class="absolute inset-0 bg-gradient-to-t from-[#0d3831] via-[#0d3831]/75 to-slate-950/40"></div>
+      <div
+        class="absolute inset-0 bg-gradient-to-t from-[#0d3831] via-[#0d3831]/75 to-slate-950/40"
+      ></div>
 
       <!-- Floating Glow Orbs -->
-      <div class="pointer-events-none absolute -right-20 top-10 h-72 w-72 rounded-full bg-emerald-500/20 blur-3xl"></div>
-      <div class="pointer-events-none absolute -left-20 bottom-0 h-72 w-72 rounded-full bg-teal-500/20 blur-3xl"></div>
+      <div
+        class="pointer-events-none absolute -right-20 top-10 h-72 w-72 rounded-full bg-emerald-500/20 blur-3xl"
+      ></div>
+      <div
+        class="pointer-events-none absolute -left-20 bottom-0 h-72 w-72 rounded-full bg-teal-500/20 blur-3xl"
+      ></div>
 
       <!-- Hero Profile Header Container -->
       <div class="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-10 pt-16 w-full">
@@ -287,13 +407,21 @@ onBeforeUnmount(() => {
           <!-- Profile Avatar & Details -->
           <div class="flex flex-col sm:flex-row items-start sm:items-end gap-5 sm:gap-6">
             <!-- Avatar Logo Container -->
-            <div class="relative flex h-28 w-28 sm:h-32 sm:w-32 shrink-0 items-center justify-center overflow-hidden rounded-3xl border-4 border-white/90 bg-slate-900 shadow-2xl ring-4 ring-emerald-500/20">
+            <div
+              class="relative flex h-28 w-28 sm:h-32 sm:w-32 shrink-0 items-center justify-center overflow-hidden rounded-3xl border-4 border-white/90 bg-slate-900 shadow-2xl ring-4 ring-emerald-500/20"
+            >
               <img
-                :src="imageUrl(shop.coverImageUrl) || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=400&q=80'"
-                :alt="shop.shopName"
+                :src="
+                  imageUrl(shop.coverImageUrl) ||
+                  'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=400&q=80'
+                "
+                :alt="`โลโก้ร้าน ${shop.shopName}`"
                 class="w-full h-full object-cover"
               />
-              <span class="absolute bottom-1 right-1 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg text-xs" title="ร้านค้าได้รับการยืนยัน">
+              <span
+                class="absolute bottom-1 right-1 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg text-xs"
+                title="ร้านค้าได้รับการยืนยัน"
+              >
                 <i class="mdi mdi-check-bold"></i>
               </span>
             </div>
@@ -301,22 +429,38 @@ onBeforeUnmount(() => {
             <!-- Meta Details -->
             <div class="space-y-2.5">
               <div class="flex flex-wrap items-center gap-2">
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/25 text-emerald-200 text-xs font-bold border border-emerald-400/30 backdrop-blur-md">
+                <span
+                  class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/25 text-emerald-200 text-xs font-bold border border-emerald-400/30 backdrop-blur-md"
+                >
                   <i class="mdi mdi-tag-outline text-emerald-300"></i>
                   {{ shop.categoryName || 'ร้านค้าชุมชน' }}
                 </span>
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-400/20 text-emerald-300 text-xs font-semibold backdrop-blur-md">
-                  <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
-                  เปิดให้บริการอยู่
+                <span
+                  class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-md"
+                  :class="
+                    isOpenNow
+                      ? 'bg-emerald-400/20 text-emerald-300'
+                      : 'bg-slate-500/20 text-slate-300'
+                  "
+                >
+                  <span
+                    class="h-2 w-2 rounded-full"
+                    :class="isOpenNow ? 'bg-emerald-400 animate-pulse' : 'bg-slate-400'"
+                  ></span>
+                  {{ isOpenNow ? 'เปิดให้บริการอยู่' : 'ปิดให้บริการแล้ว' }}
                 </span>
               </div>
 
-              <h1 class="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-none drop-shadow-md">
+              <h1
+                class="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-none drop-shadow-md"
+              >
                 {{ shop.shopName }}
               </h1>
 
               <!-- Location & Rating -->
-              <div class="flex flex-wrap items-center gap-4 text-xs sm:text-sm text-emerald-100/90 font-medium">
+              <div
+                class="flex flex-wrap items-center gap-4 text-xs sm:text-sm text-emerald-100/90 font-medium"
+              >
                 <span class="flex items-center gap-1.5">
                   <i class="mdi mdi-map-marker text-emerald-400 text-base"></i>
                   {{ shopArea }}
@@ -324,27 +468,44 @@ onBeforeUnmount(() => {
 
                 <span class="text-emerald-400/50">•</span>
 
-                <span v-if="reviewData.totalCount" class="flex items-center gap-1.5 font-bold text-amber-400 bg-amber-400/10 px-3 py-0.5 rounded-full border border-amber-400/20">
+                <span
+                  v-if="reviewData.totalCount"
+                  class="flex items-center gap-1.5 font-bold text-amber-400 bg-amber-400/10 px-3 py-0.5 rounded-full border border-amber-400/20"
+                >
                   <i class="mdi mdi-star"></i>
                   {{ reviewData.averageRating.toFixed(1) }}
-                  <span class="text-emerald-100 font-normal">({{ reviewData.totalCount }} รีวิว)</span>
+                  <span class="text-emerald-100 font-normal"
+                    >({{ reviewData.totalCount }} รีวิว)</span
+                  >
                 </span>
                 <span v-else class="text-emerald-200/80">ยังไม่มีรีวิว</span>
               </div>
 
               <!-- Shop Description Snippet -->
-              <p class="text-xs sm:text-sm text-emerald-100/80 max-w-2xl line-clamp-2 leading-relaxed font-normal">
-                {{ shop.description || 'ยินดีต้อนรับสู่ร้านค้าท้องถิ่นคุณภาพ พร้อมให้บริการสินค้าหลากหลายในจังหวัดกาญจนบุรี' }}
+              <p
+                class="text-xs sm:text-sm text-emerald-100/80 max-w-2xl line-clamp-2 leading-relaxed font-normal"
+              >
+                {{
+                  shop.description ||
+                  'ยินดีต้อนรับสู่ร้านค้าท้องถิ่นคุณภาพ พร้อมให้บริการสินค้าหลากหลายในจังหวัดกาญจนบุรี'
+                }}
               </p>
             </div>
           </div>
 
-          <!-- Action Buttons Bar -->
-          <div class="flex flex-wrap items-center gap-3 shrink-0 w-full sm:w-auto pt-2 sm:pt-0">
+          <!-- Action Buttons Bar (desktop) -->
+          <div
+            class="hidden sm:flex flex-wrap items-center gap-3 shrink-0 w-full sm:w-auto pt-2 sm:pt-0"
+          >
             <button
               type="button"
               class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-bold text-xs sm:text-sm shadow-xl transition-all duration-200 active:scale-95"
-              :class="isFollowing ? 'bg-slate-800 text-white border border-slate-700' : 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-emerald-900/30'"
+              :class="
+                isFollowing
+                  ? 'bg-slate-800 text-white border border-slate-700'
+                  : 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-emerald-900/30'
+              "
+              :aria-pressed="isFollowing"
               @click="toggleFollow"
             >
               <i class="mdi text-base" :class="isFollowing ? 'mdi-check' : 'mdi-heart-outline'"></i>
@@ -363,6 +524,7 @@ onBeforeUnmount(() => {
             <button
               type="button"
               class="flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs sm:text-sm backdrop-blur-md border border-white/20 transition active:scale-95"
+              aria-label="แชร์ร้านค้านี้"
               @click="copyShopLink"
             >
               <i class="mdi mdi-share-variant-outline text-base"></i>
@@ -375,16 +537,26 @@ onBeforeUnmount(() => {
 
     <!-- SHOP QUICK INFO BAR (FLOATING 4 COLUMNS CARD) -->
     <section class="relative z-20 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 -mt-6">
-      <div class="rounded-3xl bg-white p-5 sm:p-6 shadow-xl shadow-emerald-950/5 border border-slate-100">
+      <div
+        class="rounded-3xl bg-white p-5 sm:p-6 shadow-xl shadow-emerald-950/5 border border-slate-100"
+      >
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           <!-- Contact Phone -->
           <div class="flex items-center gap-3.5 p-2">
-            <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-[#1c4d3e] shadow-2xs">
+            <div
+              class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-[#1c4d3e] shadow-2xs"
+            >
               <i class="mdi mdi-phone-outline text-xl"></i>
             </div>
-            <div>
-              <span class="text-[11px] font-semibold text-slate-400 block uppercase tracking-wider">เบอร์โทรศัพท์</span>
-              <a v-if="shop.phone" :href="`tel:${shop.phone}`" class="font-bold text-slate-900 text-sm hover:text-[#1c4d3e] transition">
+            <div class="min-w-0">
+              <span class="text-[11px] font-semibold text-slate-400 block uppercase tracking-wider"
+                >เบอร์โทรศัพท์</span
+              >
+              <a
+                v-if="shop.phone"
+                :href="`tel:${shop.phone}`"
+                class="font-bold text-slate-900 text-sm hover:text-[#1c4d3e] transition"
+              >
                 {{ shop.phone }}
               </a>
               <span v-else class="font-medium text-slate-400 text-sm">ยังไม่ระบุ</span>
@@ -393,34 +565,52 @@ onBeforeUnmount(() => {
 
           <!-- Contact Email -->
           <div class="flex items-center gap-3.5 p-2">
-            <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-teal-50 text-teal-700 shadow-2xs">
+            <div
+              class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-teal-50 text-teal-700 shadow-2xs"
+            >
               <i class="mdi mdi-email-outline text-xl"></i>
             </div>
-            <div>
-              <span class="text-[11px] font-semibold text-slate-400 block uppercase tracking-wider">อีเมลร้านค้า</span>
-              <span class="font-bold text-slate-900 text-sm line-clamp-1">{{ shop.email || 'ยังไม่ระบุ' }}</span>
+            <div class="min-w-0">
+              <span class="text-[11px] font-semibold text-slate-400 block uppercase tracking-wider"
+                >อีเมลร้านค้า</span
+              >
+              <span class="font-bold text-slate-900 text-sm line-clamp-1 block">{{
+                shop.email || 'ยังไม่ระบุ'
+              }}</span>
             </div>
           </div>
 
           <!-- Business Hours -->
           <div class="flex items-center gap-3.5 p-2">
-            <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 shadow-2xs">
+            <div
+              class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 shadow-2xs"
+            >
               <i class="mdi mdi-clock-outline text-xl"></i>
             </div>
-            <div>
-              <span class="text-[11px] font-semibold text-slate-400 block uppercase tracking-wider">เวลาทำการ</span>
-              <span class="font-bold text-slate-900 text-xs sm:text-sm block leading-snug">{{ businessHours }}</span>
+            <div class="min-w-0">
+              <span class="text-[11px] font-semibold text-slate-400 block uppercase tracking-wider"
+                >เวลาทำการ</span
+              >
+              <span class="font-bold text-slate-900 text-xs sm:text-sm block leading-snug">{{
+                businessHours
+              }}</span>
             </div>
           </div>
 
           <!-- Shop Location Address -->
           <div class="flex items-center gap-3.5 p-2">
-            <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-[#1c4d3e] shadow-2xs">
+            <div
+              class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-[#1c4d3e] shadow-2xs"
+            >
               <i class="mdi mdi-map-marker-outline text-xl"></i>
             </div>
-            <div>
-              <span class="text-[11px] font-semibold text-slate-400 block uppercase tracking-wider">ที่อยู่และพิกัด</span>
-              <span class="font-bold text-slate-900 text-xs sm:text-sm line-clamp-1 block">{{ shopAddress }}</span>
+            <div class="min-w-0">
+              <span class="text-[11px] font-semibold text-slate-400 block uppercase tracking-wider"
+                >ที่อยู่และพิกัด</span
+              >
+              <span class="font-bold text-slate-900 text-xs sm:text-sm line-clamp-1 block">{{
+                shopAddress
+              }}</span>
             </div>
           </div>
         </div>
@@ -430,47 +620,77 @@ onBeforeUnmount(() => {
     <!-- MAIN BODY CONTAINER (2 COLUMNS) -->
     <main class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-10 pb-12 space-y-12">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-
         <!-- LEFT COLUMN: PRODUCTS, CONTENT & NEARBY SHOPS -->
         <div class="lg:col-span-8 space-y-10">
-
           <!-- SECTION 1: สินค้าในร้าน (SHOP PRODUCTS GRID) -->
-          <section class="rounded-3xl border border-slate-200/80 bg-white p-6 sm:p-7 shadow-xs space-y-6">
+          <section
+            class="rounded-3xl border border-slate-200/80 bg-white p-6 sm:p-7 shadow-xs space-y-6"
+          >
             <!-- Header Toolbar -->
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
+            <div
+              class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5"
+            >
               <div class="flex items-center gap-3">
-                <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#1c4d3e] text-white shadow-md shadow-emerald-950/10">
+                <div
+                  class="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#1c4d3e] text-white shadow-md shadow-emerald-950/10"
+                >
                   <i class="mdi mdi-shopping-outline text-xl"></i>
                 </div>
                 <div>
                   <h2 class="text-xl font-extrabold text-slate-900">สินค้าในร้าน</h2>
-                  <p class="text-xs text-slate-500">รวมสินค้าคุณภาพที่คัดสรรจากร้านนี้</p>
+                  <p class="text-xs text-slate-500">
+                    พบสินค้า {{ filteredProducts.length }} จาก {{ products.length }} รายการ
+                  </p>
                 </div>
               </div>
 
               <!-- Product Search Box inside shop -->
               <div class="relative min-w-[220px]">
                 <input
-                  v-model="productSearch"
+                  v-model="productSearchInput"
                   type="text"
                   placeholder="ค้นหาสินค้าในร้าน..."
-                  class="w-full rounded-2xl border border-slate-200 bg-slate-50 pl-9 pr-4 py-2 text-xs text-slate-700 outline-none focus:border-[#1c4d3e] focus:bg-white transition"
+                  aria-label="ค้นหาสินค้าในร้าน"
+                  class="w-full rounded-2xl border border-slate-200 bg-slate-50 pl-9 pr-9 py-2 text-xs text-slate-700 outline-none focus:border-[#1c4d3e] focus:bg-white transition"
                 />
-                <i class="mdi mdi-magnify absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-base"></i>
+                <i
+                  class="mdi mdi-magnify absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-base"
+                ></i>
+                <button
+                  v-if="productSearchInput"
+                  type="button"
+                  aria-label="ล้างคำค้นหา"
+                  class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  @click="clearSearch"
+                >
+                  <i class="mdi mdi-close-circle text-base"></i>
+                </button>
               </div>
             </div>
 
             <!-- Category Filter Pills Bar -->
-            <div v-if="productCategories.length > 1" class="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+            <div
+              v-if="productCategories.length > 1"
+              class="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none"
+            >
               <button
                 v-for="cat in productCategories"
                 :key="cat.name"
                 type="button"
-                class="px-4 py-2 rounded-2xl text-xs font-bold transition shrink-0"
-                :class="selectedCategory === cat.id ? 'bg-[#1c4d3e] text-white shadow-md shadow-emerald-950/20' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
+                class="px-4 py-2 rounded-2xl text-xs font-bold transition shrink-0 flex items-center gap-1.5"
+                :class="
+                  selectedCategory === cat.id
+                    ? 'bg-[#1c4d3e] text-white shadow-md shadow-emerald-950/20'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                "
                 @click="selectedCategory = cat.id"
               >
-                {{ cat.name }}
+                <span>{{ cat.name }}</span>
+                <span
+                  class="text-[10px] rounded-full px-1.5 py-0.5"
+                  :class="selectedCategory === cat.id ? 'bg-white/20' : 'bg-white text-slate-500'"
+                  >{{ cat.count }}</span
+                >
               </button>
             </div>
 
@@ -484,13 +704,22 @@ onBeforeUnmount(() => {
               >
                 <div>
                   <div class="relative aspect-4/3 rounded-xl overflow-hidden bg-slate-100 mb-3">
-                    <img :src="getProductImage(prod, idx)" :alt="prod.productName" class="w-full h-full object-cover group-hover:scale-108 transition duration-500" />
-                    <span class="absolute top-2 left-2 px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-[#1c4d3e] text-white shadow-xs">
+                    <img
+                      :src="getProductImage(prod, idx)"
+                      :alt="prod.productName"
+                      loading="lazy"
+                      class="w-full h-full object-cover group-hover:scale-108 transition duration-500"
+                    />
+                    <span
+                      class="absolute top-2 left-2 px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-[#1c4d3e] text-white shadow-xs"
+                    >
                       พร้อมส่ง
                     </span>
                   </div>
 
-                  <h4 class="font-bold text-slate-900 text-xs sm:text-sm line-clamp-1 group-hover:text-[#1c4d3e] transition">
+                  <h4
+                    class="font-bold text-slate-900 text-xs sm:text-sm line-clamp-1 group-hover:text-[#1c4d3e] transition"
+                  >
                     {{ prod.productName }}
                   </h4>
                   <p class="text-[11px] text-slate-400 mt-0.5 line-clamp-1">
@@ -499,11 +728,13 @@ onBeforeUnmount(() => {
                 </div>
 
                 <div class="flex items-center justify-between mt-3 pt-2 border-t border-slate-100">
-                  <span class="font-black text-[#1c4d3e] text-sm">{{ formatPrice(prod.price) }}</span>
+                  <span class="font-black text-[#1c4d3e] text-sm">{{
+                    formatPrice(prod.price)
+                  }}</span>
                   <button
                     type="button"
                     class="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 text-slate-700 hover:bg-[#1c4d3e] hover:text-white transition shadow-2xs"
-                    title="ดูรายละเอียดสินค้า"
+                    :aria-label="`ดูรายละเอียดสินค้า ${prod.productName}`"
                   >
                     <i class="mdi mdi-cart-plus text-base"></i>
                   </button>
@@ -512,18 +743,40 @@ onBeforeUnmount(() => {
             </div>
 
             <!-- Empty Products State -->
-            <div v-else class="rounded-3xl border-2 border-dashed border-slate-200 bg-slate-50/50 py-12 text-center text-xs text-slate-500">
+            <div
+              v-else
+              class="rounded-3xl border-2 border-dashed border-slate-200 bg-slate-50/50 py-12 text-center text-xs text-slate-500"
+            >
               <i class="mdi mdi-package-variant-remove text-4xl text-slate-300 block mb-2"></i>
               <span class="font-bold text-slate-700 text-sm">ไม่พบสินค้าในรายการนี้</span>
-              <p class="mt-1 text-slate-400">ลองเปลี่ยนคำค้นหา หรือเลือกหมวดหมู่อื่นเพื่อดูสินค้าทั้งหมด</p>
+              <p class="mt-1 text-slate-400">
+                ลองเปลี่ยนคำค้นหา หรือเลือกหมวดหมู่อื่นเพื่อดูสินค้าทั้งหมด
+              </p>
+              <button
+                v-if="productSearchInput || selectedCategory"
+                type="button"
+                class="mt-3 text-[#1c4d3e] font-bold text-xs hover:underline"
+                @click="
+                  () => {
+                    clearSearch()
+                    selectedCategory = null
+                  }
+                "
+              >
+                ล้างตัวกรองทั้งหมด
+              </button>
             </div>
           </section>
 
           <!-- SECTION 2: คอนเทนต์จากร้าน (CONTENT FROM SHOP) -->
-          <section class="rounded-3xl border border-slate-200/80 bg-white p-6 sm:p-7 shadow-xs space-y-6">
+          <section
+            class="rounded-3xl border border-slate-200/80 bg-white p-6 sm:p-7 shadow-xs space-y-6"
+          >
             <div class="flex items-center justify-between border-b border-slate-100 pb-4">
               <div class="flex items-center gap-3">
-                <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#1c4d3e] text-white shadow-md">
+                <div
+                  class="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#1c4d3e] text-white shadow-md"
+                >
                   <i class="mdi mdi-play-box-outline text-xl"></i>
                 </div>
                 <div>
@@ -546,16 +799,29 @@ onBeforeUnmount(() => {
               >
                 <div>
                   <div class="relative aspect-16/10 rounded-xl overflow-hidden bg-slate-900 mb-3">
-                    <img v-if="youtubeThumbnail(cnt.youtubeUrl)" :src="youtubeThumbnail(cnt.youtubeUrl)" :alt="cnt.title" class="w-full h-full object-cover group-hover:scale-105 transition" />
-                    <div v-else class="flex h-full items-center justify-center bg-[#1c4d3e] text-white">
+                    <img
+                      v-if="youtubeThumbnail(cnt.youtubeUrl)"
+                      :src="youtubeThumbnail(cnt.youtubeUrl)"
+                      :alt="cnt.title"
+                      loading="lazy"
+                      class="w-full h-full object-cover group-hover:scale-105 transition"
+                    />
+                    <div
+                      v-else
+                      class="flex h-full items-center justify-center bg-[#1c4d3e] text-white"
+                    >
                       <i class="mdi mdi-play-circle-outline text-4xl"></i>
                     </div>
-                    <span class="absolute top-2 left-2 px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-[#1c4d3e] text-white shadow-xs">
+                    <span
+                      class="absolute top-2 left-2 px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-[#1c4d3e] text-white shadow-xs"
+                    >
                       {{ cnt.contentCategoryName || 'คอนเทนต์' }}
                     </span>
                   </div>
 
-                  <h4 class="font-bold text-slate-900 text-xs sm:text-sm group-hover:text-[#1c4d3e] transition line-clamp-1">
+                  <h4
+                    class="font-bold text-slate-900 text-xs sm:text-sm group-hover:text-[#1c4d3e] transition line-clamp-1"
+                  >
                     {{ cnt.title }}
                   </h4>
                   <p class="text-[11px] text-slate-500 mt-1 line-clamp-2 leading-relaxed">
@@ -563,9 +829,13 @@ onBeforeUnmount(() => {
                   </p>
                 </div>
 
-                <div class="flex items-center justify-between text-[11px] text-slate-400 mt-3 pt-2 border-t border-slate-100 font-medium">
+                <div
+                  class="flex items-center justify-between text-[11px] text-slate-400 mt-3 pt-2 border-t border-slate-100 font-medium"
+                >
                   <span>อ่านเรื่องราว</span>
-                  <i class="mdi mdi-arrow-right text-xs transition-transform group-hover:translate-x-1"></i>
+                  <i
+                    class="mdi mdi-arrow-right text-xs transition-transform group-hover:translate-x-1"
+                  ></i>
                 </div>
               </RouterLink>
             </div>
@@ -577,15 +847,22 @@ onBeforeUnmount(() => {
           </section>
 
           <!-- SECTION 3: ร้านค้าใกล้เคียง (NEARBY SHOPS) -->
-          <section v-if="nearbyShops.length" class="rounded-3xl border border-slate-200/80 bg-white p-6 sm:p-7 shadow-xs space-y-6">
+          <section
+            v-if="nearbyShops.length"
+            class="rounded-3xl border border-slate-200/80 bg-white p-6 sm:p-7 shadow-xs space-y-6"
+          >
             <div class="flex items-center justify-between border-b border-slate-100 pb-4">
               <div class="flex items-center gap-3">
-                <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-500 text-white shadow-md">
+                <div
+                  class="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-500 text-white shadow-md"
+                >
                   <i class="mdi mdi-map-marker-radius-outline text-xl"></i>
                 </div>
                 <div>
                   <h2 class="text-xl font-extrabold text-slate-900">ร้านค้าในละแวกใกล้เคียง</h2>
-                  <p class="text-xs text-slate-500">ค้นพบร้านค้าท้องถิ่นอื่น ๆ ในพื้นที่ใกล้เคียง</p>
+                  <p class="text-xs text-slate-500">
+                    ค้นพบร้านค้าท้องถิ่นอื่น ๆ ในพื้นที่ใกล้เคียง
+                  </p>
                 </div>
               </div>
 
@@ -603,37 +880,55 @@ onBeforeUnmount(() => {
               >
                 <div>
                   <div class="aspect-16/10 rounded-xl overflow-hidden bg-slate-100 mb-2.5">
-                    <img :src="getNearbyShopImage(nb)" :alt="nb.shopName" class="w-full h-full object-cover group-hover:scale-105 transition" />
+                    <img
+                      :src="getNearbyShopImage(nb)"
+                      :alt="nb.shopName"
+                      loading="lazy"
+                      class="w-full h-full object-cover group-hover:scale-105 transition"
+                    />
                   </div>
-                  <h4 class="font-bold text-slate-900 text-xs group-hover:text-[#1c4d3e] transition line-clamp-1">{{ nb.shopName }}</h4>
+                  <h4
+                    class="font-bold text-slate-900 text-xs group-hover:text-[#1c4d3e] transition line-clamp-1"
+                  >
+                    {{ nb.shopName }}
+                  </h4>
                   <p class="text-[10px] text-slate-500 mt-0.5">{{ formatShopArea(nb) }}</p>
                 </div>
 
-                <div class="flex items-center justify-between text-[10px] text-slate-500 mt-3 pt-2 border-t border-slate-100">
-                  <span class="font-semibold text-[#1c4d3e]">{{ nb.categoryName || 'ร้านค้าชุมชน' }}</span>
+                <div
+                  class="flex items-center justify-between text-[10px] text-slate-500 mt-3 pt-2 border-t border-slate-100"
+                >
+                  <span class="font-semibold text-[#1c4d3e]">{{
+                    nb.categoryName || 'ร้านค้าชุมชน'
+                  }}</span>
                   <span class="font-bold text-[#1c4d3e]">เข้าชมร้าน</span>
                 </div>
               </RouterLink>
             </div>
           </section>
-
         </div>
 
         <!-- RIGHT SIDEBAR COLUMN: ABOUT, LOCATION & REVIEWS -->
         <div class="lg:col-span-4 space-y-6 lg:sticky lg:top-24">
-
           <!-- CARD 1: เกี่ยวกับร้าน -->
           <div class="rounded-3xl bg-white border border-slate-200/80 p-6 shadow-xs space-y-4">
-            <h3 class="font-bold text-slate-900 text-base border-b border-slate-100 pb-3 flex items-center gap-2">
+            <h3
+              class="font-bold text-slate-900 text-base border-b border-slate-100 pb-3 flex items-center gap-2"
+            >
               <i class="mdi mdi-information-outline text-[#1c4d3e] text-lg"></i>
               <span>เกี่ยวกับร้านค้า</span>
             </h3>
 
             <p class="text-xs sm:text-sm text-slate-600 leading-relaxed whitespace-pre-line">
-              {{ shop.description || 'ยินดีต้อนรับสู่ร้านค้าท้องถิ่นคุณภาพ พร้อมให้บริการสินค้าหลากหลายในจังหวัดกาญจนบุรี' }}
+              {{
+                shop.description ||
+                'ยินดีต้อนรับสู่ร้านค้าท้องถิ่นคุณภาพ พร้อมให้บริการสินค้าหลากหลายในจังหวัดกาญจนบุรี'
+              }}
             </p>
 
-            <div class="space-y-2.5 pt-2 border-t border-slate-100 text-xs font-medium text-slate-700">
+            <div
+              class="space-y-2.5 pt-2 border-t border-slate-100 text-xs font-medium text-slate-700"
+            >
               <div class="flex items-center gap-2">
                 <i class="mdi mdi-check-circle text-emerald-600 text-base"></i>
                 <span>สินค้าตรงจากชุมชนท้องถิ่น</span>
@@ -658,18 +953,28 @@ onBeforeUnmount(() => {
               </h3>
             </div>
 
-            <div v-if="hasShopLocation" class="rounded-2xl overflow-hidden border border-slate-200 h-52 relative z-10">
+            <div
+              v-if="hasShopLocation"
+              class="rounded-2xl overflow-hidden border border-slate-200 h-52 relative z-10"
+            >
               <div ref="mapContainer" class="w-full h-full bg-emerald-50/50"></div>
             </div>
 
-            <div v-else class="flex h-44 items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-5 text-center text-xs text-slate-500">
+            <div
+              v-else
+              class="flex h-44 items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-5 text-center text-xs text-slate-500"
+            >
               ร้านค้ายังไม่ได้ระบุพิกัดบนแผนที่
             </div>
 
             <div class="flex items-center justify-between pt-1 text-xs">
               <span class="font-semibold text-slate-500 flex items-center gap-1">
                 <i class="mdi mdi-compass-outline text-slate-400"></i>
-                {{ shop.latitude != null && shop.longitude != null ? `${shop.latitude.toFixed(4)}°, ${shop.longitude.toFixed(4)}°` : 'ยังไม่ระบุตำแหน่ง' }}
+                {{
+                  shop.latitude != null && shop.longitude != null
+                    ? `${shop.latitude.toFixed(4)}°, ${shop.longitude.toFixed(4)}°`
+                    : 'ยังไม่ระบุตำแหน่ง'
+                }}
               </span>
 
               <button
@@ -689,24 +994,43 @@ onBeforeUnmount(() => {
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
                 <h3 class="font-bold text-slate-900 text-base">รีวิวจากลูกค้า</h3>
-                <span v-if="reviewData.totalCount" class="text-xs font-bold text-amber-500 flex items-center gap-1 mt-0.5">
+                <span
+                  v-if="reviewData.totalCount"
+                  class="text-xs font-bold text-amber-500 flex items-center gap-1 mt-0.5"
+                >
                   <i class="mdi mdi-star"></i>
-                  {{ reviewData.averageRating.toFixed(1) }} <span class="text-slate-400 font-normal">จาก {{ reviewData.totalCount }} รีวิว</span>
+                  {{ reviewData.averageRating.toFixed(1) }}
+                  <span class="text-slate-400 font-normal"
+                    >จาก {{ reviewData.totalCount }} รีวิว</span
+                  >
                 </span>
-                <span v-else class="mt-0.5 block text-xs text-slate-400">ยังไม่มีรีวิวจากผู้ซื้อ</span>
+                <span v-else class="mt-0.5 block text-xs text-slate-400"
+                  >ยังไม่มีรีวิวจากผู้ซื้อ</span
+                >
               </div>
             </div>
 
-            <div v-if="reviewData.reviews.length" class="space-y-4">
-              <div v-for="rev in reviewData.reviews" :key="rev.reviewId" class="border-b border-slate-100 pb-3.5 text-xs space-y-2 last:border-0 last:pb-0">
+            <div
+              v-if="reviewData.reviews.length"
+              class="space-y-4 max-h-[420px] overflow-y-auto pr-1"
+            >
+              <div
+                v-for="rev in reviewData.reviews"
+                :key="rev.reviewId"
+                class="border-b border-slate-100 pb-3.5 text-xs space-y-2 last:border-0 last:pb-0"
+              >
                 <div class="flex items-center justify-between">
                   <div class="flex items-center gap-2">
-                    <span class="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100 font-bold text-emerald-800 text-xs shadow-2xs">
+                    <span
+                      class="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100 font-bold text-emerald-800 text-xs shadow-2xs"
+                    >
                       {{ reviewerInitial(rev.userName) }}
                     </span>
                     <span class="font-bold text-slate-800">{{ rev.userName }}</span>
                   </div>
-                  <span class="text-[10px] text-slate-400">{{ formatReviewDate(rev.createdAt) }}</span>
+                  <span class="text-[10px] text-slate-400">{{
+                    formatReviewDate(rev.createdAt)
+                  }}</span>
                 </div>
 
                 <div v-if="rev.rating > 0" class="flex text-amber-400 text-xs">
@@ -715,7 +1039,10 @@ onBeforeUnmount(() => {
                 <p class="text-slate-600 leading-relaxed">{{ rev.comment }}</p>
 
                 <!-- Shop Reply Box -->
-                <div v-if="rev.reply" class="rounded-xl bg-slate-50 p-3 text-[11px] text-slate-600 border border-slate-100">
+                <div
+                  v-if="rev.reply"
+                  class="rounded-xl bg-slate-50 p-3 text-[11px] text-slate-600 border border-slate-100"
+                >
                   <div class="font-bold text-slate-800 mb-1 flex items-center gap-1">
                     <i class="mdi mdi-reply text-[#1c4d3e]"></i>
                     <span>ร้านค้าตอบกลับ</span>
@@ -729,11 +1056,57 @@ onBeforeUnmount(() => {
               ยังไม่มีรีวิวสำหรับร้านค้านี้
             </p>
           </div>
-
         </div>
-
       </div>
     </main>
+
+    <!-- STICKY MOBILE ACTION BAR -->
+    <div
+      class="sm:hidden fixed bottom-0 inset-x-0 z-30 bg-white/95 backdrop-blur-md border-t border-slate-200 px-4 py-3 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] flex items-center gap-2"
+    >
+      <button
+        type="button"
+        class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border transition active:scale-95"
+        :class="
+          isFollowing
+            ? 'bg-slate-800 border-slate-800 text-white'
+            : 'bg-white border-slate-200 text-[#1c4d3e]'
+        "
+        :aria-pressed="isFollowing"
+        aria-label="ติดตามร้านค้า"
+        @click="toggleFollow"
+      >
+        <i class="mdi text-lg" :class="isFollowing ? 'mdi-check' : 'mdi-heart-outline'"></i>
+      </button>
+
+      <button
+        type="button"
+        class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-slate-200 bg-white text-[#1c4d3e]"
+        aria-label="แชร์ร้านค้านี้"
+        @click="copyShopLink"
+      >
+        <i class="mdi mdi-share-variant-outline text-lg"></i>
+      </button>
+
+      <a
+        v-if="shop.phone"
+        :href="`tel:${shop.phone}`"
+        class="flex-1 flex items-center justify-center gap-2 h-11 rounded-2xl bg-white border border-[#1c4d3e]/30 text-[#1c4d3e] font-bold text-xs active:scale-95 transition"
+      >
+        <i class="mdi mdi-phone-outline text-base"></i>
+        <span>โทรติดต่อ</span>
+      </a>
+
+      <button
+        v-if="hasShopLocation"
+        type="button"
+        class="flex-1 flex items-center justify-center gap-2 h-11 rounded-2xl bg-[#1c4d3e] text-white font-bold text-xs shadow-md shadow-emerald-950/20 active:scale-95 transition"
+        @click="openDirections"
+      >
+        <i class="mdi mdi-navigation-variant text-base"></i>
+        <span>นำทาง</span>
+      </button>
+    </div>
   </div>
 </template>
 

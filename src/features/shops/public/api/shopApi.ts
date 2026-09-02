@@ -16,7 +16,7 @@ export interface ShopReviews {
   reviews: ShopReview[]
 }
 
-export async function getShops(params: { search?: string; categoryId?: string; districtId?: string; subDistrictId?: string } = {}) {
+export async function getShops(params: { search?: string; categoryId?: string; districtId?: string; subDistrictId?: string; page?: number; pageSize?: number } = {}) {
   const { data } = await http.get<Shop[]>('/shops', { params })
   return data
 }
