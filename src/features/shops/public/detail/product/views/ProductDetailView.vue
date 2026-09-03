@@ -10,8 +10,8 @@ import {
   type ProductReviews,
   type Shop,
 } from '@/features/shops/api'
+import { push } from 'notivue'
 import { getApiErrorMessage } from '@/features/auth/api/getApiErrorMessage'
-import { useSwal } from '@/plugins/sweetalert'
 import { useCartStore } from '@/stores/cart'
 import { useAuthStore } from '@/features/auth/stores/auth'
 
@@ -24,7 +24,6 @@ const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
 const cartStore = useCartStore()
-const swal = useSwal()
 
 const product = ref<Product | null>(null)
 const shop = ref<Shop | null>(null)
@@ -100,12 +99,12 @@ async function addToCart() {
   adding.value = true
   try {
     await cartStore.add(product.value.productId, quantity.value)
-    await swal.success(
-      'เพิ่มลงตะกร้าเรียบร้อย',
-      `เพิ่ม ${product.value.productName} จำนวน ${quantity.value} ชิ้น เรียบร้อยแล้ว`,
-    )
+    push.success({
+      title: 'เพิ่มลงตะกร้าเรียบร้อย',
+      message: `เพิ่ม ${product.value.productName} จำนวน ${quantity.value} ชิ้น เรียบร้อยแล้ว`,
+    })
   } catch (error) {
-    await swal.error('เพิ่มสินค้าไม่สำเร็จ', getApiErrorMessage(error, 'กรุณาลองใหม่อีกครั้ง'))
+    push.error({ title: 'เพิ่มสินค้าไม่สำเร็จ', message: getApiErrorMessage(error, 'กรุณาลองใหม่อีกครั้ง') })
   } finally {
     adding.value = false
   }
@@ -122,7 +121,7 @@ async function buyNow() {
     await cartStore.add(product.value.productId, quantity.value)
     await router.push('/cart')
   } catch (error) {
-    await swal.error('ไม่สามารถดำเนินการได้', getApiErrorMessage(error, 'กรุณาลองใหม่อีกครั้ง'))
+    push.error({ title: 'ไม่สามารถดำเนินการได้', message: getApiErrorMessage(error, 'กรุณาลองใหม่อีกครั้ง') })
   } finally {
     buyingNow.value = false
   }
@@ -151,10 +150,10 @@ onMounted(async () => {
       .filter((item) => item.shopId !== currentProduct.shopId)
       .slice(0, 4)
   } catch (error) {
-    await swal.error(
-      'ไม่พบสินค้า',
-      getApiErrorMessage(error, 'สินค้านี้อาจถูกปิดการขายหรือไม่มีอยู่ในระบบ'),
-    )
+    push.error({
+      title: 'ไม่พบสินค้า',
+      message: getApiErrorMessage(error, 'สินค้านี้อาจถูกปิดการขายหรือไม่มีอยู่ในระบบ'),
+    })
     await router.replace('/shops')
   } finally {
     loading.value = false

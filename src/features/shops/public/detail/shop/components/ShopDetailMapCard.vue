@@ -81,10 +81,10 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9] p-6 shadow-md space-y-4">
+  <div class="rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9] p-6 shadow-xs space-y-4">
     <div class="flex items-center justify-between border-b-2 border-[#E8D9C9] pb-3">
       <h3 class="font-black text-[#332820] text-base flex items-center gap-2">
-        <i class="mdi mdi-map-marker-radius-outline text-[#D96C2C] text-xl"></i>
+        <i class="mdi mdi-map-marker-radius-outline text-[#D96C2C] text-lg"></i>
         <span>ตำแหน่งและแผนที่</span>
       </h3>
     </div>
@@ -95,6 +95,7 @@ onBeforeUnmount(() => {
     >
       <div ref="mapContainer" class="w-full h-full bg-[#F7F0E6]"></div>
     </div>
+
     <div
       v-else
       class="flex h-44 items-center justify-center rounded-2xl border-2 border-dashed border-[#E8D9C9] bg-[#F7F0E6]/50 px-5 text-center text-xs text-[#786B62]"
@@ -102,7 +103,6 @@ onBeforeUnmount(() => {
       ร้านค้ายังไม่ได้ระบุพิกัดบนแผนที่
     </div>
 
-    <!-- Bottom Coordinates & Directions Button Bar -->
     <div class="flex items-center justify-between pt-1 text-xs">
       <span class="font-semibold text-[#786B62] flex items-center gap-1">
         <i class="mdi mdi-compass-outline text-[#D96C2C]"></i>

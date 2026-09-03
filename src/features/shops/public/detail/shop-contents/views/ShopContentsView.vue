@@ -8,12 +8,11 @@ import {
   type ContentCategory,
   type PublicContent,
 } from '@/features/contents/api'
+import { push } from 'notivue'
 import { getApiErrorMessage } from '@/features/auth/api/getApiErrorMessage'
-import { useSwal } from '@/plugins/sweetalert'
 
 const route = useRoute()
 const router = useRouter()
-const swal = useSwal()
 
 const shop = ref<Shop | null>(null)
 const contents = ref<PublicContent[]>([])
@@ -114,7 +113,7 @@ onMounted(async () => {
     contents.value = contentsRes.items || []
     categories.value = catData || []
   } catch (error) {
-    await swal.error('ไม่พบร้านค้า', getApiErrorMessage(error, 'ร้านค้านี้อาจถูกปิดการใช้งาน'))
+    push.error({ title: 'ไม่พบร้านค้า', message: getApiErrorMessage(error, 'ร้านค้านี้อาจถูกปิดการใช้งาน') })
     await router.replace('/shops')
   } finally {
     loading.value = false
@@ -279,7 +278,7 @@ onMounted(async () => {
         <div
           class="flex h-20 w-20 items-center justify-center rounded-full bg-[#D96C2C]/15 text-[#D96C2C] mx-auto border border-[#D96C2C]/30"
         >
-          <i class="mdi mdi-[#D96C2C] mdi-text-box-remove-outline text-4xl"></i>
+          <i class="mdi mdi-text-box-remove-outline text-4xl text-[#D96C2C]"></i>
         </div>
         <h3 class="text-xl font-black text-[#332820]">ไม่พบเรื่องราวในรายการนี้</h3>
         <p class="text-xs sm:text-sm text-[#786B62] font-semibold max-w-md mx-auto">

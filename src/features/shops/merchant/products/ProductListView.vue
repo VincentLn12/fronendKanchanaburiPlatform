@@ -11,7 +11,10 @@ const shopId = ref<string>('')
 const loading = ref(true)
 const searchQuery = ref('')
 const swal = useSwal()
-const apiOrigin = (import.meta.env.VITE_API_URL ?? 'https://localhost:7289/api').replace(/\/api$/, '')
+const apiOrigin = (import.meta.env.VITE_API_URL ?? 'https://localhost:7289/api').replace(
+  /\/api$/,
+  '',
+)
 
 function imageUrl(url?: string) {
   return url?.startsWith('/') ? `${apiOrigin}${url}` : url
@@ -21,7 +24,9 @@ const filteredProducts = computed(() => {
   if (!searchQuery.value.trim()) return products.value
   const q = searchQuery.value.toLowerCase()
   return products.value.filter(
-    (p) => p.productName.toLowerCase().includes(q) || (p.description && p.description.toLowerCase().includes(q))
+    (p) =>
+      p.productName.toLowerCase().includes(q) ||
+      (p.description && p.description.toLowerCase().includes(q)),
   )
 })
 
@@ -42,7 +47,10 @@ async function load() {
 }
 
 async function closeProduct(product: Product) {
-  const result = await swal.confirm(`ปิดการขาย ${product.productName}?`, 'สินค้าจะไม่แสดงต่อสาธารณะบนแพลตฟอร์ม แต่ข้อมูลจะยังคงอยู่ในระบบ')
+  const result = await swal.confirm(
+    `ปิดการขาย ${product.productName}?`,
+    'สินค้าจะไม่แสดงต่อสาธารณะบนแพลตฟอร์ม แต่ข้อมูลจะยังคงอยู่ในระบบ',
+  )
   if (!result.isConfirmed) return
   try {
     await removeProduct(product.productId)
@@ -60,27 +68,41 @@ onMounted(load)
   <div class="mx-auto w-full max-w-7xl space-y-6 py-4 text-[#332820]">
     <!-- Skeleton Loading -->
     <div v-if="loading" class="space-y-6">
-      <div class="h-28 w-full animate-pulse rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9]"></div>
+      <div
+        class="h-28 w-full animate-pulse rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9]"
+      ></div>
       <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        <div v-for="i in 6" :key="i" class="h-64 animate-pulse rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9]"></div>
+        <div
+          v-for="i in 6"
+          :key="i"
+          class="h-64 animate-pulse rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9]"
+        ></div>
       </div>
     </div>
 
     <template v-else-if="hasShop">
       <!-- Header Banner Card -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-3xl border-2 border-[#E8D9C9] bg-[#FFF9F2] p-6 shadow-xs">
+      <div
+        class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-3xl border-2 border-[#E8D9C9] bg-[#FFF9F2] p-6 shadow-xs"
+      >
         <div class="flex items-center gap-4">
-          <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#D96C2C] text-white shadow-md shrink-0">
+          <div
+            class="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#D96C2C] text-white shadow-md shrink-0"
+          >
             <i class="mdi mdi-package-variant-closed text-2xl text-white"></i>
           </div>
           <div>
             <div class="flex items-center gap-2">
               <h1 class="text-2xl font-black text-[#332820]">จัดการรายการสินค้า</h1>
-              <span class="rounded-full bg-[#D96C2C]/10 px-3 py-0.5 text-xs font-black text-[#D96C2C] border border-[#D96C2C]/20">
+              <span
+                class="rounded-full bg-[#D96C2C]/10 px-3 py-0.5 text-xs font-black text-[#D96C2C] border border-[#D96C2C]/20"
+              >
                 {{ products.length }} รายการ
               </span>
             </div>
-            <p class="text-xs text-[#786B62] font-semibold mt-0.5">จัดการข้อมูลสินค้า ราคาวางจำหน่าย จำนวนสต็อก และการปิด/เปิดขายสินค้า</p>
+            <p class="text-xs text-[#786B62] font-semibold mt-0.5">
+              จัดการข้อมูลสินค้า ราคาวางจำหน่าย จำนวนสต็อก และการปิด/เปิดขายสินค้า
+            </p>
           </div>
         </div>
 
@@ -94,7 +116,10 @@ onMounted(load)
       </div>
 
       <!-- Search Filter Bar -->
-      <div v-if="products.length > 0" class="flex flex-col sm:flex-row items-center justify-between gap-4 rounded-3xl border-2 border-[#E8D9C9] bg-[#FFF9F2] p-4 shadow-xs">
+      <div
+        v-if="products.length > 0"
+        class="flex flex-col sm:flex-row items-center justify-between gap-4 rounded-3xl border-2 border-[#E8D9C9] bg-[#FFF9F2] p-4 shadow-xs"
+      >
         <div class="relative w-full sm:w-80">
           <input
             v-model="searchQuery"
@@ -102,7 +127,9 @@ onMounted(load)
             placeholder="ค้นหาชื่อหรือรายละเอียดสินค้า..."
             class="w-full rounded-2xl border-2 border-[#E8D9C9] bg-white pl-9 pr-8 py-2 text-xs font-black text-[#332820] outline-none focus:border-[#D96C2C] transition"
           />
-          <i class="mdi mdi-magnify absolute left-3 top-1/2 -translate-y-1/2 text-[#D96C2C] text-base"></i>
+          <i
+            class="mdi mdi-magnify absolute left-3 top-1/2 -translate-y-1/2 text-[#D96C2C] text-base"
+          ></i>
           <button
             v-if="searchQuery"
             type="button"
@@ -123,7 +150,9 @@ onMounted(load)
         v-if="products.length === 0"
         class="my-8 flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-[#E8D9C9] bg-[#FFF9F2] py-16 px-6 text-center shadow-xs"
       >
-        <div class="flex h-20 w-20 items-center justify-center rounded-full bg-[#D96C2C]/15 text-[#D96C2C] mb-4 border border-[#D96C2C]/30">
+        <div
+          class="flex h-20 w-20 items-center justify-center rounded-full bg-[#D96C2C]/15 text-[#D96C2C] mb-4 border border-[#D96C2C]/30"
+        >
           <i class="mdi mdi-package-variant text-4xl"></i>
         </div>
         <h2 class="text-xl font-black text-[#332820]">ยังไม่มีสินค้าในร้านค้าของคุณ</h2>
@@ -170,14 +199,19 @@ onMounted(load)
               :alt="product.productName"
               class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-108"
             />
-            <div v-else class="flex h-full w-full flex-col items-center justify-center text-[#786B62]">
+            <div
+              v-else
+              class="flex h-full w-full flex-col items-center justify-center text-[#786B62]"
+            >
               <i class="mdi mdi-image-off-outline text-4xl opacity-50"></i>
               <span class="mt-1 text-xs font-bold">ไม่มีรูปภาพ</span>
             </div>
 
             <!-- Floating Price Badge -->
             <div class="absolute bottom-3 left-3">
-              <span class="inline-flex items-center rounded-xl bg-[#D96C2C] px-3 py-1 text-xs font-black text-white shadow-md border border-white/20">
+              <span
+                class="inline-flex items-center rounded-xl bg-[#D96C2C] px-3 py-1 text-xs font-black text-white shadow-md border border-white/20"
+              >
                 ฿ {{ Number(product.price).toLocaleString('th-TH') }}
               </span>
             </div>
@@ -201,7 +235,9 @@ onMounted(load)
 
           <!-- Product Details Body -->
           <div class="flex flex-1 flex-col p-5 space-y-2">
-            <h2 class="text-base font-black text-[#332820] group-hover:text-[#D96C2C] transition line-clamp-1">
+            <h2
+              class="text-base font-black text-[#332820] group-hover:text-[#D96C2C] transition line-clamp-1"
+            >
               {{ product.productName }}
             </h2>
 
@@ -210,7 +246,9 @@ onMounted(load)
             </p>
 
             <!-- Action Buttons Bar -->
-            <div class="mt-4 flex items-center justify-between border-t-2 border-[#E8D9C9] pt-3 text-xs">
+            <div
+              class="mt-4 flex items-center justify-between border-t-2 border-[#E8D9C9] pt-3 text-xs"
+            >
               <RouterLink
                 :to="`/products/${product.productId}`"
                 target="_blank"
@@ -246,8 +284,13 @@ onMounted(load)
     </template>
 
     <!-- State: Merchant Has No Shop Yet -->
-    <div v-else class="my-8 flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-[#E8D9C9] bg-[#FFF9F2] py-16 px-6 text-center shadow-xs space-y-3">
-      <div class="flex h-20 w-20 items-center justify-center rounded-full bg-amber-100 text-amber-800 mb-2 border border-amber-300">
+    <div
+      v-else
+      class="my-8 flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-[#E8D9C9] bg-[#FFF9F2] py-16 px-6 text-center shadow-xs space-y-3"
+    >
+      <div
+        class="flex h-20 w-20 items-center justify-center rounded-full bg-amber-100 text-amber-800 mb-2 border border-amber-300"
+      >
         <i class="mdi mdi-store-plus-outline text-4xl"></i>
       </div>
       <h2 class="text-xl font-black text-[#332820]">กรุณาสร้างร้านค้าก่อนจัดการสินค้า</h2>

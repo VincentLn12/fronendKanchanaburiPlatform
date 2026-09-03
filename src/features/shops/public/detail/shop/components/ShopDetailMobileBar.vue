@@ -18,7 +18,6 @@ const emit = defineEmits<{
   <div
     class="sm:hidden fixed bottom-0 inset-x-0 z-30 bg-[#FFF9F2]/95 backdrop-blur-md border-t-2 border-[#E8D9C9] px-4 py-3 shadow-2xl flex items-center gap-2"
   >
-    <!-- Follow Button -->
     <button
       type="button"
       class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border-2 transition active:scale-95 cursor-pointer"
@@ -31,10 +30,9 @@ const emit = defineEmits<{
       aria-label="ติดตามร้านค้า"
       @click="isFollowing = !isFollowing"
     >
-      <i :class="['mdi text-lg', isFollowing ? 'mdi-check' : 'mdi-heart-outline']"></i>
+      <i class="mdi text-lg" :class="isFollowing ? 'mdi-check' : 'mdi-heart-outline'"></i>
     </button>
 
-    <!-- Share Button -->
     <button
       type="button"
       class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border-2 border-[#E8D9C9] bg-[#FFF9F2] text-[#D96C2C] cursor-pointer"
@@ -44,7 +42,6 @@ const emit = defineEmits<{
       <i class="mdi mdi-share-variant-outline text-lg"></i>
     </button>
 
-    <!-- Call Button -->
     <a
       v-if="shop.phone"
       :href="`tel:${shop.phone}`"
@@ -54,7 +51,6 @@ const emit = defineEmits<{
       <span>โทรติดต่อ</span>
     </a>
 
-    <!-- Directions Button -->
     <button
       v-if="hasShopLocation"
       type="button"

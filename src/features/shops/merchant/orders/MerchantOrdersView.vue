@@ -1,151 +1,3 @@
-<script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
-import http from '@/shared/api/http'
-import { getApiErrorMessage } from '@/features/auth/api/getApiErrorMessage'
-import { useSwal } from '@/plugins/sweetalert'
-import AppPageHeader from '@/shared/components/AppPageHeader.vue'
-import AppStatCard from '@/shared/components/AppStatCard.vue'
-import AppDateRangeFilter, { type DatePreset } from '@/shared/components/AppDateRangeFilter.vue'
-import MerchantOrderCard, { type OrderItem } from './components/MerchantOrderCard.vue'
-
-const orderStatusOptions = [
-  { title: 'ยืนยันออเดอร์', value: 'Confirmed' },
-  { title: 'สำเร็จ', value: 'Completed' },
-  { title: 'ยกเลิก', value: 'Cancelled' },
-]
-
-const orders = ref<OrderItem[]>([])
-const allOrdersForStats = ref<OrderItem[]>([])
-const loading = ref(true)
-const fetching = ref(false)
-const updatingId = ref<string | null>(null)
-const selectedFilter = ref<string>('all')
-const searchNumber = ref<string>('')
-
-// Date Filter States
-const datePreset = ref<DatePreset>('all')
-const startDate = ref<string>('')
-const endDate = ref<string>('')
-
-const swal = useSwal()
-
-// Load API with Backend Filtering
-async function load(isInitial = false) {
-  if (isInitial) {
-    loading.value = true
-  } else {
-    fetching.value = true
-  }
-  try {
-    const params: Record<string, any> = {}
-
-    if (selectedFilter.value !== 'all') {
-      params.status = selectedFilter.value
-    }
-    if (searchNumber.value.trim()) {
-      params.search = searchNumber.value.trim()
-    }
-
-    // Date filter params passed directly to Backend C# API
-    if (datePreset.value === 'today') {
-      const todayStr = new Date().toISOString().slice(0, 10)
-      params.startDate = todayStr
-      params.endDate = todayStr
-    } else if (datePreset.value === '7days') {
-      const past7 = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
-      params.startDate = past7
-    } else if (datePreset.value === '30days') {
-      const past30 = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
-      params.startDate = past30
-    } else if (datePreset.value === 'custom') {
-      if (startDate.value) params.startDate = startDate.value
-      if (endDate.value) params.endDate = endDate.value
-    }
-
-    const { data } = await http.get<OrderItem[]>('/orders/shop/mine', { params })
-    orders.value = data
-    if (isInitial || !allOrdersForStats.value.length) {
-      allOrdersForStats.value = data
-    }
-  } catch (error) {
-    await swal.error('โหลดออเดอร์ไม่สำเร็จ', getApiErrorMessage(error, 'กรุณาลองใหม่อีกครั้ง'))
-  } finally {
-    loading.value = false
-    fetching.value = false
-  }
-}
-
-// Refetch from Backend API smoothly
-watch([selectedFilter, searchNumber, datePreset, startDate, endDate], () => {
-  void load(false)
-})
-
-const totalPaidCount = computed(
-  () => allOrdersForStats.value.filter((o) => o.paymentStatus === 'Paid').length,
-)
-const totalPendingCount = computed(
-  () => allOrdersForStats.value.filter((o) => o.paymentStatus !== 'Paid').length,
-)
-const totalShippedCount = computed(
-  () =>
-    allOrdersForStats.value.filter(
-      (o) => o.orderStatus === 'Shipped' || o.orderStatus === 'Completed',
-    ).length,
-)
-
-function clearDateFilter() {
-  datePreset.value = 'all'
-  startDate.value = ''
-  endDate.value = ''
-}
-
-async function handleUpdateStatus({ order, status }: { order: OrderItem; status: string }) {
-  updatingId.value = order.orderId
-  try {
-    await http.patch(`/orders/${order.orderId}/status`, { status })
-    order.orderStatus = status
-    const statusTitle =
-      orderStatusOptions.find((opt) => opt.value === status)?.title || status
-    await swal.success('อัปเดตสถานะออเดอร์แล้ว', `เปลี่ยนสถานะเป็น "${statusTitle}" เรียบร้อยแล้ว`)
-  } catch (error) {
-    await swal.error('อัปเดตไม่สำเร็จ', getApiErrorMessage(error, 'กรุณาลองใหม่อีกครั้ง'))
-  } finally {
-    updatingId.value = null
-  }
-}
-
-async function handleShipOrder({
-  order,
-  provider,
-  trackingNumber,
-}: {
-  order: OrderItem
-  provider: string
-  trackingNumber: string
-}) {
-  if (!provider || !trackingNumber) {
-    await swal.warning('กรอกข้อมูลไม่ครบ', 'กรุณาระบุบริษัทขนส่งและเลขพัสดุ')
-    return
-  }
-
-  updatingId.value = order.orderId
-  try {
-    await http.put(`/orders/${order.orderId}/shipment`, {
-      shippingProvider: provider,
-      trackingNumber: trackingNumber,
-    })
-    order.orderStatus = 'Shipped'
-    await swal.success('บันทึกการจัดส่งแล้ว', 'ระบบอัปเดตเลขพัสดุและแจ้งลูกค้าเรียบร้อยแล้ว')
-  } catch (error) {
-    await swal.error('บันทึกการจัดส่งไม่สำเร็จ', getApiErrorMessage(error, 'กรุณาลองใหม่อีกครั้ง'))
-  } finally {
-    updatingId.value = null
-  }
-}
-
-onMounted(() => void load(true))
-</script>
-
 <template>
   <div class="mx-auto w-full max-w-7xl space-y-6 py-4 text-[#332820] font-sans">
     <!-- Skeleton Loading -->
@@ -367,6 +219,153 @@ onMounted(() => void load(true))
     </template>
   </div>
 </template>
+
+<script setup lang="ts">
+import { computed, onMounted, ref, watch } from 'vue'
+import http from '@/shared/api/http'
+import { getApiErrorMessage } from '@/features/auth/api/getApiErrorMessage'
+import { useSwal } from '@/plugins/sweetalert'
+import AppPageHeader from '@/shared/components/AppPageHeader.vue'
+import AppStatCard from '@/shared/components/AppStatCard.vue'
+import AppDateRangeFilter, { type DatePreset } from '@/shared/components/AppDateRangeFilter.vue'
+import MerchantOrderCard, { type OrderItem } from './components/MerchantOrderCard.vue'
+
+const orderStatusOptions = [
+  { title: 'ยืนยันออเดอร์', value: 'Confirmed' },
+  { title: 'สำเร็จ', value: 'Completed' },
+  { title: 'ยกเลิก', value: 'Cancelled' },
+]
+
+const orders = ref<OrderItem[]>([])
+const allOrdersForStats = ref<OrderItem[]>([])
+const loading = ref(true)
+const fetching = ref(false)
+const updatingId = ref<string | null>(null)
+const selectedFilter = ref<string>('all')
+const searchNumber = ref<string>('')
+
+// Date Filter States
+const datePreset = ref<DatePreset>('all')
+const startDate = ref<string>('')
+const endDate = ref<string>('')
+
+const swal = useSwal()
+
+// Load API with Backend Filtering
+async function load(isInitial = false) {
+  if (isInitial) {
+    loading.value = true
+  } else {
+    fetching.value = true
+  }
+  try {
+    const params: Record<string, any> = {}
+
+    if (selectedFilter.value !== 'all') {
+      params.status = selectedFilter.value
+    }
+    if (searchNumber.value.trim()) {
+      params.search = searchNumber.value.trim()
+    }
+
+    // Date filter params passed directly to Backend C# API
+    if (datePreset.value === 'today') {
+      const todayStr = new Date().toISOString().slice(0, 10)
+      params.startDate = todayStr
+      params.endDate = todayStr
+    } else if (datePreset.value === '7days') {
+      const past7 = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
+      params.startDate = past7
+    } else if (datePreset.value === '30days') {
+      const past30 = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
+      params.startDate = past30
+    } else if (datePreset.value === 'custom') {
+      if (startDate.value) params.startDate = startDate.value
+      if (endDate.value) params.endDate = endDate.value
+    }
+
+    const { data } = await http.get<OrderItem[]>('/orders/shop/mine', { params })
+    orders.value = data
+    if (isInitial || !allOrdersForStats.value.length) {
+      allOrdersForStats.value = data
+    }
+  } catch (error) {
+    await swal.error('โหลดออเดอร์ไม่สำเร็จ', getApiErrorMessage(error, 'กรุณาลองใหม่อีกครั้ง'))
+  } finally {
+    loading.value = false
+    fetching.value = false
+  }
+}
+
+// Refetch from Backend API smoothly
+watch([selectedFilter, searchNumber, datePreset, startDate, endDate], () => {
+  void load(false)
+})
+
+const totalPaidCount = computed(
+  () => allOrdersForStats.value.filter((o) => o.paymentStatus === 'Paid').length,
+)
+const totalPendingCount = computed(
+  () => allOrdersForStats.value.filter((o) => o.paymentStatus !== 'Paid').length,
+)
+const totalShippedCount = computed(
+  () =>
+    allOrdersForStats.value.filter(
+      (o) => o.orderStatus === 'Shipped' || o.orderStatus === 'Completed',
+    ).length,
+)
+
+function clearDateFilter() {
+  datePreset.value = 'all'
+  startDate.value = ''
+  endDate.value = ''
+}
+
+async function handleUpdateStatus({ order, status }: { order: OrderItem; status: string }) {
+  updatingId.value = order.orderId
+  try {
+    await http.patch(`/orders/${order.orderId}/status`, { status })
+    order.orderStatus = status
+    const statusTitle = orderStatusOptions.find((opt) => opt.value === status)?.title || status
+    await swal.success('อัปเดตสถานะออเดอร์แล้ว', `เปลี่ยนสถานะเป็น "${statusTitle}" เรียบร้อยแล้ว`)
+  } catch (error) {
+    await swal.error('อัปเดตไม่สำเร็จ', getApiErrorMessage(error, 'กรุณาลองใหม่อีกครั้ง'))
+  } finally {
+    updatingId.value = null
+  }
+}
+
+async function handleShipOrder({
+  order,
+  provider,
+  trackingNumber,
+}: {
+  order: OrderItem
+  provider: string
+  trackingNumber: string
+}) {
+  if (!provider || !trackingNumber) {
+    await swal.warning('กรอกข้อมูลไม่ครบ', 'กรุณาระบุบริษัทขนส่งและเลขพัสดุ')
+    return
+  }
+
+  updatingId.value = order.orderId
+  try {
+    await http.put(`/orders/${order.orderId}/shipment`, {
+      shippingProvider: provider,
+      trackingNumber: trackingNumber,
+    })
+    order.orderStatus = 'Shipped'
+    await swal.success('บันทึกการจัดส่งแล้ว', 'ระบบอัปเดตเลขพัสดุและแจ้งลูกค้าเรียบร้อยแล้ว')
+  } catch (error) {
+    await swal.error('บันทึกการจัดส่งไม่สำเร็จ', getApiErrorMessage(error, 'กรุณาลองใหม่อีกครั้ง'))
+  } finally {
+    updatingId.value = null
+  }
+}
+
+onMounted(() => void load(true))
+</script>
 
 <style scoped>
 .scrollbar-none::-webkit-scrollbar {

@@ -1,132 +1,3 @@
-<script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import {
-  getProductCategories,
-  getShop,
-  getShopProducts,
-  type Product,
-  type ProductCategory,
-  type Shop,
-} from '@/features/shops/api'
-import { getApiErrorMessage } from '@/features/auth/api/getApiErrorMessage'
-import { useSwal } from '@/plugins/sweetalert'
-
-const route = useRoute()
-const router = useRouter()
-const swal = useSwal()
-
-const shop = ref<Shop | null>(null)
-const products = ref<Product[]>([])
-const categories = ref<ProductCategory[]>([])
-const loading = ref(true)
-
-const selectedCategory = ref<string | null>(null)
-const searchQuery = ref('')
-const sortBy = ref<'default' | 'price-asc' | 'price-desc' | 'name'>('default')
-
-const apiOrigin = (import.meta.env.VITE_API_URL ?? 'https://localhost:7289/api').replace(
-  /\/api$/,
-  '',
-)
-
-function imageUrl(url?: string) {
-  return url?.startsWith('/') ? `${apiOrigin}${url}` : url
-}
-
-function formatPrice(value: number) {
-  return new Intl.NumberFormat('th-TH', {
-    style: 'currency',
-    currency: 'THB',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  }).format(value)
-}
-
-function getProductImage(product: Product, index: number): string {
-  const defaults = [
-    'https://images.unsplash.com/photo-1606744888344-493238951221?auto=format&fit=crop&w=600&q=80',
-    'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=600&q=80',
-    'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=600&q=80',
-    'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?auto=format&fit=crop&w=600&q=80',
-    'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?auto=format&fit=crop&w=600&q=80',
-    'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&w=600&q=80',
-  ]
-  const resolved = imageUrl(product.imageUrl)
-  return (resolved || defaults[index % defaults.length])!
-}
-
-const shopArea = computed(() => {
-  const subDistrict = shop.value?.subDistrictName
-  const district = shop.value?.districtName
-  return [subDistrict ? `ต.${subDistrict}` : null, district ? `อ.${district}` : null, 'จ.กาญจนบุรี']
-    .filter(Boolean)
-    .join(' ')
-})
-
-const productCategories = computed(() => [
-  { id: null, name: 'ทั้งหมด', count: products.value.length },
-  ...categories.value
-    .filter((category) =>
-      products.value.some((product) => product.productCategoryId === category.productCategoryId),
-    )
-    .map((category) => ({
-      id: category.productCategoryId,
-      name: category.categoryName,
-      count: products.value.filter((p) => p.productCategoryId === category.productCategoryId)
-        .length,
-    })),
-])
-
-const filteredProducts = computed(() => {
-  let list = [...products.value]
-  if (selectedCategory.value) {
-    list = list.filter((p) => p.productCategoryId === selectedCategory.value)
-  }
-  if (searchQuery.value.trim()) {
-    const q = searchQuery.value.toLowerCase().trim()
-    list = list.filter((p) => p.productName.toLowerCase().includes(q))
-  }
-
-  if (sortBy.value === 'price-asc') {
-    list.sort((a, b) => a.price - b.price)
-  } else if (sortBy.value === 'price-desc') {
-    list.sort((a, b) => b.price - a.price)
-  } else if (sortBy.value === 'name') {
-    list.sort((a, b) => a.productName.localeCompare(b.productName, 'th'))
-  }
-
-  return list
-})
-
-function productCategoryName(productCategoryId: string) {
-  return (
-    categories.value.find((category) => category.productCategoryId === productCategoryId)
-      ?.categoryName ?? 'สินค้า'
-  )
-}
-
-onMounted(async () => {
-  loading.value = true
-  try {
-    const shopId = String(route.params.id)
-    const [shopData, shopProducts, productCategories] = await Promise.all([
-      getShop(shopId),
-      getShopProducts(shopId),
-      getProductCategories(),
-    ])
-    shop.value = shopData
-    products.value = shopProducts
-    categories.value = productCategories
-  } catch (error) {
-    await swal.error('ไม่พบร้านค้า', getApiErrorMessage(error, 'ร้านค้านี้อาจถูกปิดการใช้งาน'))
-    await router.replace('/shops')
-  } finally {
-    loading.value = false
-  }
-})
-</script>
-
 <template>
   <div class="min-h-screen bg-[#F7F0E6] text-[#332820] pb-24">
     <!-- BREADCRUMB BAR -->
@@ -176,7 +47,7 @@ onMounted(async () => {
                 สินค้าทั้งหมดของ {{ shop.shopName }}
               </h1>
               <p class="text-xs sm:text-sm text-[#786B62] font-semibold">
-                มีสินค้าทั้งหมด
+                มีสินค้าพร้อมจำหน่ายทั้งหมด
                 <span class="text-[#D96C2C] font-black">{{ products.length }}</span> รายการ
               </p>
             </div>
@@ -368,6 +239,140 @@ onMounted(async () => {
   </div>
 </template>
 
+<script setup lang="ts">
+import { computed, onMounted, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import {
+  getProductCategories,
+  getShop,
+  getShopProducts,
+  type Product,
+  type ProductCategory,
+  type Shop,
+} from '@/features/shops/api'
+import { push } from 'notivue'
+import { getApiErrorMessage } from '@/features/auth/api/getApiErrorMessage'
+
+const route = useRoute()
+const router = useRouter()
+
+const shop = ref<Shop | null>(null)
+const products = ref<Product[]>([])
+const categories = ref<ProductCategory[]>([])
+const loading = ref(true)
+
+const selectedCategory = ref<string | null>(null)
+const searchQuery = ref('')
+const sortBy = ref<'default' | 'price-asc' | 'price-desc' | 'name'>('default')
+
+const apiOrigin = (import.meta.env.VITE_API_URL ?? 'https://localhost:7289/api').replace(
+  /\/api$/,
+  '',
+)
+
+function imageUrl(url?: string) {
+  return url?.startsWith('/') ? `${apiOrigin}${url}` : url
+}
+
+function formatPrice(value: number) {
+  return new Intl.NumberFormat('th-TH', {
+    style: 'currency',
+    currency: 'THB',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(value)
+}
+
+function getProductImage(product: Product, index: number): string {
+  const defaults = [
+    'https://images.unsplash.com/photo-1606744888344-493238951221?auto=format&fit=crop&w=600&q=80',
+    'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=600&q=80',
+    'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=600&q=80',
+    'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?auto=format&fit=crop&w=600&q=80',
+    'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?auto=format&fit=crop&w=600&q=80',
+    'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&w=600&q=80',
+  ]
+  const resolved = imageUrl(product.imageUrl)
+  return (resolved || defaults[index % defaults.length])!
+}
+
+const shopArea = computed(() => {
+  const subDistrict = shop.value?.subDistrictName
+  const district = shop.value?.districtName
+  return [subDistrict ? `ต.${subDistrict}` : null, district ? `อ.${district}` : null, 'จ.กาญจนบุรี']
+    .filter(Boolean)
+    .join(' ')
+})
+
+const productCategories = computed(() => [
+  { id: null, name: 'ทั้งหมด', count: products.value.length },
+  ...categories.value
+    .filter((category) =>
+      products.value.some((product) => product.productCategoryId === category.productCategoryId),
+    )
+    .map((category) => ({
+      id: category.productCategoryId,
+      name: category.categoryName,
+      count: products.value.filter((p) => p.productCategoryId === category.productCategoryId)
+        .length,
+    })),
+])
+
+function productCategoryName(productCategoryId: string) {
+  return (
+    categories.value.find((category) => category.productCategoryId === productCategoryId)
+      ?.categoryName ?? 'สินค้า'
+  )
+}
+
+const filteredProducts = computed(() => {
+  let list = [...products.value]
+  if (selectedCategory.value) {
+    list = list.filter((p) => p.productCategoryId === selectedCategory.value)
+  }
+  if (searchQuery.value.trim()) {
+    const q = searchQuery.value.toLowerCase().trim()
+    list = list.filter(
+      (p) =>
+        p.productName.toLowerCase().includes(q) ||
+        (p.description && p.description.toLowerCase().includes(q)),
+    )
+  }
+
+  if (sortBy.value === 'price-asc') {
+    list.sort((a, b) => a.price - b.price)
+  } else if (sortBy.value === 'price-desc') {
+    list.sort((a, b) => b.price - a.price)
+  } else if (sortBy.value === 'name') {
+    list.sort((a, b) => a.productName.localeCompare(b.productName, 'th'))
+  }
+
+  return list
+})
+
+onMounted(async () => {
+  loading.value = true
+  try {
+    const shopId = String(route.params.id)
+    const [shopData, productsRes, catData] = await Promise.all([
+      getShop(shopId),
+      getShopProducts(shopId),
+      getProductCategories(),
+    ])
+    shop.value = shopData
+    products.value = productsRes || []
+    categories.value = catData || []
+  } catch (error) {
+    push.error({
+      title: 'ไม่พบร้านค้า',
+      message: getApiErrorMessage(error, 'ร้านค้านี้อาจถูกปิดการใช้งาน'),
+    })
+    await router.replace('/shops')
+  } finally {
+    loading.value = false
+  }
+})
+</script>
 <style scoped>
 .scrollbar-none::-webkit-scrollbar {
   display: none;

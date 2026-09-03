@@ -26,7 +26,6 @@ defineProps<{
       </div>
     </div>
 
-    <!-- Customer Reviews List -->
     <div
       v-if="reviewData.reviews.length"
       class="space-y-4 max-h-[420px] overflow-y-auto pr-1 scrollbar-thin"
@@ -41,10 +40,10 @@ defineProps<{
             <span
               class="flex h-7 w-7 items-center justify-center rounded-full bg-[#D96C2C] font-black text-white text-xs shadow-2xs"
             >
-              {{ reviewerInitial(rev.reviewerName || rev.userName || 'ผู้ใช้งาน') }}
+              {{ reviewerInitial(rev.userName || rev.reviewerName || 'ผู้ใช้งาน') }}
             </span>
             <span class="font-bold text-[#332820]">{{
-              rev.reviewerName || rev.userName || 'ผู้ใช้งาน'
+              rev.userName || rev.reviewerName || 'ผู้ใช้งาน'
             }}</span>
           </div>
           <span class="text-[10px] text-[#786B62]">{{ formatReviewDate(rev.createdAt) }}</span>
@@ -53,9 +52,7 @@ defineProps<{
         <div v-if="rev.rating > 0" class="flex text-[#D96C2C] text-xs">
           <i v-for="s in rev.rating" :key="s" class="mdi mdi-star"></i>
         </div>
-        <p v-if="rev.comment" class="text-[#786B62] leading-relaxed font-medium">
-          {{ rev.comment }}
-        </p>
+        <p class="text-[#786B62] leading-relaxed font-medium">{{ rev.comment }}</p>
 
         <!-- Shop Reply Box -->
         <div

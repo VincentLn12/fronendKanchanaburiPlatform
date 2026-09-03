@@ -200,7 +200,6 @@ function validateQty() {
 </template>
 
 <style scoped>
-/* Hide spin buttons for number inputs */
 input[type='number']::-webkit-inner-spin-button,
 input[type='number']::-webkit-outer-spin-button {
   -webkit-appearance: none;

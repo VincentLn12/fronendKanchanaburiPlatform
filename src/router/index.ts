@@ -8,7 +8,8 @@ async function requireActiveShop() {
     const { data } = await http.get<{ status: string }>('/shops/mine')
     return data.status === 'Active' ? true : { name: 'shop-application' }
   } catch (error) {
-    if (axios.isAxiosError(error) && error.response?.status === 404) return { name: 'shop-application' }
+    if (axios.isAxiosError(error) && error.response?.status === 404)
+      return { name: 'shop-application' }
     return { name: 'home' }
   }
 }
@@ -49,24 +50,35 @@ const router = createRouter({
     {
       path: '/shops/:id',
       name: 'shop-detail',
-      component: () => import('@/features/shops/public/detail/views/ShopDetailView.vue'),
+      component: () => import('@/features/shops/public/detail/shop/views/ShopDetailView.vue'),
     },
     {
       path: '/shops/:id/products',
       name: 'shop-products-all',
-      component: () => import('@/features/shops/public/detail/views/ShopProductsView.vue'),
+      component: () =>
+        import('@/features/shops/public/detail/shop-products/views/ShopProductsView.vue'),
     },
     {
       path: '/shops/:id/contents',
       name: 'shop-contents-all',
-      component: () => import('@/features/shops/public/detail/views/ShopContentsView.vue'),
+      component: () =>
+        import('@/features/shops/public/detail/shop-contents/views/ShopContentsView.vue'),
+    },
+    {
+      path: '/products/:id',
+      name: 'product-detail',
+      component: () => import('@/features/shops/public/detail/product/views/ProductDetailView.vue'),
     },
     {
       path: '/contents',
       name: 'contents',
       component: () => import('@/features/contents/public/list/views/ContentListView.vue'),
     },
-    { path: '/contents/:id', name: 'content-detail', component: () => import('@/features/contents/public/detail/views/ContentDetailView.vue') },
+    {
+      path: '/contents/:id',
+      name: 'content-detail',
+      component: () => import('@/features/contents/public/detail/views/ContentDetailView.vue'),
+    },
     {
       path: '/create',
       name: 'content-create',
@@ -88,7 +100,7 @@ const router = createRouter({
     {
       path: '/products/:id',
       name: 'product-detail',
-      component: () => import('@/features/shops/public/detail/views/ProductDetailView.vue'),
+      component: () => import('@/features/shops/public/detail/product/views/ProductDetailView.vue'),
     },
     {
       path: '/cart',
@@ -185,26 +197,115 @@ const router = createRouter({
           name: 'admin-shops',
           component: () => import('@/features/admin/shops/views/AdminShopListView.vue'),
         },
-        { path: 'shops/:shopId/products', name: 'admin-shop-products', component: () => import('@/features/admin/products/views/AdminProductListView.vue') },
-        { path: 'categories', name: 'admin-shop-categories', component: () => import('@/features/admin/shop-categories/views/AdminShopCategoriesView.vue') },
-        { path: 'categories/new', name: 'admin-shop-category-new', component: () => import('@/features/admin/shop-categories/views/AdminShopCategoryFormView.vue') },
-        { path: 'categories/:id/edit', name: 'admin-shop-category-edit', component: () => import('@/features/admin/shop-categories/views/AdminShopCategoryFormView.vue') },
-        { path: 'product-categories', name: 'admin-product-categories', component: () => import('@/features/admin/product-categories/views/AdminProductCategoriesView.vue') },
-        { path: 'product-categories/new', name: 'admin-product-category-new', component: () => import('@/features/admin/product-categories/views/AdminProductCategoryFormView.vue') },
-        { path: 'product-categories/:id/edit', name: 'admin-product-category-edit', component: () => import('@/features/admin/product-categories/views/AdminProductCategoryFormView.vue') },
-        { path: 'content-categories', name: 'admin-content-categories', component: () => import('@/features/admin/content-categories/views/AdminContentCategoriesView.vue') },
-        { path: 'content-categories/new', name: 'admin-content-category-new', component: () => import('@/features/admin/content-categories/views/AdminContentCategoryFormView.vue') },
-        { path: 'content-categories/:id/edit', name: 'admin-content-category-edit', component: () => import('@/features/admin/content-categories/views/AdminContentCategoryFormView.vue') },
-        { path: 'tags', name: 'admin-tags', component: () => import('@/features/admin/tags/views/AdminTagsView.vue') },
-        { path: 'tags/new', name: 'admin-tag-new', component: () => import('@/features/admin/tags/views/AdminTagFormView.vue') },
-        { path: 'tags/:id/edit', name: 'admin-tag-edit', component: () => import('@/features/admin/tags/views/AdminTagFormView.vue') },
-        { path: 'contents', name: 'admin-contents', component: () => import('@/features/admin/contents/views/AdminContentsView.vue') },
-        { path: 'contents/new', name: 'admin-content-new', component: () => import('@/features/admin/contents/views/AdminContentFormView.vue') },
-        { path: 'contents/:id/edit', name: 'admin-content-edit', component: () => import('@/features/admin/contents/views/AdminContentFormView.vue') },
-        { path: 'schedules', name: 'admin-schedules', component: () => import('@/features/admin/schedules/views/AdminSchedulesView.vue') },
-        { path: 'schedules/new', name: 'admin-schedule-new', component: () => import('@/features/admin/schedules/views/AdminScheduleFormView.vue') },
-        { path: 'schedules/:id/edit', name: 'admin-schedule-edit', component: () => import('@/features/admin/schedules/views/AdminScheduleFormView.vue') },
-        { path: 'reports', name: 'admin-reports', component: () => import('@/features/admin/reports/views/AdminReportsView.vue') },
+        {
+          path: 'shops/:shopId/products',
+          name: 'admin-shop-products',
+          component: () => import('@/features/admin/products/views/AdminProductListView.vue'),
+        },
+        {
+          path: 'categories',
+          name: 'admin-shop-categories',
+          component: () =>
+            import('@/features/admin/shop-categories/views/AdminShopCategoriesView.vue'),
+        },
+        {
+          path: 'categories/new',
+          name: 'admin-shop-category-new',
+          component: () =>
+            import('@/features/admin/shop-categories/views/AdminShopCategoryFormView.vue'),
+        },
+        {
+          path: 'categories/:id/edit',
+          name: 'admin-shop-category-edit',
+          component: () =>
+            import('@/features/admin/shop-categories/views/AdminShopCategoryFormView.vue'),
+        },
+        {
+          path: 'product-categories',
+          name: 'admin-product-categories',
+          component: () =>
+            import('@/features/admin/product-categories/views/AdminProductCategoriesView.vue'),
+        },
+        {
+          path: 'product-categories/new',
+          name: 'admin-product-category-new',
+          component: () =>
+            import('@/features/admin/product-categories/views/AdminProductCategoryFormView.vue'),
+        },
+        {
+          path: 'product-categories/:id/edit',
+          name: 'admin-product-category-edit',
+          component: () =>
+            import('@/features/admin/product-categories/views/AdminProductCategoryFormView.vue'),
+        },
+        {
+          path: 'content-categories',
+          name: 'admin-content-categories',
+          component: () =>
+            import('@/features/admin/content-categories/views/AdminContentCategoriesView.vue'),
+        },
+        {
+          path: 'content-categories/new',
+          name: 'admin-content-category-new',
+          component: () =>
+            import('@/features/admin/content-categories/views/AdminContentCategoryFormView.vue'),
+        },
+        {
+          path: 'content-categories/:id/edit',
+          name: 'admin-content-category-edit',
+          component: () =>
+            import('@/features/admin/content-categories/views/AdminContentCategoryFormView.vue'),
+        },
+        {
+          path: 'tags',
+          name: 'admin-tags',
+          component: () => import('@/features/admin/tags/views/AdminTagsView.vue'),
+        },
+        {
+          path: 'tags/new',
+          name: 'admin-tag-new',
+          component: () => import('@/features/admin/tags/views/AdminTagFormView.vue'),
+        },
+        {
+          path: 'tags/:id/edit',
+          name: 'admin-tag-edit',
+          component: () => import('@/features/admin/tags/views/AdminTagFormView.vue'),
+        },
+        {
+          path: 'contents',
+          name: 'admin-contents',
+          component: () => import('@/features/admin/contents/views/AdminContentsView.vue'),
+        },
+        {
+          path: 'contents/new',
+          name: 'admin-content-new',
+          component: () => import('@/features/admin/contents/views/AdminContentFormView.vue'),
+        },
+        {
+          path: 'contents/:id/edit',
+          name: 'admin-content-edit',
+          component: () => import('@/features/admin/contents/views/AdminContentFormView.vue'),
+        },
+        {
+          path: 'schedules',
+          name: 'admin-schedules',
+          component: () => import('@/features/admin/schedules/views/AdminSchedulesView.vue'),
+        },
+        {
+          path: 'schedules/new',
+          name: 'admin-schedule-new',
+          component: () => import('@/features/admin/schedules/views/AdminScheduleFormView.vue'),
+        },
+        {
+          path: 'schedules/:id/edit',
+          name: 'admin-schedule-edit',
+          component: () => import('@/features/admin/schedules/views/AdminScheduleFormView.vue'),
+        },
+        {
+          path: 'reports',
+          name: 'admin-reports',
+          component: () => import('@/features/admin/reports/views/AdminReportsView.vue'),
+        },
       ],
     },
     { path: '/about', redirect: '/' },

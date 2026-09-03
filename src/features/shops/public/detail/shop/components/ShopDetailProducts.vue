@@ -34,13 +34,18 @@ function clearSearch() {
   productSearchInput.value = ''
   productSearch.value = ''
 }
+
+function clearFilters() {
+  clearSearch()
+  selectedCategory.value = null
+}
 </script>
 
 <template>
-  <section class="rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9] p-6 sm:p-7 shadow-md space-y-6">
+  <section class="rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9] p-6 sm:p-7 shadow-xs space-y-6">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-2 border-[#E8D9C9] pb-4">
       <div class="flex items-center gap-3">
-        <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#D96C2C] text-white shadow-md font-bold">
+        <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#D96C2C] text-white shadow-xs font-bold">
           <i class="mdi mdi-store-search-outline text-xl text-white"></i>
         </div>
         <div>
@@ -80,7 +85,7 @@ function clearSearch() {
         class="px-4 py-2 rounded-2xl text-xs font-black transition shrink-0 flex items-center gap-1.5 cursor-pointer border-2"
         :class="
           selectedCategory === cat.id
-            ? 'border-[#D96C2C] bg-[#D96C2C] text-white shadow-md'
+            ? 'border-[#D96C2C] bg-[#D96C2C] text-white shadow-xs'
             : 'border-[#E8D9C9] bg-white text-[#332820] hover:border-[#D96C2C]'
         "
         @click="selectedCategory = cat.id"
@@ -113,6 +118,9 @@ function clearSearch() {
               loading="lazy"
               class="w-full h-full object-cover group-hover:scale-108 transition duration-500"
             />
+            <span class="absolute top-2 left-2 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-[#D96C2C] text-white shadow-md">
+              พร้อมส่ง
+            </span>
           </div>
 
           <span class="text-[10px] font-black text-[#D96C2C] bg-[#D96C2C]/10 px-2 py-0.5 rounded-md border border-[#D96C2C]/20 inline-block mb-1">
@@ -121,13 +129,22 @@ function clearSearch() {
           <h3 class="font-black text-[#332820] text-xs sm:text-sm group-hover:text-[#D96C2C] transition line-clamp-1">
             {{ prod.productName }}
           </h3>
+          <p v-if="prod.description" class="text-xs text-[#786B62] mt-1 line-clamp-2 font-medium leading-relaxed">
+            {{ prod.description }}
+          </p>
         </div>
 
         <div class="flex items-center justify-between mt-3 pt-2.5 border-t border-[#E8D9C9]">
-          <span class="font-black text-[#D96C2C] text-sm sm:text-base">{{ formatPrice(prod.price) }}</span>
-          <span class="text-[10px] font-bold text-[#786B62] group-hover:text-[#D96C2C] flex items-center">
-            ดูสินค้า <i class="mdi mdi-chevron-right"></i>
-          </span>
+          <div>
+            <span class="block text-[10px] text-[#786B62] font-black uppercase">ราคา</span>
+            <span class="font-black text-[#D96C2C] text-sm sm:text-base">{{ formatPrice(prod.price) }}</span>
+          </div>
+          <button
+            type="button"
+            class="flex h-8 w-8 items-center justify-center rounded-xl bg-[#D96C2C] text-white hover:bg-[#BF5720] transition shadow-xs cursor-pointer border border-[#D96C2C]"
+          >
+            <i class="mdi mdi-cart-plus text-base text-white"></i>
+          </button>
         </div>
       </RouterLink>
     </div>
@@ -140,7 +157,7 @@ function clearSearch() {
         v-if="productSearch || selectedCategory"
         type="button"
         class="text-xs font-bold text-[#D96C2C] hover:underline"
-        @click="() => { clearSearch(); selectedCategory = null; }"
+        @click="clearFilters"
       >
         ล้างตัวกรองทั้งหมด
       </button>
@@ -150,7 +167,7 @@ function clearSearch() {
     <div v-if="products.length > 0" class="pt-2">
       <RouterLink
         :to="`/shops/${shop.shopId}/products`"
-        class="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl bg-[#D96C2C]/10 hover:bg-[#D96C2C] text-[#D96C2C] hover:text-white border-2 border-[#D96C2C] font-black text-xs sm:text-sm shadow-md transition duration-200 cursor-pointer group"
+        class="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl bg-[#D96C2C]/10 hover:bg-[#D96C2C] text-[#D96C2C] hover:text-white border-2 border-[#D96C2C] font-black text-xs sm:text-sm shadow-xs transition duration-200 cursor-pointer group"
       >
         <i class="mdi mdi-grid text-lg group-hover:text-white"></i>
         <span class="group-hover:text-white">ดูสินค้าทั้งหมดของร้านนี้ ({{ products.length }} รายการ)</span>

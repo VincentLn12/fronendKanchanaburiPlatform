@@ -7,9 +7,9 @@ defineProps<{
 </script>
 
 <template>
-  <section class="rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9] p-6 sm:p-7 shadow-md space-y-5">
+  <section class="rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9] p-6 sm:p-7 shadow-xs space-y-5">
     <div class="flex items-center gap-3 border-b-2 border-[#E8D9C9] pb-4">
-      <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#D96C2C] text-white shadow-md font-bold">
+      <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#D96C2C] text-white shadow-xs font-bold">
         <i class="mdi mdi-store-check-outline text-xl text-white"></i>
       </div>
       <div>
@@ -18,7 +18,6 @@ defineProps<{
       </div>
     </div>
 
-    <!-- Description Text Box -->
     <p class="text-xs sm:text-sm text-[#786B62] leading-relaxed whitespace-pre-line font-semibold">
       {{
         shop.description ||
@@ -26,7 +25,6 @@ defineProps<{
       }}
     </p>
 
-    <!-- Community Badges -->
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
       <div class="flex items-center gap-2.5 p-3 rounded-2xl bg-[#F7F0E6] border border-[#E8D9C9] text-xs font-bold text-[#332820]">
         <i class="mdi mdi-leaf text-[#D96C2C] text-xl shrink-0"></i>
