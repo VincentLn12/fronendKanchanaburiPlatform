@@ -36,7 +36,7 @@
         @clear-filters="clearFilters"
         @filter-change="
           () => {
-            page = 1
+            resetPage()
             load()
           }
         "
@@ -45,20 +45,11 @@
       <!-- MODE 1: SHOP CARDS GRID VIEW -->
       <div v-if="viewMode === 'shops'" class="space-y-6">
         <!-- RESULTS TOOLBAR -->
-        <div class="flex flex-wrap items-center justify-between gap-4 bg-[#FFF9F2] px-6 py-4 rounded-2xl border-2 border-[#E8D9C9] shadow-xs">
-          <div class="text-sm font-extrabold text-[#332820]">
-            พบ <span class="text-[#D96C2C] font-black text-base">{{ totalCount }}</span> ร้านค้าและผู้ประกอบการชุมชน
-          </div>
-
-          <button
-            v-if="activeFilterCount"
-            type="button"
-            class="text-xs font-black text-[#D96C2C] hover:text-[#BF5720] hover:underline flex items-center gap-1 cursor-pointer"
-            @click="clearFilters"
-          >
-            <i class="mdi mdi-refresh"></i> ล้างตัวกรอง
-          </button>
-        </div>
+        <AppDisplayToolbar
+          :total-count="totalCount"
+          unit-label="ร้านค้าและผู้ประกอบการชุมชน"
+          :show-display-toggle="false"
+        />
 
         <!-- SKELETON LOADING -->
         <div v-if="loading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -79,54 +70,17 @@
         </div>
 
         <!-- EMPTY STATE -->
-        <div
+        <AppEmptyState
           v-else
-          class="rounded-3xl border-2 border-[#E8D9C9] bg-[#FFF9F2] p-12 text-center shadow-xs space-y-4"
-        >
-          <div
-            class="h-16 w-16 rounded-full bg-[#D96C2C]/15 text-[#D96C2C] flex items-center justify-center mx-auto text-3xl font-bold border border-[#D96C2C]/30"
-          >
-            <i class="mdi mdi-store-off-outline"></i>
-          </div>
-          <h3 class="text-lg font-black text-[#332820]">ไม่พบร้านค้าตามเงื่อนไข</h3>
-          <p class="text-xs text-[#786B62] max-w-sm mx-auto font-medium">
-            ลองปรับเปลี่ยนคำค้นหา หรือเลือกตัวกรองอำเภอและประเภทร้านค้าอื่น
-          </p>
-          <button
-            type="button"
-            class="px-6 py-2.5 rounded-xl bg-[#D96C2C] hover:bg-[#BF5720] text-white text-xs font-black transition shadow-md cursor-pointer border border-[#D96C2C]"
-            @click="clearFilters"
-          >
-            ล้างตัวกรองทั้งหมด
-          </button>
-        </div>
+          icon="mdi-store-off-outline"
+          title="ไม่พบร้านค้าตามเงื่อนไข"
+          description="ลองปรับเปลี่ยนคำค้นหา หรือเลือกตัวกรองอำเภอและประเภทร้านค้าอื่น"
+          action-label="ล้างตัวกรองทั้งหมด"
+          @action="clearFilters"
+        />
 
         <!-- PAGINATION -->
-        <div v-if="totalPages > 1" class="flex items-center justify-center gap-2 pt-6">
-          <button
-            type="button"
-            class="flex h-9 w-9 items-center justify-center rounded-xl border-2 border-[#E8D9C9] bg-[#FFF9F2] text-xs font-bold transition hover:border-[#D96C2C] disabled:opacity-40 cursor-pointer shadow-2xs text-[#332820]"
-            :disabled="page <= 1"
-            @click="prevPage"
-          >
-            <i class="mdi mdi-chevron-left text-base"></i>
-          </button>
-
-          <span
-            class="px-4 py-2 rounded-xl bg-[#FFF9F2] border-2 border-[#E8D9C9] text-xs font-black text-[#D96C2C] shadow-2xs"
-          >
-            หน้า {{ page }} จาก {{ totalPages }}
-          </span>
-
-          <button
-            type="button"
-            class="flex h-9 w-9 items-center justify-center rounded-xl border-2 border-[#E8D9C9] bg-[#FFF9F2] text-xs font-bold transition hover:border-[#D96C2C] disabled:opacity-40 cursor-pointer shadow-2xs text-[#332820]"
-            :disabled="page >= totalPages"
-            @click="nextPage"
-          >
-            <i class="mdi mdi-chevron-right text-base"></i>
-          </button>
-        </div>
+        <AppPagination v-model:page="page" :total-pages="totalPages" @change="load" />
       </div>
 
       <!-- MODE 2: MAP VIEW -->
@@ -140,16 +94,29 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { getDistricts, getShopCategories, getShops, getSubDistricts } from '../api/shopApi'
-import type { District, Shop, ShopCategory, SubDistrict } from '../../shared/types/shop'
+import {
+  getDistricts,
+  getShopCategories,
+  getShops,
+  getSubDistricts,
+  type District,
+  type Shop,
+  type ShopCategory,
+  type SubDistrict,
+} from '@/features/shops/api'
 
-import ShopHeroBanner from '../components/ShopHeroBanner.vue'
-import ShopCategoryBar from '../components/ShopCategoryBar.vue'
-import ShopFeaturedSection from '../components/ShopFeaturedSection.vue'
-import ShopDistrictFilterBar from '../components/ShopDistrictFilterBar.vue'
-import ShopFilterSection from '../components/ShopFilterSection.vue'
-import ShopCard from '../components/ShopCard.vue'
-import ShopMapView from '../components/ShopMapView.vue'
+import ShopHeroBanner from '../../components/ShopHeroBanner.vue'
+import ShopCategoryBar from '../../components/ShopCategoryBar.vue'
+import ShopFeaturedSection from '../../components/ShopFeaturedSection.vue'
+import ShopDistrictFilterBar from '../../components/ShopDistrictFilterBar.vue'
+import ShopFilterSection from '../../components/ShopFilterSection.vue'
+import ShopCard from '../../components/ShopCard.vue'
+import ShopMapView from '../../components/ShopMapView.vue'
+
+import AppPagination from '@/shared/components/AppPagination.vue'
+import AppEmptyState from '@/shared/components/AppEmptyState.vue'
+import AppDisplayToolbar from '@/shared/components/AppDisplayToolbar.vue'
+import { usePagination } from '@/shared/composables/usePagination'
 
 const route = useRoute()
 
@@ -158,6 +125,8 @@ const categories = ref<ShopCategory[]>([])
 const districts = ref<District[]>([])
 const subDistricts = ref<SubDistrict[]>([])
 
+const { page, pageSize, totalCount, totalPages, setPageResult, resetPage } = usePagination(9)
+
 const search = ref('')
 const categoryId = ref<string | null>(null)
 const districtId = ref<string | null>(null)
@@ -165,11 +134,6 @@ const subDistrictId = ref<string | null>(null)
 const sortBy = ref<'latest' | 'popular' | 'title'>('latest')
 
 const viewMode = ref<'shops' | 'map'>('shops')
-
-const page = ref(1)
-const pageSize = ref(9)
-const totalCount = ref(0)
-const totalPages = ref(1)
 const loading = ref(true)
 
 const sortOptions = [
@@ -210,13 +174,11 @@ async function loadShopsData() {
       pageSize: pageSize.value,
     })
     shops.value = res.items
-    totalCount.value = res.totalCount
-    totalPages.value = res.totalPages
+    setPageResult(res.totalCount, res.totalPages)
   } catch (err) {
     console.error('Failed loading shops', err)
     shops.value = []
-    totalCount.value = 0
-    totalPages.value = 1
+    setPageResult(0, 1)
   } finally {
     loading.value = false
   }
@@ -224,20 +186,6 @@ async function loadShopsData() {
 
 function load() {
   void loadShopsData()
-}
-
-function prevPage() {
-  if (page.value > 1) {
-    page.value--
-    load()
-  }
-}
-
-function nextPage() {
-  if (page.value < totalPages.value) {
-    page.value++
-    load()
-  }
 }
 
 async function changeDistrict() {
@@ -250,7 +198,7 @@ async function changeDistrict() {
       console.error(e)
     }
   }
-  page.value = 1
+  resetPage()
   load()
 }
 
@@ -261,7 +209,7 @@ function selectDistrictPill(id: string | null) {
 
 function selectCategoryPill(id: string | null) {
   categoryId.value = id
-  page.value = 1
+  resetPage()
   load()
 }
 
@@ -271,7 +219,7 @@ function clearFilters() {
   subDistrictId.value = null
   search.value = ''
   sortBy.value = 'latest'
-  page.value = 1
+  resetPage()
   load()
 }
 
@@ -285,7 +233,7 @@ watch(
   () => route.query,
   () => {
     applyQueryParams()
-    page.value = 1
+    resetPage()
     load()
   },
 )

@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { getPublicContents } from '@/features/contents/public/api/contentApi'
-import { archiveMyContent, getMyContents, type UserContent } from '@/features/contents/user/api/userContentApi'
-import { getMyShop } from '../api/shopApi'
-import type { Shop } from '../../shared/types/shop'
+import {
+  archiveMyContent,
+  getMyContents,
+  getPublicContents,
+  type UserContent,
+} from '@/features/contents/api'
+import { getMyShop, type Shop } from '@/features/shops/api'
 import { getApiErrorMessage } from '@/features/auth/api/getApiErrorMessage'
 import { useSwal } from '@/plugins/sweetalert'
 

@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import axios from 'axios'
 import { computed, onMounted, ref } from 'vue'
-import { removeProduct, getProducts } from '../api/productApi'
-import { getMyShop } from '../api/shopApi'
-import type { Product } from '../../shared/types/product'
+import { getMyShop, getProducts, removeProduct, type Product } from '@/features/shops/api'
 import { getApiErrorMessage } from '@/features/auth/api/getApiErrorMessage'
 import { useSwal } from '@/plugins/sweetalert'
 

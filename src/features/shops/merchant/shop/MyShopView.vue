@@ -12,14 +12,12 @@ import {
   updateShopStatus,
   uploadShopBackgroundImage,
   uploadShopCoverImage,
-} from '../api/shopApi'
-import type {
-  District,
-  Shop,
-  ShopCategory,
-  ShopFormData,
-  SubDistrict,
-} from '../../shared/types/shop'
+  type District,
+  type Shop,
+  type ShopCategory,
+  type ShopFormData,
+  type SubDistrict,
+} from '@/features/shops/api'
 import AppSelect from '@/components/common/input/AppSelect.vue'
 import AppTextField from '@/components/common/input/AppTextField.vue'
 import AppTextarea from '@/components/common/input/AppTextarea.vue'
@@ -37,7 +35,10 @@ const uploadingCover = ref(false)
 const uploadingBackground = ref(false)
 const restoringLocation = ref(false)
 const swal = useSwal()
-const apiOrigin = (import.meta.env.VITE_API_URL ?? 'https://localhost:7289/api').replace(/\/api$/, '')
+const apiOrigin = (import.meta.env.VITE_API_URL ?? 'https://localhost:7289/api').replace(
+  /\/api$/,
+  '',
+)
 
 const form = ref<ShopFormData>({
   shopName: '',
@@ -152,7 +153,10 @@ async function submit() {
 
 async function removeShop() {
   if (!shop.value) return
-  const result = await swal.confirm('ยืนยันปิดบริการร้านนี้?', 'ร้านจะไม่แสดงต่อสาธารณะบนแพลตฟอร์ม แต่ข้อมูลของคุณจะไม่ถูกลบ')
+  const result = await swal.confirm(
+    'ยืนยันปิดบริการร้านนี้?',
+    'ร้านจะไม่แสดงต่อสาธารณะบนแพลตฟอร์ม แต่ข้อมูลของคุณจะไม่ถูกลบ',
+  )
   if (!result.isConfirmed) return
   try {
     await closeShop(shop.value.shopId)
@@ -165,7 +169,10 @@ async function removeShop() {
 
 async function reopenShop() {
   if (!shop.value) return
-  const result = await swal.confirm('เปิดบริการร้านค้าอีกครั้ง?', 'ร้านจะแสดงต่อสาธารณะและสามารถรับคำสั่งซื้อได้อีกครั้ง')
+  const result = await swal.confirm(
+    'เปิดบริการร้านค้าอีกครั้ง?',
+    'ร้านจะแสดงต่อสาธารณะและสามารถรับคำสั่งซื้อได้อีกครั้ง',
+  )
   if (!result.isConfirmed) return
   try {
     await updateShopStatus(shop.value.shopId, 'Active')
@@ -186,7 +193,10 @@ async function uploadCoverImage(event: Event) {
     shop.value = await uploadShopCoverImage(shop.value.shopId, file)
     await swal.success('อัปโหลดรูปหน้าปกร้านแล้ว')
   } catch (error) {
-    await swal.error('อัปโหลดรูปไม่สำเร็จ', getApiErrorMessage(error, 'รองรับไฟล์ภาพ JPG, PNG, WEBP ขนาดไม่เกิน 5 MB'))
+    await swal.error(
+      'อัปโหลดรูปไม่สำเร็จ',
+      getApiErrorMessage(error, 'รองรับไฟล์ภาพ JPG, PNG, WEBP ขนาดไม่เกิน 5 MB'),
+    )
   } finally {
     input.value = ''
     uploadingCover.value = false
@@ -203,7 +213,10 @@ async function uploadBackgroundImage(event: Event) {
     shop.value = await uploadShopBackgroundImage(shop.value.shopId, file)
     await swal.success('อัปโหลดรูปพื้นหลังร้านแล้ว')
   } catch (error) {
-    await swal.error('อัปโหลดรูปไม่สำเร็จ', getApiErrorMessage(error, 'รองรับไฟล์ภาพ JPG, PNG, WEBP ขนาดไม่เกิน 5 MB'))
+    await swal.error(
+      'อัปโหลดรูปไม่สำเร็จ',
+      getApiErrorMessage(error, 'รองรับไฟล์ภาพ JPG, PNG, WEBP ขนาดไม่เกิน 5 MB'),
+    )
   } finally {
     input.value = ''
     uploadingBackground.value = false
@@ -234,31 +247,48 @@ onMounted(async () => {
   <div class="mx-auto w-full max-w-5xl xl:max-w-6xl py-4 space-y-6 text-[#332820]">
     <!-- Skeleton Loading -->
     <div v-if="loading" class="space-y-6">
-      <div class="h-28 w-full animate-pulse rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9]"></div>
-      <div class="h-96 w-full animate-pulse rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9]"></div>
+      <div
+        class="h-28 w-full animate-pulse rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9]"
+      ></div>
+      <div
+        class="h-96 w-full animate-pulse rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9]"
+      ></div>
     </div>
 
     <template v-else>
       <!-- Page Title & Status Header Card -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-3xl border-2 border-[#E8D9C9] bg-[#FFF9F2] p-6 shadow-xs">
+      <div
+        class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-3xl border-2 border-[#E8D9C9] bg-[#FFF9F2] p-6 shadow-xs"
+      >
         <div class="flex items-center gap-4">
-          <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#D96C2C] text-white shadow-md shrink-0">
+          <div
+            class="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#D96C2C] text-white shadow-md shrink-0"
+          >
             <i class="mdi mdi-store-cog text-2xl text-white"></i>
           </div>
           <div>
             <h1 class="text-2xl font-black text-[#332820]">
               {{ shop ? 'ตั้งค่าข้อมูลร้านค้า' : 'ลงทะเบียนเปิดร้านค้าใหม่' }}
             </h1>
-            <p class="text-xs text-[#786B62] font-semibold mt-0.5">จัดการข้อมูลทั่วไป รูปภาพร้าน พิกัดที่ตั้ง และช่องทางติดต่อบนแพลตฟอร์ม</p>
+            <p class="text-xs text-[#786B62] font-semibold mt-0.5">
+              จัดการข้อมูลทั่วไป รูปภาพร้าน พิกัดที่ตั้ง และช่องทางติดต่อบนแพลตฟอร์ม
+            </p>
           </div>
         </div>
 
         <div v-if="shop" class="flex items-center gap-3">
           <span
             class="inline-flex items-center gap-1.5 rounded-full px-3.5 py-1 text-xs font-black border-2"
-            :class="shop.status === 'Active' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-amber-100 text-amber-800 border-amber-300'"
+            :class="
+              shop.status === 'Active'
+                ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                : 'bg-amber-100 text-amber-800 border-amber-300'
+            "
           >
-            <span class="h-2 w-2 rounded-full" :class="shop.status === 'Active' ? 'bg-emerald-600 animate-pulse' : 'bg-amber-600'"></span>
+            <span
+              class="h-2 w-2 rounded-full"
+              :class="shop.status === 'Active' ? 'bg-emerald-600 animate-pulse' : 'bg-amber-600'"
+            ></span>
             {{ shop.status === 'Active' ? 'เปิดบริการต่อสาธารณะ' : 'ปิดบริการชั่วคราว' }}
           </span>
 
@@ -276,7 +306,6 @@ onMounted(async () => {
       <!-- Main Form Card -->
       <div class="overflow-hidden rounded-3xl border-2 border-[#E8D9C9] bg-[#FFF9F2] shadow-xs">
         <form class="space-y-8 p-6 sm:p-8 lg:p-10" @submit.prevent="submit">
-          
           <!-- General Info Section -->
           <div class="space-y-6">
             <div class="flex items-center gap-2 border-b-2 border-[#E8D9C9] pb-3">
@@ -313,12 +342,16 @@ onMounted(async () => {
           <div v-if="shop" class="space-y-6 pt-4">
             <div class="flex items-center gap-2 border-b-2 border-[#E8D9C9] pb-3">
               <i class="mdi mdi-image-multiple-outline text-[#D96C2C] text-xl"></i>
-              <h2 class="text-lg font-black text-[#332820]">รูปภาพประกอบร้านค้า (Shop Images & Banners)</h2>
+              <h2 class="text-lg font-black text-[#332820]">
+                รูปภาพประกอบร้านค้า (Shop Images & Banners)
+              </h2>
             </div>
 
             <div class="grid gap-6 md:grid-cols-2">
               <!-- 1. Cover Image Box -->
-              <div class="rounded-3xl border-2 border-dashed border-[#E8D9C9] bg-white p-5 space-y-4 flex flex-col justify-between">
+              <div
+                class="rounded-3xl border-2 border-dashed border-[#E8D9C9] bg-white p-5 space-y-4 flex flex-col justify-between"
+              >
                 <div>
                   <h3 class="font-black text-[#332820] flex items-center gap-2">
                     <i class="mdi mdi-image-outline text-[#D96C2C] text-lg"></i>
@@ -330,21 +363,33 @@ onMounted(async () => {
                 </div>
 
                 <div class="space-y-3">
-                  <div class="relative aspect-16/9 w-full overflow-hidden rounded-2xl bg-[#171412] border-2 border-[#E8D9C9] shadow-2xs">
+                  <div
+                    class="relative aspect-16/9 w-full overflow-hidden rounded-2xl bg-[#171412] border-2 border-[#E8D9C9] shadow-2xs"
+                  >
                     <img
                       v-if="shop.coverImageUrl"
                       :src="imageUrl(shop.coverImageUrl)"
                       alt="รูปหน้าปกร้าน"
                       class="h-full w-full object-cover"
                     />
-                    <div v-else class="flex h-full w-full items-center justify-center text-[#786B62]">
+                    <div
+                      v-else
+                      class="flex h-full w-full items-center justify-center text-[#786B62]"
+                    >
                       <i class="mdi mdi-storefront text-4xl text-[#D96C2C]"></i>
                     </div>
                   </div>
 
-                  <label class="cursor-pointer inline-flex items-center justify-center gap-2 rounded-2xl bg-[#D96C2C] hover:bg-[#BF5720] w-full py-2.5 text-xs font-black text-white shadow-md transition active:scale-95 border border-[#D96C2C]">
-                    <i class="mdi text-base text-white" :class="uploadingCover ? 'mdi-loading animate-spin' : 'mdi-upload'"></i>
-                    <span class="!text-white font-black">{{ uploadingCover ? 'กำลังอัปโหลด...' : 'เลือกและอัปโหลดรูปหน้าปก' }}</span>
+                  <label
+                    class="cursor-pointer inline-flex items-center justify-center gap-2 rounded-2xl bg-[#D96C2C] hover:bg-[#BF5720] w-full py-2.5 text-xs font-black text-white shadow-md transition active:scale-95 border border-[#D96C2C]"
+                  >
+                    <i
+                      class="mdi text-base text-white"
+                      :class="uploadingCover ? 'mdi-loading animate-spin' : 'mdi-upload'"
+                    ></i>
+                    <span class="!text-white font-black">{{
+                      uploadingCover ? 'กำลังอัปโหลด...' : 'เลือกและอัปโหลดรูปหน้าปก'
+                    }}</span>
                     <input
                       class="sr-only"
                       type="file"
@@ -357,7 +402,9 @@ onMounted(async () => {
               </div>
 
               <!-- 2. Background Image Box -->
-              <div class="rounded-3xl border-2 border-dashed border-[#E8D9C9] bg-white p-5 space-y-4 flex flex-col justify-between">
+              <div
+                class="rounded-3xl border-2 border-dashed border-[#E8D9C9] bg-white p-5 space-y-4 flex flex-col justify-between"
+              >
                 <div>
                   <h3 class="font-black text-[#332820] flex items-center gap-2">
                     <i class="mdi mdi-panorama-outline text-[#D96C2C] text-lg"></i>
@@ -369,21 +416,33 @@ onMounted(async () => {
                 </div>
 
                 <div class="space-y-3">
-                  <div class="relative aspect-16/9 w-full overflow-hidden rounded-2xl bg-[#171412] border-2 border-[#E8D9C9] shadow-2xs">
+                  <div
+                    class="relative aspect-16/9 w-full overflow-hidden rounded-2xl bg-[#171412] border-2 border-[#E8D9C9] shadow-2xs"
+                  >
                     <img
                       v-if="shop.backgroundImageUrl"
                       :src="imageUrl(shop.backgroundImageUrl)"
                       alt="รูปพื้นหลังร้าน"
                       class="h-full w-full object-cover"
                     />
-                    <div v-else class="flex h-full w-full items-center justify-center text-[#786B62]">
+                    <div
+                      v-else
+                      class="flex h-full w-full items-center justify-center text-[#786B62]"
+                    >
                       <i class="mdi mdi-panorama text-4xl text-[#D96C2C]"></i>
                     </div>
                   </div>
 
-                  <label class="cursor-pointer inline-flex items-center justify-center gap-2 rounded-2xl bg-[#D96C2C] hover:bg-[#BF5720] w-full py-2.5 text-xs font-black text-white shadow-md transition active:scale-95 border border-[#D96C2C]">
-                    <i class="mdi text-base text-white" :class="uploadingBackground ? 'mdi-loading animate-spin' : 'mdi-upload'"></i>
-                    <span class="!text-white font-black">{{ uploadingBackground ? 'กำลังอัปโหลด...' : 'เลือกรูปพื้นหลัง' }}</span>
+                  <label
+                    class="cursor-pointer inline-flex items-center justify-center gap-2 rounded-2xl bg-[#D96C2C] hover:bg-[#BF5720] w-full py-2.5 text-xs font-black text-white shadow-md transition active:scale-95 border border-[#D96C2C]"
+                  >
+                    <i
+                      class="mdi text-base text-white"
+                      :class="uploadingBackground ? 'mdi-loading animate-spin' : 'mdi-upload'"
+                    ></i>
+                    <span class="!text-white font-black">{{
+                      uploadingBackground ? 'กำลังอัปโหลด...' : 'เลือกรูปพื้นหลัง'
+                    }}</span>
                     <input
                       class="sr-only"
                       type="file"
@@ -428,7 +487,9 @@ onMounted(async () => {
           <div class="space-y-6 pt-4">
             <div class="flex items-center gap-2 border-b-2 border-[#E8D9C9] pb-3">
               <i class="mdi mdi-map-marker-radius-outline text-[#D96C2C] text-xl"></i>
-              <h2 class="text-lg font-black text-[#332820]">ที่อยู่และตำแหน่งร้าน (เลือกอัตโนมัติจาก GPS)</h2>
+              <h2 class="text-lg font-black text-[#332820]">
+                ที่อยู่และตำแหน่งร้าน (เลือกอัตโนมัติจาก GPS)
+              </h2>
             </div>
 
             <div class="grid gap-6 sm:grid-cols-2">
@@ -462,7 +523,10 @@ onMounted(async () => {
             <section class="space-y-3">
               <div>
                 <h3 class="font-black text-[#332820]">ตำแหน่งร้านบนแผนที่</h3>
-                <p class="text-xs text-[#786B62] font-semibold">กดปุ่ม "ใช้ตำแหน่งปัจจุบัน" เพื่อเลือกลำดับอำเภอและตำบลให้อัตโนมัติ หรือคลิกปักหมุดบนแผนที่</p>
+                <p class="text-xs text-[#786B62] font-semibold">
+                  กดปุ่ม "ใช้ตำแหน่งปัจจุบัน" เพื่อเลือกลำดับอำเภอและตำบลให้อัตโนมัติ
+                  หรือคลิกปักหมุดบนแผนที่
+                </p>
               </div>
               <LocationPickerMap
                 v-model:latitude="form.latitude"
@@ -473,7 +537,9 @@ onMounted(async () => {
           </div>
 
           <!-- Action Buttons Bar -->
-          <div class="flex flex-wrap items-center justify-between gap-4 border-t-2 border-[#E8D9C9] pt-6">
+          <div
+            class="flex flex-wrap items-center justify-between gap-4 border-t-2 border-[#E8D9C9] pt-6"
+          >
             <button
               v-if="shop && shop.status !== 'Closed'"
               type="button"
@@ -500,14 +566,16 @@ onMounted(async () => {
                 class="inline-flex items-center gap-2 rounded-2xl bg-[#D96C2C] hover:bg-[#BF5720] px-8 py-3.5 text-xs sm:text-sm font-black text-white shadow-lg transition active:scale-95 disabled:opacity-60 cursor-pointer border border-[#D96C2C]"
                 :disabled="saving || shop?.status === 'Closed'"
               >
-                <i class="mdi text-lg text-white" :class="saving ? 'mdi-loading animate-spin' : 'mdi-content-save-outline'"></i>
+                <i
+                  class="mdi text-lg text-white"
+                  :class="saving ? 'mdi-loading animate-spin' : 'mdi-content-save-outline'"
+                ></i>
                 <span class="!text-white font-black">{{
                   saving ? 'กำลังบันทึก...' : shop ? 'บันทึกการเปลี่ยนแปลง' : 'ยืนยันสร้างร้านค้า'
                 }}</span>
               </button>
             </div>
           </div>
-
         </form>
       </div>
     </template>

@@ -1,10 +1,14 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getShop } from '../api/shopApi'
-import { getProductCategories, getShopProducts } from '../api/productApi'
-import type { Shop } from '../../shared/types/shop'
-import type { Product, ProductCategory } from '../../shared/types/product'
+import {
+  getProductCategories,
+  getShop,
+  getShopProducts,
+  type Product,
+  type ProductCategory,
+  type Shop,
+} from '@/features/shops/api'
 import { getApiErrorMessage } from '@/features/auth/api/getApiErrorMessage'
 import { useSwal } from '@/plugins/sweetalert'
 
@@ -21,7 +25,10 @@ const selectedCategory = ref<string | null>(null)
 const searchQuery = ref('')
 const sortBy = ref<'default' | 'price-asc' | 'price-desc' | 'name'>('default')
 
-const apiOrigin = (import.meta.env.VITE_API_URL ?? 'https://localhost:7289/api').replace(/\/api$/, '')
+const apiOrigin = (import.meta.env.VITE_API_URL ?? 'https://localhost:7289/api').replace(
+  /\/api$/,
+  '',
+)
 
 function imageUrl(url?: string) {
   return url?.startsWith('/') ? `${apiOrigin}${url}` : url
@@ -36,8 +43,7 @@ function formatPrice(value: number) {
   }).format(value)
 }
 
-function getProductImage(product: Product, index: number) {
-  if (product.imageUrl) return imageUrl(product.imageUrl)
+function getProductImage(product: Product, index: number): string {
   const defaults = [
     'https://images.unsplash.com/photo-1606744888344-493238951221?auto=format&fit=crop&w=600&q=80',
     'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=600&q=80',
@@ -46,7 +52,8 @@ function getProductImage(product: Product, index: number) {
     'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?auto=format&fit=crop&w=600&q=80',
     'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&w=600&q=80',
   ]
-  return defaults[index % defaults.length]
+  const resolved = imageUrl(product.imageUrl)
+  return (resolved || defaults[index % defaults.length])!
 }
 
 const shopArea = computed(() => {
@@ -66,7 +73,8 @@ const productCategories = computed(() => [
     .map((category) => ({
       id: category.productCategoryId,
       name: category.categoryName,
-      count: products.value.filter((p) => p.productCategoryId === category.productCategoryId).length,
+      count: products.value.filter((p) => p.productCategoryId === category.productCategoryId)
+        .length,
     })),
 ])
 
@@ -123,12 +131,19 @@ onMounted(async () => {
   <div class="min-h-screen bg-[#F7F0E6] text-[#332820] pb-24">
     <!-- BREADCRUMB BAR -->
     <div class="bg-[#FFF9F2] border-b-2 border-[#E8D9C9] py-3.5 shadow-2xs">
-      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-xs text-[#786B62] flex items-center gap-2 overflow-x-auto scrollbar-none font-bold">
+      <div
+        class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-xs text-[#786B62] flex items-center gap-2 overflow-x-auto scrollbar-none font-bold"
+      >
         <RouterLink to="/" class="hover:text-[#D96C2C] transition">หน้าแรก</RouterLink>
         <i class="mdi mdi-chevron-right text-[#E8D9C9]"></i>
         <RouterLink to="/shops" class="hover:text-[#D96C2C] transition">ร้านค้าทั้งหมด</RouterLink>
         <i class="mdi mdi-chevron-right text-[#E8D9C9]"></i>
-        <RouterLink v-if="shop" :to="`/shops/${shop.shopId}`" class="hover:text-[#D96C2C] line-clamp-1 transition">{{ shop.shopName }}</RouterLink>
+        <RouterLink
+          v-if="shop"
+          :to="`/shops/${shop.shopId}`"
+          class="hover:text-[#D96C2C] line-clamp-1 transition"
+          >{{ shop.shopName }}</RouterLink
+        >
         <i class="mdi mdi-chevron-right text-[#E8D9C9]"></i>
         <span class="text-[#332820] font-black">สินค้าทั้งหมด</span>
       </div>
@@ -141,13 +156,18 @@ onMounted(async () => {
           <div class="flex items-center gap-4">
             <!-- Shop Logo Avatar -->
             <img
-              :src="imageUrl(shop.coverImageUrl) || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80'"
+              :src="
+                imageUrl(shop.coverImageUrl) ||
+                'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80'
+              "
               :alt="shop.shopName"
               class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-2 border-white ring-4 ring-[#D96C2C]/30 shadow-md shrink-0"
             />
             <div class="space-y-1">
               <div class="flex items-center gap-2">
-                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-[#D96C2C]/10 text-[#D96C2C] border border-[#D96C2C]/20">
+                <span
+                  class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-[#D96C2C]/10 text-[#D96C2C] border border-[#D96C2C]/20"
+                >
                   {{ shop.categoryName || 'ร้านค้าชุมชน' }}
                 </span>
                 <span class="text-xs text-[#786B62] font-semibold">📍 {{ shopArea }}</span>
@@ -156,7 +176,8 @@ onMounted(async () => {
                 สินค้าทั้งหมดของ {{ shop.shopName }}
               </h1>
               <p class="text-xs sm:text-sm text-[#786B62] font-semibold">
-                มีสินค้าทั้งหมด <span class="text-[#D96C2C] font-black">{{ products.length }}</span> รายการ
+                มีสินค้าทั้งหมด
+                <span class="text-[#D96C2C] font-black">{{ products.length }}</span> รายการ
               </p>
             </div>
           </div>
@@ -174,11 +195,11 @@ onMounted(async () => {
 
     <!-- MAIN PRODUCTS CATALOG CONTAINER -->
     <main class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-
       <!-- TOOLBAR: SEARCH, CATEGORY PILLS & SORTING -->
-      <div class="rounded-3xl bg-[#FFF9F2] p-5 sm:p-6 border-2 border-[#E8D9C9] shadow-xs space-y-4">
+      <div
+        class="rounded-3xl bg-[#FFF9F2] p-5 sm:p-6 border-2 border-[#E8D9C9] shadow-xs space-y-4"
+      >
         <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
-          
           <!-- Search Input Box -->
           <div class="relative flex-1 max-w-md">
             <input
@@ -187,7 +208,9 @@ onMounted(async () => {
               placeholder="ค้นหาสินค้าในร้านนี้..."
               class="w-full rounded-2xl border-2 border-[#E8D9C9] bg-white pl-10 pr-9 py-2.5 text-xs sm:text-sm text-[#332820] outline-none focus:border-[#D96C2C] transition font-bold"
             />
-            <i class="mdi mdi-magnify absolute left-3.5 top-1/2 -translate-y-1/2 text-[#D96C2C] text-lg"></i>
+            <i
+              class="mdi mdi-magnify absolute left-3.5 top-1/2 -translate-y-1/2 text-[#D96C2C] text-lg"
+            ></i>
             <button
               v-if="searchQuery"
               type="button"
@@ -211,11 +234,13 @@ onMounted(async () => {
               <option value="name">ชื่อสินค้า (A-Z)</option>
             </select>
           </div>
-
         </div>
 
         <!-- Category Pills Bar -->
-        <div v-if="productCategories.length > 1" class="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none pt-2 border-t-2 border-[#E8D9C9]">
+        <div
+          v-if="productCategories.length > 1"
+          class="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none pt-2 border-t-2 border-[#E8D9C9]"
+        >
           <button
             v-for="cat in productCategories"
             :key="cat.name"
@@ -231,7 +256,11 @@ onMounted(async () => {
             <span>{{ cat.name }}</span>
             <span
               class="text-[10px] rounded-full px-1.5 py-0.5"
-              :class="selectedCategory === cat.id ? 'bg-white text-[#D96C2C] font-black' : 'bg-[#F7F0E6] text-[#786B62] font-extrabold'"
+              :class="
+                selectedCategory === cat.id
+                  ? 'bg-white text-[#D96C2C] font-black'
+                  : 'bg-[#F7F0E6] text-[#786B62] font-extrabold'
+              "
             >
               {{ cat.count }}
             </span>
@@ -241,7 +270,11 @@ onMounted(async () => {
 
       <!-- LOADING SKELETON -->
       <div v-if="loading" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
-        <div v-for="i in 8" :key="i" class="h-64 animate-pulse rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9]"></div>
+        <div
+          v-for="i in 8"
+          :key="i"
+          class="h-64 animate-pulse rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9]"
+        ></div>
       </div>
 
       <!-- EMPTY STATE -->
@@ -249,7 +282,9 @@ onMounted(async () => {
         v-else-if="!filteredProducts.length"
         class="rounded-3xl border-2 border-dashed border-[#E8D9C9] bg-[#FFF9F2] py-20 px-6 text-center shadow-sm space-y-3"
       >
-        <div class="flex h-20 w-20 items-center justify-center rounded-full bg-[#D96C2C]/15 text-[#D96C2C] mx-auto border border-[#D96C2C]/30">
+        <div
+          class="flex h-20 w-20 items-center justify-center rounded-full bg-[#D96C2C]/15 text-[#D96C2C] mx-auto border border-[#D96C2C]/30"
+        >
           <i class="mdi mdi-package-variant-remove text-4xl"></i>
         </div>
         <h3 class="text-xl font-black text-[#332820]">ไม่พบสินค้าในรายการนี้</h3>
@@ -260,7 +295,12 @@ onMounted(async () => {
           v-if="searchQuery || selectedCategory"
           type="button"
           class="mt-2 inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-[#D96C2C] text-white font-black text-xs hover:bg-[#BF5720] transition border border-[#D96C2C]"
-          @click="() => { searchQuery = ''; selectedCategory = null; }"
+          @click="
+            () => {
+              searchQuery = ''
+              selectedCategory = null
+            }
+          "
         >
           ล้างตัวกรองทั้งหมด
         </button>
@@ -283,18 +323,27 @@ onMounted(async () => {
                 loading="lazy"
                 class="w-full h-full object-cover group-hover:scale-108 transition duration-500"
               />
-              <span class="absolute top-2 left-2 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-[#D96C2C] text-white shadow-md">
+              <span
+                class="absolute top-2 left-2 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-[#D96C2C] text-white shadow-md"
+              >
                 พร้อมส่ง
               </span>
             </div>
 
-            <span class="text-[10px] font-black text-[#D96C2C] bg-[#D96C2C]/10 px-2 py-0.5 rounded-md border border-[#D96C2C]/20 inline-block mb-1">
+            <span
+              class="text-[10px] font-black text-[#D96C2C] bg-[#D96C2C]/10 px-2 py-0.5 rounded-md border border-[#D96C2C]/20 inline-block mb-1"
+            >
               {{ productCategoryName(prod.productCategoryId) }}
             </span>
-            <h3 class="font-black text-[#332820] text-sm sm:text-base group-hover:text-[#D96C2C] transition line-clamp-1">
+            <h3
+              class="font-black text-[#332820] text-sm sm:text-base group-hover:text-[#D96C2C] transition line-clamp-1"
+            >
               {{ prod.productName }}
             </h3>
-            <p v-if="prod.description" class="text-xs text-[#786B62] mt-1 line-clamp-2 font-medium leading-relaxed">
+            <p
+              v-if="prod.description"
+              class="text-xs text-[#786B62] mt-1 line-clamp-2 font-medium leading-relaxed"
+            >
               {{ prod.description }}
             </p>
           </div>
@@ -302,7 +351,9 @@ onMounted(async () => {
           <div class="flex items-center justify-between mt-4 pt-3 border-t-2 border-[#E8D9C9]">
             <div>
               <span class="block text-[10px] text-[#786B62] font-black uppercase">ราคา</span>
-              <span class="font-black text-[#D96C2C] text-base sm:text-lg">{{ formatPrice(prod.price) }}</span>
+              <span class="font-black text-[#D96C2C] text-base sm:text-lg">{{
+                formatPrice(prod.price)
+              }}</span>
             </div>
             <button
               type="button"
@@ -313,7 +364,6 @@ onMounted(async () => {
           </div>
         </RouterLink>
       </div>
-
     </main>
   </div>
 </template>

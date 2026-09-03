@@ -9,8 +9,12 @@ import {
   getShopCategories,
   getSubDistricts,
   updateShop,
-} from '../api/shopApi'
-import type { District, Shop, ShopCategory, ShopFormData, SubDistrict } from '../../shared/types/shop'
+  type District,
+  type Shop,
+  type ShopCategory,
+  type ShopFormData,
+  type SubDistrict,
+} from '@/features/shops/api'
 import AppSelect from '@/components/common/input/AppSelect.vue'
 import AppTextField from '@/components/common/input/AppTextField.vue'
 import AppTextarea from '@/components/common/input/AppTextarea.vue'

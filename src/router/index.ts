@@ -44,22 +44,22 @@ const router = createRouter({
     {
       path: '/shops',
       name: 'shops',
-      component: () => import('@/features/shops/public/views/ShopListView.vue'),
+      component: () => import('@/features/shops/public/list/views/ShopListView.vue'),
     },
     {
       path: '/shops/:id',
       name: 'shop-detail',
-      component: () => import('@/features/shops/public/views/ShopDetailView.vue'),
+      component: () => import('@/features/shops/public/detail/views/ShopDetailView.vue'),
     },
     {
       path: '/shops/:id/products',
       name: 'shop-products-all',
-      component: () => import('@/features/shops/public/views/ShopProductsView.vue'),
+      component: () => import('@/features/shops/public/detail/views/ShopProductsView.vue'),
     },
     {
       path: '/shops/:id/contents',
       name: 'shop-contents-all',
-      component: () => import('@/features/shops/public/views/ShopContentsView.vue'),
+      component: () => import('@/features/shops/public/detail/views/ShopContentsView.vue'),
     },
     {
       path: '/contents',
@@ -88,7 +88,7 @@ const router = createRouter({
     {
       path: '/products/:id',
       name: 'product-detail',
-      component: () => import('@/features/shops/public/views/ProductDetailView.vue'),
+      component: () => import('@/features/shops/public/detail/views/ProductDetailView.vue'),
     },
     {
       path: '/cart',
@@ -123,54 +123,54 @@ const router = createRouter({
     {
       path: '/shop-application',
       name: 'shop-application',
-      component: () => import('@/features/shops/merchant/views/ShopApplicationView.vue'),
+      component: () => import('@/features/shops/merchant/shop/ShopApplicationView.vue'),
       meta: { requiresAuth: true },
     },
     {
       path: '/my-shop',
-      component: () => import('@/features/shops/merchant/views/ShopManageLayout.vue'),
+      component: () => import('@/features/shops/merchant/layout/ShopManageLayout.vue'),
       meta: { requiresAuth: true },
       beforeEnter: requireActiveShop,
       children: [
         {
           path: '',
           name: 'my-shop',
-          component: () => import('@/features/shops/merchant/views/MyShopView.vue'),
+          component: () => import('@/features/shops/merchant/shop/MyShopView.vue'),
         },
         {
           path: 'products',
           name: 'my-shop-products',
-          component: () => import('@/features/shops/merchant/views/ProductListView.vue'),
+          component: () => import('@/features/shops/merchant/products/ProductListView.vue'),
         },
         {
           path: 'products/new',
           name: 'my-shop-product-new',
-          component: () => import('@/features/shops/merchant/views/ProductFormView.vue'),
+          component: () => import('@/features/shops/merchant/products/ProductFormView.vue'),
         },
         {
           path: 'products/:id/edit',
           name: 'my-shop-product-edit',
-          component: () => import('@/features/shops/merchant/views/ProductFormView.vue'),
+          component: () => import('@/features/shops/merchant/products/ProductFormView.vue'),
         },
         {
           path: 'orders',
           name: 'my-shop-orders',
-          component: () => import('@/features/shops/merchant/views/MerchantOrdersView.vue'),
+          component: () => import('@/features/shops/merchant/orders/MerchantOrdersView.vue'),
         },
         {
           path: 'contents',
           name: 'my-shop-contents',
-          component: () => import('@/features/shops/merchant/views/MerchantContentsView.vue'),
+          component: () => import('@/features/shops/merchant/contents/MerchantContentsView.vue'),
         },
         {
           path: 'contents/new',
           name: 'my-shop-content-new',
-          component: () => import('@/features/shops/merchant/views/MerchantContentFormView.vue'),
+          component: () => import('@/features/shops/merchant/contents/MerchantContentFormView.vue'),
         },
         {
           path: 'contents/:id/edit',
           name: 'my-shop-content-edit',
-          component: () => import('@/features/shops/merchant/views/MerchantContentFormView.vue'),
+          component: () => import('@/features/shops/merchant/contents/MerchantContentFormView.vue'),
         },
       ],
     },

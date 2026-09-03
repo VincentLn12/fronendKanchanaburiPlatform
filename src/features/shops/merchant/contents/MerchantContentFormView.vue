@@ -13,9 +13,8 @@ import {
   type SubmissionStatus,
   type SubDistrict,
   type UserContentFormData,
-} from '@/features/contents/user/api/userContentApi'
-import { getMyShop } from '../api/shopApi'
-import type { Shop } from '../../shared/types/shop'
+} from '@/features/contents/api'
+import { getMyShop, type Shop } from '@/features/shops/api'
 import AppSelect from '@/components/common/input/AppSelect.vue'
 import AppTextField from '@/components/common/input/AppTextField.vue'
 import AppTextarea from '@/components/common/input/AppTextarea.vue'
@@ -184,7 +183,9 @@ async function save() {
     else await createMyContent(payload)
     await swal.success(
       isEdit.value ? 'บันทึกการแก้ไขแล้ว' : 'บันทึกเรื่องราวร้านค้าแล้ว',
-      form.status === 'Published' ? 'คอนเทนต์แสดงผลต่อสาธารณะทันที' : 'บันทึกเป็นฉบับร่างเรียบร้อยแล้ว',
+      form.status === 'Published'
+        ? 'คอนเทนต์แสดงผลต่อสาธารณะทันที'
+        : 'บันทึกเป็นฉบับร่างเรียบร้อยแล้ว',
     )
     await router.push('/my-shop/contents')
   } catch (error) {
@@ -201,13 +202,19 @@ onMounted(load)
   <div class="mx-auto w-full max-w-5xl xl:max-w-6xl py-4 space-y-6 text-[#332820]">
     <!-- Skeleton Loading -->
     <div v-if="loading" class="space-y-6">
-      <div class="h-28 w-full animate-pulse rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9]"></div>
-      <div class="h-96 w-full animate-pulse rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9]"></div>
+      <div
+        class="h-28 w-full animate-pulse rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9]"
+      ></div>
+      <div
+        class="h-96 w-full animate-pulse rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9]"
+      ></div>
     </div>
 
     <template v-else>
       <!-- Page Title Header Card with Status Select on Top Right -->
-      <div class="flex flex-wrap items-center justify-between gap-4 rounded-3xl border-2 border-[#E8D9C9] bg-[#FFF9F2] p-6 shadow-xs">
+      <div
+        class="flex flex-wrap items-center justify-between gap-4 rounded-3xl border-2 border-[#E8D9C9] bg-[#FFF9F2] p-6 shadow-xs"
+      >
         <div>
           <RouterLink
             to="/my-shop/contents"
@@ -218,7 +225,9 @@ onMounted(load)
           <h1 class="mt-2 text-2xl sm:text-3xl font-black text-[#332820]">
             {{ isEdit ? 'แก้ไขเรื่องราวร้านค้า' : 'เขียนเรื่องราวร้านค้าใหม่' }}
           </h1>
-          <p class="mt-1 text-xs text-[#786B62] font-semibold">สร้างคอนเทนต์ เรื่องราว วิดีโอแนะนำสินค้าและวิถีชีวิตร้านค้าของคุณ</p>
+          <p class="mt-1 text-xs text-[#786B62] font-semibold">
+            สร้างคอนเทนต์ เรื่องราว วิดีโอแนะนำสินค้าและวิถีชีวิตร้านค้าของคุณ
+          </p>
         </div>
 
         <!-- TOP RIGHT CONTROLS: STATUS SELECT & SAVE BUTTON -->
@@ -242,19 +251,31 @@ onMounted(load)
               :disabled="saving"
               @click="save"
             >
-              <i class="mdi text-base text-white" :class="saving ? 'mdi-loading animate-spin' : 'mdi-publish'" />
-              <span class="!text-white font-black ml-1">{{ saving ? 'กำลังบันทึก...' : 'บันทึกเรื่องราว' }}</span>
+              <i
+                class="mdi text-base text-white"
+                :class="saving ? 'mdi-loading animate-spin' : 'mdi-publish'"
+              />
+              <span class="!text-white font-black ml-1">{{
+                saving ? 'กำลังบันทึก...' : 'บันทึกเรื่องราว'
+              }}</span>
             </button>
           </div>
         </div>
       </div>
 
       <!-- Main Form Container -->
-      <form class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] items-start" @submit.prevent="save">
+      <form
+        class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] items-start"
+        @submit.prevent="save"
+      >
         <div class="space-y-6">
           <!-- Section 1: Content Story Details -->
-          <section class="rounded-3xl border-2 border-[#E8D9C9] bg-[#FFF9F2] p-6 shadow-xs space-y-4">
-            <h2 class="text-lg font-black text-[#332820] flex items-center gap-2 border-b-2 border-[#E8D9C9] pb-3">
+          <section
+            class="rounded-3xl border-2 border-[#E8D9C9] bg-[#FFF9F2] p-6 shadow-xs space-y-4"
+          >
+            <h2
+              class="text-lg font-black text-[#332820] flex items-center gap-2 border-b-2 border-[#E8D9C9] pb-3"
+            >
               <i class="mdi mdi-file-document-outline text-[#D96C2C] text-xl"></i>
               เนื้อเรื่องราวและวิดีโอ
             </h2>
@@ -293,8 +314,12 @@ onMounted(load)
           </section>
 
           <!-- Section 2: Category & Location -->
-          <section class="rounded-3xl border-2 border-[#E8D9C9] bg-[#FFF9F2] p-6 shadow-xs space-y-4">
-            <h2 class="text-lg font-black text-[#332820] flex items-center gap-2 border-b-2 border-[#E8D9C9] pb-3">
+          <section
+            class="rounded-3xl border-2 border-[#E8D9C9] bg-[#FFF9F2] p-6 shadow-xs space-y-4"
+          >
+            <h2
+              class="text-lg font-black text-[#332820] flex items-center gap-2 border-b-2 border-[#E8D9C9] pb-3"
+            >
               <i class="mdi mdi-map-marker-outline text-[#D96C2C] text-xl"></i>
               หมวดหมู่และพิกัดสถานที่
             </h2>
@@ -339,22 +364,31 @@ onMounted(load)
 
         <!-- Sidebar Info Guide -->
         <aside class="space-y-5 lg:sticky lg:top-6">
-          <section class="rounded-3xl border-2 border-[#D96C2C]/30 bg-[#D96C2C]/10 p-5 text-xs sm:text-sm text-[#332820] space-y-2">
+          <section
+            class="rounded-3xl border-2 border-[#D96C2C]/30 bg-[#D96C2C]/10 p-5 text-xs sm:text-sm text-[#332820] space-y-2"
+          >
             <div class="flex gap-3">
               <i class="mdi mdi-storefront text-xl text-[#D96C2C] shrink-0" />
               <div>
                 <h2 class="font-black text-[#D96C2C]">ผูกกับร้านค้าอัตโนมัติ</h2>
                 <p class="mt-1 font-semibold leading-relaxed text-[#786B62]">
-                  เรื่องราวนี้จะถูกเชื่อมกับร้านค้า <strong class="text-[#332820]">{{ shop?.shopName }}</strong> และแสดงผลต่อสาธารณะทันทีเมื่อเลือกสถานะเผยแพร่
+                  เรื่องราวนี้จะถูกเชื่อมกับร้านค้า
+                  <strong class="text-[#332820]">{{ shop?.shopName }}</strong>
+                  และแสดงผลต่อสาธารณะทันทีเมื่อเลือกสถานะเผยแพร่
                 </p>
               </div>
             </div>
           </section>
 
-          <section class="rounded-3xl border-2 border-[#E8D9C9] bg-[#FFF9F2] p-5 text-xs sm:text-sm text-[#786B62] space-y-2 font-semibold">
+          <section
+            class="rounded-3xl border-2 border-[#E8D9C9] bg-[#FFF9F2] p-5 text-xs sm:text-sm text-[#786B62] space-y-2 font-semibold"
+          >
             <p class="font-black text-[#332820] text-sm">💡 เคล็ดลับการลงเรื่องราว</p>
             <ul class="space-y-2 pt-1">
-              <li>• เลือก <strong>"🟢 เผยแพร่ทันที"</strong> บนขวาเพื่อให้บทความแสดงผลทันทีโดยไม่ต้องรออนุมัติ</li>
+              <li>
+                • เลือก
+                <strong>"🟢 เผยแพร่ทันที"</strong> บนขวาเพื่อให้บทความแสดงผลทันทีโดยไม่ต้องรออนุมัติ
+              </li>
               <li>• เลือก <strong>"📝 บันทึกร่าง"</strong> หากต้องการบันทึกไว้แก้ไขภายหลัง</li>
               <li>• กดปุ่ม "ใช้ตำแหน่งปัจจุบัน" บนแผนที่เพื่อระบุพิกัดและเลือกอำเภอให้อัตโนมัติ</li>
             </ul>

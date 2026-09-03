@@ -2,8 +2,7 @@
 import axios from 'axios'
 import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
-import { getMyShop } from '../api/shopApi'
-import type { Shop } from '../../shared/types/shop'
+import { getMyShop, type Shop } from '@/features/shops/api'
 
 const route = useRoute()
 const isOpen = ref(false)
@@ -96,7 +95,9 @@ onMounted(async () => {
           class="relative overflow-hidden rounded-2xl border border-white/15 bg-white/5 p-4 text-white shadow-md backdrop-blur-md"
         >
           <!-- Ambient Glow Blob -->
-          <div class="pointer-events-none absolute -right-6 -top-6 h-28 w-28 rounded-full bg-[#D96C2C]/20 blur-xl"></div>
+          <div
+            class="pointer-events-none absolute -right-6 -top-6 h-28 w-28 rounded-full bg-[#D96C2C]/20 blur-xl"
+          ></div>
 
           <div class="relative">
             <div class="flex items-start justify-between gap-2">
@@ -147,7 +148,11 @@ onMounted(async () => {
             class="mdi mdi-store-cog-outline text-2xl transition-transform group-hover:scale-110 shrink-0"
             :class="active('/my-shop') ? 'text-white' : 'text-[#F2A65A]'"
           ></i>
-          <span :class="active('/my-shop') ? 'font-black text-white' : 'text-slate-100'" class="text-sm sm:text-base leading-snug">ข้อมูลและตั้งค่าร้านค้า</span>
+          <span
+            :class="active('/my-shop') ? 'font-black text-white' : 'text-slate-100'"
+            class="text-sm sm:text-base leading-snug"
+            >ข้อมูลและตั้งค่าร้านค้า</span
+          >
         </RouterLink>
 
         <!-- Product Management -->
@@ -165,7 +170,11 @@ onMounted(async () => {
             class="mdi mdi-package-variant-closed text-2xl transition-transform group-hover:scale-110 shrink-0"
             :class="active('/my-shop/products') ? 'text-white' : 'text-[#F2A65A]'"
           ></i>
-          <span :class="active('/my-shop/products') ? 'font-black text-white' : 'text-slate-100'" class="text-sm sm:text-base leading-snug">จัดการสินค้าในร้าน</span>
+          <span
+            :class="active('/my-shop/products') ? 'font-black text-white' : 'text-slate-100'"
+            class="text-sm sm:text-base leading-snug"
+            >จัดการสินค้าในร้าน</span
+          >
         </RouterLink>
 
         <!-- Customer Orders -->
@@ -183,7 +192,11 @@ onMounted(async () => {
             class="mdi mdi-clipboard-text-clock-outline text-2xl transition-transform group-hover:scale-110 shrink-0"
             :class="active('/my-shop/orders') ? 'text-white' : 'text-[#F2A65A]'"
           ></i>
-          <span :class="active('/my-shop/orders') ? 'font-black text-white' : 'text-slate-100'" class="text-sm sm:text-base leading-snug">ออเดอร์ลูกค้า</span>
+          <span
+            :class="active('/my-shop/orders') ? 'font-black text-white' : 'text-slate-100'"
+            class="text-sm sm:text-base leading-snug"
+            >ออเดอร์ลูกค้า</span
+          >
         </RouterLink>
 
         <!-- Merchant Contents Management -->
@@ -201,7 +214,11 @@ onMounted(async () => {
             class="mdi mdi-text-box-multiple-outline text-2xl transition-transform group-hover:scale-110 shrink-0"
             :class="active('/my-shop/contents') ? 'text-white' : 'text-[#F2A65A]'"
           ></i>
-          <span :class="active('/my-shop/contents') ? 'font-black text-white' : 'text-slate-100'" class="text-sm sm:text-base leading-snug">จัดการคอนเทนต์ร้านค้า</span>
+          <span
+            :class="active('/my-shop/contents') ? 'font-black text-white' : 'text-slate-100'"
+            class="text-sm sm:text-base leading-snug"
+            >จัดการคอนเทนต์ร้านค้า</span
+          >
         </RouterLink>
       </nav>
 
@@ -212,7 +229,9 @@ onMounted(async () => {
           class="group flex items-center gap-3.5 rounded-2xl px-4 py-3.5 text-sm font-bold text-slate-200 hover:text-white hover:bg-white/10 transition-all"
           @click="closeMenu"
         >
-          <i class="mdi mdi-arrow-left text-xl text-[#F2A65A] transition-transform group-hover:-translate-x-1 shrink-0"></i>
+          <i
+            class="mdi mdi-arrow-left text-xl text-[#F2A65A] transition-transform group-hover:-translate-x-1 shrink-0"
+          ></i>
           <span>กลับไปหน้าร้านค้าทั้งหมด</span>
         </RouterLink>
       </div>
@@ -233,7 +252,7 @@ onMounted(async () => {
   background: #171412;
 }
 .scrollbar-thin::-webkit-scrollbar-thumb {
-  background: #D96C2C;
+  background: #d96c2c;
   border-radius: 9999px;
 }
 </style>

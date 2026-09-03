@@ -3,11 +3,18 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-import { getShop, getShopReviews, getShops, type ShopReviews } from '../api/shopApi'
-import { getProductCategories, getShopProducts } from '../api/productApi'
-import { getPublicContents, type PublicContent } from '@/features/contents/public/api/contentApi'
-import type { Shop } from '../../shared/types/shop'
-import type { Product, ProductCategory } from '../../shared/types/product'
+import {
+  getShop,
+  getShopReviews,
+  getShops,
+  getProductCategories,
+  getShopProducts,
+  type ShopReviews,
+  type Shop,
+  type Product,
+  type ProductCategory,
+} from '@/features/shops/api'
+import { getPublicContents, type PublicContent } from '@/features/contents/api'
 import { getApiErrorMessage } from '@/features/auth/api/getApiErrorMessage'
 import { useSwal } from '@/plugins/sweetalert'
 

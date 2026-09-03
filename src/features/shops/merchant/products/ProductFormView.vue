@@ -3,14 +3,15 @@ import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   createProduct,
+  getMyShop,
   getProduct,
   getProductCategories,
   updateProduct,
   uploadCoverImage,
   uploadDetailImages,
-} from '../api/productApi'
-import { getMyShop } from '../api/shopApi'
-import type { ProductFormData, ProductCategory } from '../../shared/types/product'
+  type ProductCategory,
+  type ProductFormData,
+} from '@/features/shops/api'
 import AppSelect from '@/components/common/input/AppSelect.vue'
 import AppTextField from '@/components/common/input/AppTextField.vue'
 import AppTextarea from '@/components/common/input/AppTextarea.vue'
