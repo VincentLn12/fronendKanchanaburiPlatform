@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ContentCategory, District, SubDistrict, Tag } from '../api/contentApi'
+import type { ContentCategory, District, SubDistrict, Tag } from '../../api/contentApi'
 import AppSelect from '@/components/common/input/AppSelect.vue'
 
 interface Props {
@@ -34,15 +34,20 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <section class="rounded-3xl border-2 border-[#E8D9C9] bg-[#FFF9F2] shadow-sm overflow-hidden text-[#332820]">
+  <section
+    class="relative z-30 rounded-3xl border-2 border-[#E8D9C9] bg-[#FFF9F2] shadow-sm text-[#332820]"
+  >
     <button
       type="button"
       class="flex w-full items-center justify-between px-6 py-4 text-left cursor-pointer bg-[#FFF9F2]"
+      :class="filtersOpen ? 'rounded-t-3xl' : 'rounded-3xl'"
       :aria-expanded="filtersOpen"
       @click="emit('update:filtersOpen', !filtersOpen)"
     >
       <span class="flex items-center gap-2.5 text-base font-black text-[#D96C2C]">
-        <div class="h-8 w-8 rounded-xl bg-[#D96C2C]/15 border border-[#D96C2C]/30 flex items-center justify-center text-[#D96C2C]">
+        <div
+          class="h-8 w-8 rounded-xl bg-[#D96C2C]/15 border border-[#D96C2C]/30 flex items-center justify-center text-[#D96C2C]"
+        >
           <i class="mdi mdi-tune-variant text-lg" />
         </div>
         <span>ค้นหาและกรองคอนเทนต์</span>
@@ -139,7 +144,10 @@ const emit = defineEmits<{
           <label class="block text-xs font-bold text-[#786B62] mb-1.5">เรียงตาม</label>
           <AppSelect
             :model-value="sortBy"
-            @update:model-value="(val: any) => emit('update:sortBy', (val as 'latest' | 'popular' | 'title') ?? 'latest')"
+            @update:model-value="
+              (val: any) =>
+                emit('update:sortBy', (val as 'latest' | 'popular' | 'title') ?? 'latest')
+            "
             :items="sortOptions"
             item-title="title"
             item-value="id"

@@ -30,7 +30,7 @@
         @clear-filters="clearFilters"
         @filter-change="
           () => {
-            page = 1
+            resetPage()
             load()
           }
         "
@@ -39,40 +39,11 @@
       <!-- MODE 1: CONTENT CARDS GRID / LIST VIEW -->
       <div v-if="viewMode === 'contents'" class="space-y-6">
         <!-- RESULTS TOOLBAR -->
-        <div class="flex flex-wrap items-center justify-between gap-4 bg-[#FFF9F2] px-6 py-4 rounded-2xl border-2 border-[#E8D9C9] shadow-xs">
-          <div class="text-sm font-extrabold text-[#332820]">
-            พบ <span class="text-[#D96C2C] font-black text-base">{{ totalCount }}</span> คอนเทนต์ท่องเที่ยวและวัฒนธรรม
-          </div>
-
-          <div class="flex items-center gap-1 border-2 border-[#E8D9C9] bg-[#F7F0E6] p-1 rounded-xl shadow-2xs">
-            <button
-              type="button"
-              class="flex h-8 w-8 items-center justify-center text-xs font-bold rounded-lg transition cursor-pointer"
-              :class="
-                contentDisplayMode === 'grid'
-                  ? 'bg-[#D96C2C] text-white shadow-xs'
-                  : 'text-[#786B62] hover:bg-[#E8D9C9]/60'
-              "
-              @click="contentDisplayMode = 'grid'"
-              title="แสดงแบบตาราง"
-            >
-              <i class="mdi mdi-view-grid-outline"></i>
-            </button>
-            <button
-              type="button"
-              class="flex h-8 w-8 items-center justify-center text-xs font-bold rounded-lg transition cursor-pointer"
-              :class="
-                contentDisplayMode === 'list'
-                  ? 'bg-[#D96C2C] text-white shadow-xs'
-                  : 'text-[#786B62] hover:bg-[#E8D9C9]/60'
-              "
-              @click="contentDisplayMode = 'list'"
-              title="แสดงแบบรายการ"
-            >
-              <i class="mdi mdi-format-list-bulleted"></i>
-            </button>
-          </div>
-        </div>
+        <AppDisplayToolbar
+          v-model:display-mode="contentDisplayMode"
+          :total-count="totalCount"
+          unit-label="คอนเทนต์ท่องเที่ยวและวัฒนธรรม"
+        />
 
         <!-- SKELETON LOADING -->
         <div
@@ -109,10 +80,7 @@
         </div>
 
         <!-- LIST MODE -->
-        <div
-          v-else-if="contents.length && contentDisplayMode === 'list'"
-          class="space-y-4"
-        >
+        <div v-else-if="contents.length && contentDisplayMode === 'list'" class="space-y-4">
           <ContentCard
             v-for="item in contents"
             :key="item.contentId"
@@ -122,53 +90,17 @@
         </div>
 
         <!-- EMPTY STATE -->
-        <div
+        <AppEmptyState
           v-else
-          class="rounded-3xl border-2 border-[#E8D9C9] bg-[#FFF9F2] p-12 text-center shadow-xs space-y-4"
-        >
-          <div class="h-16 w-16 rounded-full bg-[#D96C2C]/15 text-[#D96C2C] flex items-center justify-center mx-auto text-3xl font-bold border border-[#D96C2C]/30">
-            <i class="mdi mdi-play-box-remove-outline"></i>
-          </div>
-          <h3 class="text-lg font-black text-[#332820]">ไม่พบข้อมูลคอนเทนต์</h3>
-          <p class="text-xs text-[#786B62] max-w-sm mx-auto font-medium">
-            ลองปรับเปลี่ยนคำค้นหาหรือตัวกรองหมวดหมู่ อำเภอ เพื่อค้นหาเรื่องราวที่คุณสนใจ
-          </p>
-          <button
-            type="button"
-            class="px-6 py-2.5 rounded-xl bg-[#D96C2C] hover:bg-[#BF5720] text-white text-xs font-black transition shadow-md cursor-pointer border border-[#D96C2C]"
-            @click="clearFilters"
-          >
-            ล้างตัวกรองทั้งหมด
-          </button>
-        </div>
+          icon="mdi-play-box-remove-outline"
+          title="ไม่พบข้อมูลคอนเทนต์"
+          description="ลองปรับเปลี่ยนคำค้นหาหรือตัวกรองหมวดหมู่ อำเภอ เพื่อค้นหาเรื่องราวที่คุณสนใจ"
+          action-label="ล้างตัวกรองทั้งหมด"
+          @action="clearFilters"
+        />
 
         <!-- PAGINATION -->
-        <div
-          v-if="totalPages > 1"
-          class="flex items-center justify-center gap-2 pt-6"
-        >
-          <button
-            type="button"
-            class="flex h-9 w-9 items-center justify-center rounded-xl border-2 border-[#E8D9C9] bg-[#FFF9F2] text-xs font-bold transition hover:border-[#D96C2C] disabled:opacity-40 cursor-pointer shadow-2xs text-[#332820]"
-            :disabled="page <= 1"
-            @click="prevPage"
-          >
-            <i class="mdi mdi-chevron-left text-base"></i>
-          </button>
-
-          <span class="px-4 py-2 rounded-xl bg-[#FFF9F2] border-2 border-[#E8D9C9] text-xs font-black text-[#D96C2C] shadow-2xs">
-            หน้า {{ page }} จาก {{ totalPages }}
-          </span>
-
-          <button
-            type="button"
-            class="flex h-9 w-9 items-center justify-center rounded-xl border-2 border-[#E8D9C9] bg-[#FFF9F2] text-xs font-bold transition hover:border-[#D96C2C] disabled:opacity-40 cursor-pointer shadow-2xs text-[#332820]"
-            :disabled="page >= totalPages"
-            @click="nextPage"
-          >
-            <i class="mdi mdi-chevron-right text-base"></i>
-          </button>
-        </div>
+        <AppPagination v-model:page="page" :total-pages="totalPages" @change="load" />
       </div>
 
       <!-- MODE 2: MAP VIEW -->
@@ -184,30 +116,33 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import {
   getContentCategories,
-  getDistricts,
   getPublicContents,
   getTags,
-  getSubDistricts,
   type ContentCategory,
-  type District,
   type PublicContent,
-  type SubDistrict,
   type Tag,
-} from '../../api/contentApi'
+} from '@/features/contents/api'
 
-import ContentHeroBanner from '../../components/ContentHeroBanner.vue'
-import ContentCategoryBar from '../../components/ContentCategoryBar.vue'
-import ContentFilterSection from '../../components/ContentFilterSection.vue'
-import ContentCard from '../../components/ContentCard.vue'
-import ContentMapView from '../../components/ContentMapView.vue'
+import ContentHeroBanner from '../components/ContentHeroBanner.vue'
+import ContentCategoryBar from '../components/ContentCategoryBar.vue'
+import ContentFilterSection from '../components/ContentFilterSection.vue'
+import ContentCard from '../components/ContentCard.vue'
+import ContentMapView from '../components/ContentMapView.vue'
+
+import AppPagination from '@/shared/components/AppPagination.vue'
+import AppEmptyState from '@/shared/components/AppEmptyState.vue'
+import AppDisplayToolbar from '@/shared/components/AppDisplayToolbar.vue'
+import { usePagination } from '@/shared/composables/usePagination'
+import { useLocations } from '@/shared/composables/useLocations'
 
 const route = useRoute()
 
 const contents = ref<PublicContent[]>([])
 const categories = ref<ContentCategory[]>([])
-const districts = ref<District[]>([])
-const subDistricts = ref<SubDistrict[]>([])
 const tags = ref<Tag[]>([])
+
+const { districts, subDistricts, fetchDistricts, fetchSubDistricts } = useLocations()
+const { page, pageSize, totalCount, totalPages, setPageResult, resetPage } = usePagination(9)
 
 const search = ref('')
 const categoryId = ref<string | null>(null)
@@ -219,11 +154,6 @@ const sortBy = ref<'latest' | 'popular' | 'title'>('latest')
 const viewMode = ref<'contents' | 'map'>('contents')
 const contentDisplayMode = ref<'grid' | 'list'>('grid')
 const filtersOpen = ref(true)
-
-const page = ref(1)
-const pageSize = ref(9)
-const totalCount = ref(0)
-const totalPages = ref(1)
 const loading = ref(true)
 
 const sortOptions = [
@@ -244,14 +174,10 @@ const activeFilterCount = computed(() => {
 
 async function loadMasterData() {
   try {
-    const [catRes, distRes, tagRes] = await Promise.all([
-      getContentCategories(),
-      getDistricts(),
-      getTags(),
-    ])
+    const [catRes, tagRes] = await Promise.all([getContentCategories(), getTags()])
     categories.value = catRes
-    districts.value = distRes
     tags.value = tagRes
+    await fetchDistricts()
   } catch (err) {
     console.error('Failed loading master data', err)
   }
@@ -271,13 +197,11 @@ async function loadData() {
       pageSize: pageSize.value,
     })
     contents.value = res.items
-    totalCount.value = res.totalCount
-    totalPages.value = res.totalPages
+    setPageResult(res.totalCount, res.totalPages)
   } catch (err) {
     console.error('Failed loading public contents', err)
     contents.value = []
-    totalCount.value = 0
-    totalPages.value = 1
+    setPageResult(0, 1)
   } finally {
     loading.value = false
   }
@@ -289,41 +213,20 @@ function load() {
 
 async function changeDistrict() {
   subDistrictId.value = null
-  subDistricts.value = []
-  if (districtId.value) {
-    try {
-      subDistricts.value = await getSubDistricts(districtId.value)
-    } catch (e) {
-      console.error(e)
-    }
-  }
-  page.value = 1
+  await fetchSubDistricts(districtId.value)
+  resetPage()
   load()
-}
-
-function prevPage() {
-  if (page.value > 1) {
-    page.value--
-    load()
-  }
-}
-
-function nextPage() {
-  if (page.value < totalPages.value) {
-    page.value++
-    load()
-  }
 }
 
 function selectCategoryPill(id: string | null) {
   categoryId.value = id
-  page.value = 1
+  resetPage()
   load()
 }
 
 function selectTag(id: string) {
   tagId.value = tagId.value === id ? null : id
-  page.value = 1
+  resetPage()
   load()
 }
 
@@ -334,7 +237,7 @@ function clearFilters() {
   tagId.value = null
   search.value = ''
   sortBy.value = 'latest'
-  page.value = 1
+  resetPage()
   load()
 }
 
@@ -349,7 +252,7 @@ watch(
   () => route.query,
   () => {
     applyQueryParams()
-    page.value = 1
+    resetPage()
     load()
   },
 )
@@ -358,11 +261,7 @@ onMounted(async () => {
   applyQueryParams()
   await loadMasterData()
   if (districtId.value) {
-    try {
-      subDistricts.value = await getSubDistricts(districtId.value)
-    } catch (e) {
-      console.error(e)
-    }
+    await fetchSubDistricts(districtId.value)
   }
   load()
 })

@@ -28,7 +28,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <section class="rounded-3xl border-2 border-[#E8D9C9] bg-[#FFF9F2] shadow-sm p-5 sm:p-6 space-y-4 text-[#332820]">
+  <section class="relative z-30 rounded-3xl border-2 border-[#E8D9C9] bg-[#FFF9F2] shadow-sm p-5 sm:p-6 space-y-4 text-[#332820]">
     <div class="flex items-center justify-between border-b-2 border-[#E8D9C9]/60 pb-3">
       <span class="flex items-center gap-2.5 text-base font-black text-[#D96C2C]">
         <div class="h-8 w-8 rounded-xl bg-[#D96C2C]/15 border border-[#D96C2C]/30 flex items-center justify-center text-[#D96C2C]">

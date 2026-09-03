@@ -14,7 +14,7 @@ import {
   type SubmissionStatus,
   type SubDistrict,
   type UserContentFormData,
-} from '../api/userContentApi'
+} from '@/features/contents/api'
 import AppSelect from '@/components/common/input/AppSelect.vue'
 import AppTextField from '@/components/common/input/AppTextField.vue'
 import AppTextarea from '@/components/common/input/AppTextarea.vue'
@@ -167,7 +167,9 @@ async function save() {
     else await createMyContent(payload)
     await swal.success(
       isEdit.value ? 'บันทึกการแก้ไขแล้ว' : 'บันทึกคอนเทนต์แล้ว',
-      form.status === 'Published' ? 'คอนเทนต์ของคุณแสดงผลต่อสาธารณะทันที' : 'บันทึกเป็นฉบับร่างเรียบร้อยแล้ว',
+      form.status === 'Published'
+        ? 'คอนเทนต์ของคุณแสดงผลต่อสาธารณะทันที'
+        : 'บันทึกเป็นฉบับร่างเรียบร้อยแล้ว',
     )
     await router.push('/profile')
   } catch (error) {
@@ -185,8 +187,12 @@ onMounted(load)
     <main class="mx-auto w-full max-w-6xl px-4 py-7 sm:px-6 lg:py-10">
       <!-- Skeleton Loading -->
       <div v-if="loading" class="space-y-6">
-        <div class="h-24 w-full animate-pulse rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9]"></div>
-        <div class="h-96 w-full animate-pulse rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9]"></div>
+        <div
+          class="h-24 w-full animate-pulse rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9]"
+        ></div>
+        <div
+          class="h-96 w-full animate-pulse rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9]"
+        ></div>
       </div>
 
       <template v-else>
@@ -204,7 +210,9 @@ onMounted(load)
             <h1 class="mt-2 text-2xl sm:text-3xl font-black text-[#332820]">
               {{ isEdit ? 'แก้ไขคอนเทนต์' : 'สร้างคอนเทนต์ใหม่' }}
             </h1>
-            <p class="mt-1 text-xs text-[#786B62] font-semibold">บอกเล่าเรื่องราว สถานที่ท่องเที่ยว วัฒนธรรม หรือประสบการณ์ในกาญจนบุรี</p>
+            <p class="mt-1 text-xs text-[#786B62] font-semibold">
+              บอกเล่าเรื่องราว สถานที่ท่องเที่ยว วัฒนธรรม หรือประสบการณ์ในกาญจนบุรี
+            </p>
           </div>
 
           <!-- TOP RIGHT CONTROLS: STATUS SELECT & SAVE BUTTON -->
@@ -228,19 +236,31 @@ onMounted(load)
                 :disabled="saving"
                 @click="save"
               >
-                <i class="mdi text-base text-white" :class="saving ? 'mdi-loading animate-spin' : 'mdi-publish'" />
-                <span class="!text-white font-black ml-1">{{ saving ? 'กำลังบันทึก...' : 'บันทึกคอนเทนต์' }}</span>
+                <i
+                  class="mdi text-base text-white"
+                  :class="saving ? 'mdi-loading animate-spin' : 'mdi-publish'"
+                />
+                <span class="!text-white font-black ml-1">{{
+                  saving ? 'กำลังบันทึก...' : 'บันทึกคอนเทนต์'
+                }}</span>
               </button>
             </div>
           </div>
         </div>
 
         <!-- Form Container -->
-        <form class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] items-start" @submit.prevent="save">
+        <form
+          class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] items-start"
+          @submit.prevent="save"
+        >
           <div class="space-y-6">
             <!-- Section 1: Details -->
-            <section class="rounded-3xl border-2 border-[#E8D9C9] bg-[#FFF9F2] p-6 shadow-xs space-y-4">
-              <h2 class="text-lg font-black text-[#332820] flex items-center gap-2 border-b-2 border-[#E8D9C9] pb-3">
+            <section
+              class="rounded-3xl border-2 border-[#E8D9C9] bg-[#FFF9F2] p-6 shadow-xs space-y-4"
+            >
+              <h2
+                class="text-lg font-black text-[#332820] flex items-center gap-2 border-b-2 border-[#E8D9C9] pb-3"
+              >
                 <i class="mdi mdi-file-document-outline text-[#D96C2C] text-xl"></i>
                 ข้อมูลเนื้อหาเรื่องราว
               </h2>
@@ -279,12 +299,16 @@ onMounted(load)
             </section>
 
             <!-- Section 2: Category, Link to Shop & Location -->
-            <section class="rounded-3xl border-2 border-[#E8D9C9] bg-[#FFF9F2] p-6 shadow-xs space-y-4">
-              <h2 class="text-lg font-black text-[#332820] flex items-center gap-2 border-b-2 border-[#E8D9C9] pb-3">
+            <section
+              class="rounded-3xl border-2 border-[#E8D9C9] bg-[#FFF9F2] p-6 shadow-xs space-y-4"
+            >
+              <h2
+                class="text-lg font-black text-[#332820] flex items-center gap-2 border-b-2 border-[#E8D9C9] pb-3"
+              >
                 <i class="mdi mdi-storefront-outline text-[#D96C2C] text-xl"></i>
                 หมวดหมู่ ร้านค้า และพิกัดสถานที่
               </h2>
-              
+
               <div class="space-y-5">
                 <div class="grid gap-5 sm:grid-cols-2">
                   <AppSelect
@@ -343,13 +367,16 @@ onMounted(load)
 
           <!-- Sidebar Guide -->
           <aside class="space-y-5 lg:sticky lg:top-6">
-            <section class="rounded-3xl border-2 border-[#D96C2C]/30 bg-[#D96C2C]/10 p-5 text-xs sm:text-sm text-[#332820] space-y-2">
+            <section
+              class="rounded-3xl border-2 border-[#D96C2C]/30 bg-[#D96C2C]/10 p-5 text-xs sm:text-sm text-[#332820] space-y-2"
+            >
               <div class="flex gap-3">
                 <i class="mdi mdi-store-check text-xl text-[#D96C2C] shrink-0" />
                 <div>
                   <h2 class="font-black text-[#D96C2C]">เชื่อมโยงเรื่องราวกับร้านค้า</h2>
                   <p class="mt-1 font-semibold leading-relaxed text-[#786B62]">
-                    คุณสามารถเลือกเชื่อมบทความนี้เข้ากับร้านค้าเพื่อดึงดูดลูกค้าและแสดงบทความในหน้ารายละเอียดร้านค้านั้น ๆ ได้!
+                    คุณสามารถเลือกเชื่อมบทความนี้เข้ากับร้านค้าเพื่อดึงดูดลูกค้าและแสดงบทความในหน้ารายละเอียดร้านค้านั้น
+                    ๆ ได้!
                   </p>
                 </div>
               </div>

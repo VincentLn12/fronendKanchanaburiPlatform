@@ -2,7 +2,7 @@
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-import type { PublicContent } from '../api/contentApi'
+import type { PublicContent } from '../../api/contentApi'
 
 interface Props {
   contents: PublicContent[]

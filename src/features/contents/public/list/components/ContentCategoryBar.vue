@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ContentCategory } from '../api/contentApi'
+import type { ContentCategory } from '../../api/contentApi'
 
 interface Props {
   categories: ContentCategory[]
@@ -30,7 +30,11 @@ const emit = defineEmits<{
       >
         <div
           class="h-6 w-6 rounded-xl flex items-center justify-center text-xs"
-          :class="selectedCategoryId === null ? 'bg-white text-[#D96C2C] font-black' : 'bg-[#D96C2C]/10 text-[#D96C2C]'"
+          :class="
+            selectedCategoryId === null
+              ? 'bg-white text-[#D96C2C] font-black'
+              : 'bg-[#D96C2C]/10 text-[#D96C2C]'
+          "
         >
           <i class="mdi mdi-compass-outline"></i>
         </div>
@@ -51,7 +55,11 @@ const emit = defineEmits<{
       >
         <div
           class="h-6 w-6 rounded-xl flex items-center justify-center text-xs"
-          :class="selectedCategoryId === cat.contentCategoryId ? 'bg-white text-[#D96C2C] font-black' : 'bg-[#D96C2C]/10 text-[#D96C2C]'"
+          :class="
+            selectedCategoryId === cat.contentCategoryId
+              ? 'bg-white text-[#D96C2C] font-black'
+              : 'bg-[#D96C2C]/10 text-[#D96C2C]'
+          "
         >
           <i class="mdi mdi-shape-outline"></i>
         </div>

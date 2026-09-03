@@ -1,5 +1,213 @@
+<template>
+  <div v-if="content" class="min-h-screen bg-[#F7F0E6] text-[#332820] pb-16">
+    <!-- BREADCRUMB BAR -->
+    <div class="bg-[#FFF9F2] border-b-2 border-[#E8D9C9] py-3 shadow-2xs">
+      <div
+        class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-xs text-[#786B62] flex items-center gap-2 font-bold"
+      >
+        <RouterLink to="/" class="hover:text-[#D96C2C] transition">หน้าแรก</RouterLink>
+        <i class="mdi mdi-chevron-right text-[#E8D9C9]"></i>
+        <RouterLink to="/contents" class="hover:text-[#D96C2C] transition"
+          >สำรวจคอนเทนต์</RouterLink
+        >
+        <i class="mdi mdi-chevron-right text-[#E8D9C9]"></i>
+        <span class="text-[#D96C2C] font-black">{{
+          content.contentCategoryName || 'ท่องเที่ยวและวัฒนธรรม'
+        }}</span>
+        <i class="mdi mdi-chevron-right text-[#E8D9C9]"></i>
+        <span class="text-[#332820] font-black line-clamp-1">{{ content.title }}</span>
+      </div>
+    </div>
+
+    <!-- MAIN 2-COLUMN LAYOUT WRAPPER (8 Cols Stream + 4 Cols Sticky Sidebar) -->
+    <main class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <!-- LEFT MAIN COLUMN -->
+        <div class="lg:col-span-8 space-y-8">
+          <!-- 1. Video Player & Metadata Card -->
+          <ContentDetailHero
+            :content="content"
+            :isFavorite="isFavorite"
+            :changingFavorite="changingFavorite"
+            @toggle-favorite="toggleFavorite"
+            @share="shareContent"
+          />
+
+          <section
+            v-if="content.summary"
+            class="rounded-3xl border-2 border-[#E8D9C9] bg-[#FFF9F2] p-6 sm:p-7 shadow-xs"
+          >
+            <h2 class="text-xl font-black text-[#D96C2C]">เกี่ยวกับวิดีโอนี้</h2>
+            <p class="mt-3 text-sm leading-relaxed text-[#786B62] font-semibold">
+              {{ content.summary }}
+            </p>
+          </section>
+
+          <!-- 3. Schedules & Events (Only if schedule exists) -->
+          <section
+            v-if="schedules.length"
+            class="rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9] p-6 sm:p-8 shadow-xs space-y-6"
+          >
+            <div class="flex items-center justify-between border-b-2 border-[#E8D9C9] pb-4">
+              <div class="flex items-center gap-3">
+                <div
+                  class="h-10 w-10 rounded-2xl bg-[#D96C2C] text-white flex items-center justify-center font-bold shadow-md"
+                >
+                  <i class="mdi mdi-calendar-clock-outline text-xl text-white"></i>
+                </div>
+                <div>
+                  <h2 class="text-xl font-black text-[#332820]">รอบการแสดง / กิจกรรม</h2>
+                  <p class="text-xs text-[#786B62] font-medium">
+                    รอบการแสดงสดและกิจกรรมวัฒนธรรมที่กำลังจะเกิดขึ้น
+                  </p>
+                </div>
+              </div>
+              <span
+                class="text-xs font-black text-[#D96C2C] bg-[#D96C2C]/10 border border-[#D96C2C]/20 px-3.5 py-1 rounded-full shadow-2xs"
+              >
+                มี {{ schedules.length }} รอบการแสดง
+              </span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div
+                v-for="sch in schedules"
+                :key="sch.scheduleId"
+                class="rounded-2xl border-2 border-[#E8D9C9] bg-[#F7F0E6] p-4 space-y-2 shadow-2xs hover:border-[#D96C2C] transition"
+              >
+                <span class="font-black text-[#332820] text-sm block">{{ sch.title }}</span>
+                <p class="text-xs text-[#786B62] flex items-center gap-1.5 font-bold">
+                  <i class="mdi mdi-clock-outline text-[#D96C2C]"></i>
+                  <span>{{ formatDate(sch.startDateTime) }}</span>
+                </p>
+                <p
+                  v-if="sch.address"
+                  class="text-xs text-[#786B62] flex items-center gap-1.5 font-medium"
+                >
+                  <i class="mdi mdi-map-marker-outline text-[#D96C2C]"></i>
+                  <span>{{ sch.address }}</span>
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <!-- 4. Community Discussion & Reviews -->
+          <ContentDetailReviews
+            v-model:comment="reviewForm.comment"
+            :reviewData="reviewData"
+            :myReview="myReview"
+            :isLoggedIn="auth.isLoggedIn"
+            :reviewSaving="reviewSaving"
+            @save-review="saveReview"
+            @remove-review="removeReview"
+          />
+        </div>
+
+        <!-- RIGHT STICKY SIDEBAR (4 Cols: Location Map -> Shops/Products Widget) -->
+        <div class="lg:col-span-4 lg:sticky lg:top-24 space-y-6">
+          <ContentDetailSidebar
+            :content="content"
+            :shops="relatedShops"
+            :products="products"
+            @open-directions="openDirections"
+          />
+        </div>
+      </div>
+
+      <!-- BOTTOM SECTION: Recommended Related Video Cards -->
+      <ContentDetailRelated :items="relatedContents" />
+
+      <!-- FOOTER SHARE / REPORT SECTION -->
+      <section
+        class="flex flex-wrap items-center justify-end gap-4 border-t-2 border-[#E8D9C9] pt-6 text-xs text-[#786B62]"
+      >
+        <div class="flex items-center gap-4">
+          <div class="flex items-center gap-2">
+            <span class="font-black text-[#332820]">แชร์คอนเทนต์</span>
+            <button
+              type="button"
+              class="h-8 w-8 rounded-full bg-blue-600 text-white flex items-center justify-center hover:opacity-90 transition cursor-pointer shadow-2xs"
+              @click="shareContent('fb')"
+            >
+              <i class="mdi mdi-facebook text-base text-white"></i>
+            </button>
+            <button
+              type="button"
+              class="h-8 w-8 rounded-full bg-emerald-600 text-white flex items-center justify-center hover:opacity-90 transition cursor-pointer shadow-2xs"
+              @click="shareContent('line')"
+            >
+              <i class="mdi mdi-forum-outline text-base text-white"></i>
+            </button>
+            <button
+              type="button"
+              class="h-8 w-8 rounded-full bg-white text-[#332820] flex items-center justify-center hover:bg-[#F7F0E6] transition cursor-pointer border-2 border-[#E8D9C9]"
+              @click="shareContent()"
+            >
+              <i class="mdi mdi-link-variant text-base text-[#D96C2C]"></i>
+            </button>
+          </div>
+
+          <button
+            type="button"
+            class="text-xs font-bold text-[#786B62] hover:text-rose-600 flex items-center gap-1 transition cursor-pointer"
+            @click="openReport({ contentId: content.contentId, label: content.title })"
+          >
+            <i class="mdi mdi-flag-outline"></i>
+            <span>รายงานเนื้อหา</span>
+          </button>
+        </div>
+      </section>
+    </main>
+
+    <!-- REPORT MODAL -->
+    <ContentReportModal
+      v-model:reason="reportForm.reason"
+      v-model:description="reportForm.description"
+      :target="reportTarget"
+      :reporting="reporting"
+      @close="reportTarget = null"
+      @submit="submitReport"
+    />
+  </div>
+
+  <!-- SKELETON LOADING STATE -->
+  <div v-else-if="loading" class="min-h-screen bg-[#F7F0E6] pb-16 animate-pulse">
+    <div class="bg-[#FFF9F2] border-b-2 border-[#E8D9C9] py-3 shadow-2xs">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="h-4 w-48 bg-[#E8D9C9]/50 rounded-lg"></div>
+      </div>
+    </div>
+
+    <main class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div class="lg:col-span-8 space-y-8">
+          <div class="rounded-3xl border-2 border-[#E8D9C9] bg-[#FFF9F2] p-6 space-y-4 shadow-xs">
+            <div class="aspect-video w-full rounded-2xl bg-[#E8D9C9]/60"></div>
+            <div class="h-7 w-3/4 rounded-xl bg-[#E8D9C9]/50"></div>
+            <div class="h-4 w-1/3 rounded-lg bg-[#E8D9C9]/40"></div>
+          </div>
+          <div class="rounded-3xl border-2 border-[#E8D9C9] bg-[#FFF9F2] p-6 space-y-3 shadow-xs">
+            <div class="h-6 w-32 rounded-xl bg-[#E8D9C9]/50"></div>
+            <div class="h-4 w-full rounded-lg bg-[#E8D9C9]/40"></div>
+            <div class="h-4 w-2/3 rounded-lg bg-[#E8D9C9]/40"></div>
+          </div>
+        </div>
+        <div class="lg:col-span-4 space-y-6">
+          <div
+            class="rounded-3xl border-2 border-[#E8D9C9] bg-[#FFF9F2] p-6 h-80 space-y-4 shadow-xs"
+          >
+            <div class="h-40 rounded-2xl bg-[#E8D9C9]/50"></div>
+            <div class="h-5 w-2/3 rounded-xl bg-[#E8D9C9]/50"></div>
+            <div class="h-4 w-1/2 rounded-lg bg-[#E8D9C9]/40"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</template>
+
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   addContentFavorite,
@@ -20,7 +228,7 @@ import {
   type ContentSchedule,
   type ContentShopProduct,
   type PublicContent,
-} from '../../api/contentApi'
+} from '@/features/contents/api'
 import { getShop, getShops } from '@/features/shops/public/api/shopApi'
 import type { Shop } from '@/features/shops/shared/types/shop'
 import { useSwal } from '@/plugins/sweetalert'
@@ -64,6 +272,8 @@ function formatDate(value?: string) {
 }
 
 async function load() {
+  if (!id.value) return
+  loading.value = true
   try {
     content.value = await getPublicContent(id.value)
     const [scheduleItems, productItems, reviews, shops, relatedData] = await Promise.all([
@@ -71,11 +281,15 @@ async function load() {
       getContentShopProducts(id.value).catch(() => []),
       getContentReviews(id.value).catch(() => ({ totalCount: 0, reviews: [] })),
       content.value.shopId
-        ? getShop(content.value.shopId).then((shop) => [shop]).catch(() => [])
-        : getShops({ districtId: content.value.districtId, pageSize: 3 }).catch(() => ({ items: [] as Shop[] })),
-      getPublicContents({ categoryId: content.value.contentCategoryId, pageSize: 4 }).catch(
-        () => ({ items: [] }),
-      ),
+        ? getShop(content.value.shopId)
+            .then((shop) => [shop])
+            .catch(() => [])
+        : getShops({ districtId: content.value.districtId, pageSize: 3 }).catch(() => ({
+            items: [] as Shop[],
+          })),
+      getPublicContents({ categoryId: content.value.contentCategoryId, pageSize: 4 }).catch(() => ({
+        items: [],
+      })),
     ])
     schedules.value = scheduleItems
     products.value = productItems
@@ -165,7 +379,10 @@ function shareContent(platform?: string) {
   if (platform === 'fb') {
     window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank')
   } else if (platform === 'line') {
-    window.open(`https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(url)}`, '_blank')
+    window.open(
+      `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(url)}`,
+      '_blank',
+    )
   } else {
     navigator.clipboard.writeText(url)
     void swal.success('คัดลอกลิงก์แล้ว', 'นำลิงก์ไปแชร์ให้เพื่อน ๆ ได้เลย')
@@ -217,161 +434,14 @@ function openDirections() {
   }
 }
 
+watch(
+  () => route.params.id,
+  (newId, oldId) => {
+    if (newId && newId !== oldId) {
+      void load()
+    }
+  },
+)
+
 onMounted(load)
 </script>
-
-<template>
-  <div v-if="content" class="min-h-screen bg-[#F7F0E6] text-[#332820] pb-16">
-    <!-- BREADCRUMB BAR -->
-    <div class="bg-[#FFF9F2] border-b-2 border-[#E8D9C9] py-3 shadow-2xs">
-      <div
-        class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-xs text-[#786B62] flex items-center gap-2 font-bold"
-      >
-        <RouterLink to="/" class="hover:text-[#D96C2C] transition">หน้าแรก</RouterLink>
-        <i class="mdi mdi-chevron-right text-[#E8D9C9]"></i>
-        <RouterLink to="/contents" class="hover:text-[#D96C2C] transition">สำรวจคอนเทนต์</RouterLink>
-        <i class="mdi mdi-chevron-right text-[#E8D9C9]"></i>
-        <span class="text-[#D96C2C] font-black">{{ content.contentCategoryName || 'ศิลปะการแสดง' }}</span>
-        <i class="mdi mdi-chevron-right text-[#E8D9C9]"></i>
-        <span class="text-[#332820] font-black line-clamp-1">{{ content.title }}</span>
-      </div>
-    </div>
-
-    <!-- MAIN 2-COLUMN LAYOUT WRAPPER (8 Cols Stream + 4 Cols Sticky Sidebar) -->
-    <main class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-10">
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        
-        <!-- LEFT MAIN COLUMN -->
-        <div class="lg:col-span-8 space-y-8">
-          <!-- 1. Video Player & Metadata Card -->
-          <ContentDetailHero
-            :content="content"
-            :isFavorite="isFavorite"
-            :changingFavorite="changingFavorite"
-            @toggle-favorite="toggleFavorite"
-            @share="shareContent"
-          />
-
-          <section v-if="content.summary" class="rounded-3xl border-2 border-[#E8D9C9] bg-[#FFF9F2] p-6 sm:p-7 shadow-xs">
-            <h2 class="text-xl font-black text-[#D96C2C]">เกี่ยวกับวิดีโอนี้</h2>
-            <p class="mt-3 text-sm leading-relaxed text-[#786B62] font-semibold">{{ content.summary }}</p>
-          </section>
-
-          <!-- 3. Schedules & Events (Only if schedule exists) -->
-          <section
-            v-if="schedules.length"
-            class="rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9] p-6 sm:p-8 shadow-xs space-y-6"
-          >
-            <div class="flex items-center justify-between border-b-2 border-[#E8D9C9] pb-4">
-              <div class="flex items-center gap-3">
-                <div class="h-10 w-10 rounded-2xl bg-[#D96C2C] text-white flex items-center justify-center font-bold shadow-md">
-                  <i class="mdi mdi-calendar-clock-outline text-xl text-white"></i>
-                </div>
-                <div>
-                  <h2 class="text-xl font-black text-[#332820]">รอบการแสดง / กิจกรรม</h2>
-                  <p class="text-xs text-[#786B62] font-medium">รอบการแสดงสดและกิจกรรมวัฒนธรรมที่กำลังจะเกิดขึ้น</p>
-                </div>
-              </div>
-              <span class="text-xs font-black text-[#D96C2C] bg-[#D96C2C]/10 border border-[#D96C2C]/20 px-3.5 py-1 rounded-full shadow-2xs">
-                มี {{ schedules.length }} รอบการแสดง
-              </span>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div
-                v-for="sch in schedules"
-                :key="sch.scheduleId"
-                class="rounded-2xl border-2 border-[#E8D9C9] bg-[#F7F0E6] p-4 space-y-2 shadow-2xs hover:border-[#D96C2C] transition"
-              >
-                <span class="font-black text-[#332820] text-sm block">{{ sch.title }}</span>
-                <p class="text-xs text-[#786B62] flex items-center gap-1.5 font-bold">
-                  <i class="mdi mdi-clock-outline text-[#D96C2C]"></i>
-                  <span>{{ formatDate(sch.startDateTime) }}</span>
-                </p>
-                <p v-if="sch.address" class="text-xs text-[#786B62] flex items-center gap-1.5 font-medium">
-                  <i class="mdi mdi-map-marker-outline text-[#D96C2C]"></i>
-                  <span>{{ sch.address }}</span>
-                </p>
-              </div>
-            </div>
-          </section>
-
-          <!-- 4. Community Discussion & Reviews -->
-          <ContentDetailReviews
-            v-model:comment="reviewForm.comment"
-            :reviewData="reviewData"
-            :myReview="myReview"
-            :isLoggedIn="auth.isLoggedIn"
-            :reviewSaving="reviewSaving"
-            @save-review="saveReview"
-            @remove-review="removeReview"
-          />
-        </div>
-
-        <!-- RIGHT STICKY SIDEBAR (4 Cols: Location Map -> Shops/Products Widget) -->
-        <div class="lg:col-span-4 lg:sticky lg:top-24 space-y-6">
-          <ContentDetailSidebar
-            :content="content"
-            :shops="relatedShops"
-            :products="products"
-            @open-directions="openDirections"
-          />
-        </div>
-      </div>
-
-      <!-- BOTTOM SECTION: Recommended Related Video Cards -->
-      <ContentDetailRelated :items="relatedContents" />
-
-      <!-- FOOTER SHARE / REPORT SECTION -->
-      <section
-        class="flex flex-wrap items-center justify-end gap-4 border-t-2 border-[#E8D9C9] pt-6 text-xs text-[#786B62]"
-      >
-        <div class="flex items-center gap-4">
-          <div class="flex items-center gap-2">
-            <span class="font-black text-[#332820]">แชร์คอนเทนต์</span>
-            <button
-              type="button"
-              class="h-8 w-8 rounded-full bg-blue-600 text-white flex items-center justify-center hover:opacity-90 transition cursor-pointer shadow-2xs"
-              @click="shareContent('fb')"
-            >
-              <i class="mdi mdi-facebook text-base text-white"></i>
-            </button>
-            <button
-              type="button"
-              class="h-8 w-8 rounded-full bg-emerald-600 text-white flex items-center justify-center hover:opacity-90 transition cursor-pointer shadow-2xs"
-              @click="shareContent('line')"
-            >
-              <i class="mdi mdi-forum-outline text-base text-white"></i>
-            </button>
-            <button
-              type="button"
-              class="h-8 w-8 rounded-full bg-white text-[#332820] flex items-center justify-center hover:bg-[#F7F0E6] transition cursor-pointer border-2 border-[#E8D9C9]"
-              @click="shareContent()"
-            >
-              <i class="mdi mdi-link-variant text-base text-[#D96C2C]"></i>
-            </button>
-          </div>
-
-          <button
-            type="button"
-            class="text-xs font-bold text-[#786B62] hover:text-rose-600 flex items-center gap-1 transition cursor-pointer"
-            @click="openReport({ contentId: content.contentId, label: content.title })"
-          >
-            <i class="mdi mdi-flag-outline"></i>
-            <span>รายงานเนื้อหา</span>
-          </button>
-        </div>
-      </section>
-    </main>
-
-    <!-- REPORT MODAL -->
-    <ContentReportModal
-      v-model:reason="reportForm.reason"
-      v-model:description="reportForm.description"
-      :target="reportTarget"
-      :reporting="reporting"
-      @close="reportTarget = null"
-      @submit="submitReport"
-    />
-  </div>
-</template>

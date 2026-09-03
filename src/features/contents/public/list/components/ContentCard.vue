@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { PublicContent } from '../api/contentApi'
+import type { PublicContent } from '../../api/contentApi'
 
 interface Props {
   item: PublicContent
@@ -159,7 +159,9 @@ function formatPublishedDate(value?: string) {
         >
           {{ item.title }}
         </h3>
-        <p class="text-xs sm:text-sm text-[#786B62] line-clamp-2 mt-1.5 leading-relaxed font-semibold">
+        <p
+          class="text-xs sm:text-sm text-[#786B62] line-clamp-2 mt-1.5 leading-relaxed font-semibold"
+        >
           {{ item.summary || 'ค้นพบเรื่องราวน่าสนใจและการท่องเที่ยวในจังหวัดกาญจนบุรี' }}
         </p>
       </div>
