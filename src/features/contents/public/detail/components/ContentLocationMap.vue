@@ -7,13 +7,23 @@ const props = defineProps<{ latitude: number; longitude: number; title: string }
 const element = ref<HTMLElement | null>(null)
 let map: L.Map | null = null
 onMounted(() => {
-  map = L.map(element.value!, { scrollWheelZoom: false, dragging: !L.Browser.mobile }).setView(
-    [props.latitude, props.longitude],
-    15,
-  )
+  const KANCHANABURI_BOUNDS: L.LatLngBoundsExpression = [
+    [13.70, 98.00],
+    [15.85, 100.00],
+  ]
+  map = L.map(element.value!, {
+    scrollWheelZoom: false,
+    dragging: !L.Browser.mobile,
+    minZoom: 9,
+    maxZoom: 18,
+    maxBounds: KANCHANABURI_BOUNDS,
+    maxBoundsViscosity: 0.4,
+  }).setView([props.latitude, props.longitude], 15)
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '&copy; OpenStreetMap contributors',
+    bounds: KANCHANABURI_BOUNDS,
+    keepBuffer: 6,
   }).addTo(map)
   const icon = L.divIcon({
     className: 'content-location-marker',

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// Merchant area - Emerald Nature Product List Management View
 import axios from 'axios'
 import { computed, onMounted, ref } from 'vue'
 import { removeProduct, getProducts } from '../api/productApi'
@@ -60,62 +59,63 @@ onMounted(load)
 </script>
 
 <template>
-  <div class="mx-auto w-full max-w-7xl space-y-6 py-2">
+  <div class="mx-auto w-full max-w-7xl space-y-6 py-4 text-[#332820]">
     <!-- Skeleton Loading -->
     <div v-if="loading" class="space-y-6">
-      <div class="h-24 w-full animate-pulse rounded-3xl bg-slate-200/70"></div>
+      <div class="h-28 w-full animate-pulse rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9]"></div>
       <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        <div v-for="i in 6" :key="i" class="h-64 animate-pulse rounded-3xl bg-slate-200/70"></div>
+        <div v-for="i in 6" :key="i" class="h-64 animate-pulse rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9]"></div>
       </div>
     </div>
 
     <template v-else-if="hasShop">
       <!-- Header Banner Card -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm">
-        <div class="flex items-center gap-3.5">
-          <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-100">
-            <i class="mdi mdi-package-variant-closed text-2xl"></i>
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-3xl border-2 border-[#E8D9C9] bg-[#FFF9F2] p-6 shadow-xs">
+        <div class="flex items-center gap-4">
+          <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#D96C2C] text-white shadow-md shrink-0">
+            <i class="mdi mdi-package-variant-closed text-2xl text-white"></i>
           </div>
           <div>
             <div class="flex items-center gap-2">
-              <h1 class="text-xl font-extrabold text-slate-900">จัดการรายการสินค้า</h1>
-              <span class="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-bold text-emerald-700">
+              <h1 class="text-2xl font-black text-[#332820]">จัดการรายการสินค้า</h1>
+              <span class="rounded-full bg-[#D96C2C]/10 px-3 py-0.5 text-xs font-black text-[#D96C2C] border border-[#D96C2C]/20">
                 {{ products.length }} รายการ
               </span>
             </div>
-            <p class="text-xs text-slate-500">จัดการข้อมูล ราคาสินค้า ปริมาณในคลัง และการเปิด/ปิดขาย</p>
+            <p class="text-xs text-[#786B62] font-semibold mt-0.5">จัดการข้อมูลสินค้า ราคาวางจำหน่าย จำนวนสต็อก และการปิด/เปิดขายสินค้า</p>
           </div>
         </div>
 
         <RouterLink
           to="/my-shop/products/new"
-          class="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-600/25 transition hover:bg-emerald-700 active:scale-95"
+          class="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#D96C2C] hover:bg-[#BF5720] px-6 py-3 text-xs sm:text-sm font-black text-white shadow-md transition active:scale-95 border border-[#D96C2C] cursor-pointer"
         >
-          <i class="mdi mdi-plus-circle text-lg"></i>
-          <span>+ เพิ่มสินค้าใหม่</span>
+          <i class="mdi mdi-plus-circle text-lg text-white"></i>
+          <span class="!text-white font-black">+ เพิ่มสินค้าใหม่</span>
         </RouterLink>
       </div>
 
       <!-- Search Filter Bar -->
-      <div v-if="products.length > 0" class="flex flex-col sm:flex-row items-center justify-between gap-4 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs">
+      <div v-if="products.length > 0" class="flex flex-col sm:flex-row items-center justify-between gap-4 rounded-3xl border-2 border-[#E8D9C9] bg-[#FFF9F2] p-4 shadow-xs">
         <div class="relative w-full sm:w-80">
           <input
             v-model="searchQuery"
             type="text"
             placeholder="ค้นหาชื่อหรือรายละเอียดสินค้า..."
-            class="w-full rounded-xl border border-slate-200 bg-slate-50 pl-9 pr-4 py-2 text-xs outline-none focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+            class="w-full rounded-2xl border-2 border-[#E8D9C9] bg-white pl-9 pr-8 py-2 text-xs font-black text-[#332820] outline-none focus:border-[#D96C2C] transition"
           />
-          <i class="mdi mdi-magnify absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-base"></i>
+          <i class="mdi mdi-magnify absolute left-3 top-1/2 -translate-y-1/2 text-[#D96C2C] text-base"></i>
           <button
             v-if="searchQuery"
-            class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+            type="button"
+            class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#786B62] hover:text-[#332820]"
             @click="searchQuery = ''"
           >
-            <i class="mdi mdi-close-circle text-sm"></i>
+            <i class="mdi mdi-close-circle text-base"></i>
           </button>
         </div>
 
-        <div class="text-xs text-slate-500 font-medium">
+        <div class="text-xs text-[#786B62] font-black">
           แสดง {{ filteredProducts.length }} จากทั้งหมด {{ products.length }} รายการ
         </div>
       </div>
@@ -123,56 +123,63 @@ onMounted(load)
       <!-- Empty State: No Products -->
       <div
         v-if="products.length === 0"
-        class="my-8 flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-slate-200 bg-white py-16 px-6 text-center shadow-sm"
+        class="my-8 flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-[#E8D9C9] bg-[#FFF9F2] py-16 px-6 text-center shadow-xs"
       >
-        <div class="flex h-20 w-20 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 mb-4">
+        <div class="flex h-20 w-20 items-center justify-center rounded-full bg-[#D96C2C]/15 text-[#D96C2C] mb-4 border border-[#D96C2C]/30">
           <i class="mdi mdi-package-variant text-4xl"></i>
         </div>
-        <h2 class="text-xl font-bold text-slate-800">ยังไม่มีสินค้าในร้านค้าของคุณ</h2>
-        <p class="mt-2 max-w-md text-sm text-slate-500">
-          เริ่มต้นเพิ่มรายการสินค้าชิ้นแรกของคุณเพื่อให้ลูกค้าสามารถเข้ามาเลือกซื้อได้เลยทันที
+        <h2 class="text-xl font-black text-[#332820]">ยังไม่มีสินค้าในร้านค้าของคุณ</h2>
+        <p class="mt-2 max-w-md text-xs sm:text-sm text-[#786B62] font-semibold leading-relaxed">
+          เริ่มต้นเพิ่มรายการสินค้าชิ้นแรกของคุณเพื่อให้ลูกค้าสามารถเข้ามาเลือกซื้อผ่านแพลตฟอร์มได้ทันที
         </p>
         <RouterLink
           to="/my-shop/products/new"
-          class="mt-6 inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-600/20 transition hover:bg-emerald-700 active:scale-95"
+          class="mt-6 inline-flex items-center gap-2 rounded-2xl bg-[#D96C2C] hover:bg-[#BF5720] px-6 py-3 text-xs sm:text-sm font-black text-white shadow-md transition active:scale-95 border border-[#D96C2C]"
         >
-          <i class="mdi mdi-plus-circle"></i>
-          <span>เพิ่มสินค้าชิ้นแรก</span>
+          <i class="mdi mdi-plus-circle text-lg text-white"></i>
+          <span class="!text-white font-black">เพิ่มสินค้าชิ้นแรก</span>
         </RouterLink>
       </div>
 
       <!-- No Search Results -->
       <div
         v-else-if="filteredProducts.length === 0"
-        class="rounded-3xl border border-slate-200 bg-white p-12 text-center text-slate-500 shadow-sm"
+        class="rounded-3xl border-2 border-[#E8D9C9] bg-[#FFF9F2] p-12 text-center text-[#786B62] shadow-xs"
       >
-        <i class="mdi mdi-magnify-remove text-4xl text-slate-300 mb-2 block"></i>
-        ไม่พบสินค้าที่ตรงกับคำค้นหา "{{ searchQuery }}"
+        <i class="mdi mdi-magnify-remove text-4xl text-[#D96C2C] mb-2 block"></i>
+        <p class="font-black text-[#332820]">ไม่พบสินค้าที่ตรงกับคำค้นหา "{{ searchQuery }}"</p>
+        <button
+          type="button"
+          class="mt-3 text-xs font-black text-[#D96C2C] hover:underline"
+          @click="searchQuery = ''"
+        >
+          ล้างคำค้นหา
+        </button>
       </div>
 
-      <!-- Product Grid (Cards layout) -->
+      <!-- Product Grid Cards -->
       <div v-else class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         <article
           v-for="product in filteredProducts"
           :key="product.productId"
-          class="group flex flex-col overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-emerald-300 hover:shadow-md"
+          class="group flex flex-col overflow-hidden rounded-3xl border-2 border-[#E8D9C9] bg-[#FFF9F2] shadow-2xs transition-all duration-300 hover:-translate-y-1 hover:border-[#D96C2C] hover:shadow-xl"
         >
           <!-- Product Image Container -->
-          <div class="relative h-48 w-full overflow-hidden bg-slate-100">
+          <div class="relative h-48 w-full overflow-hidden bg-[#171412]">
             <img
               v-if="product.imageUrl"
               :src="imageUrl(product.imageUrl)"
               :alt="product.productName"
-              class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+              class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-108"
             />
-            <div v-else class="flex h-full w-full flex-col items-center justify-center bg-slate-100 text-slate-400">
+            <div v-else class="flex h-full w-full flex-col items-center justify-center text-[#786B62]">
               <i class="mdi mdi-image-off-outline text-4xl opacity-50"></i>
-              <span class="mt-1 text-xs font-semibold">ไม่มีรูปภาพ</span>
+              <span class="mt-1 text-xs font-bold">ไม่มีรูปภาพ</span>
             </div>
 
             <!-- Floating Price Badge -->
             <div class="absolute bottom-3 left-3">
-              <span class="inline-flex items-center rounded-xl bg-slate-900/85 px-3 py-1 text-xs font-extrabold text-white backdrop-blur-md border border-white/20 shadow-md">
+              <span class="inline-flex items-center rounded-xl bg-[#D96C2C] px-3 py-1 text-xs font-black text-white shadow-md border border-white/20">
                 ฿ {{ Number(product.price).toLocaleString('th-TH') }}
               </span>
             </div>
@@ -181,13 +188,13 @@ onMounted(load)
             <div class="absolute top-3 right-3">
               <span
                 v-if="product.quantity > 0"
-                class="inline-flex items-center gap-1 rounded-full bg-emerald-500/90 px-2.5 py-0.5 text-[10px] font-bold text-white backdrop-blur-md shadow-xs"
+                class="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-3 py-0.5 text-[10px] font-black text-white shadow-md"
               >
-                คงเหลือ {{ product.quantity }} ชิ้น
+                คลัง {{ product.quantity }} ชิ้น
               </span>
               <span
                 v-else
-                class="inline-flex items-center gap-1 rounded-full bg-rose-500/90 px-2.5 py-0.5 text-[10px] font-bold text-white backdrop-blur-md shadow-xs"
+                class="inline-flex items-center gap-1 rounded-full bg-rose-600 px-3 py-0.5 text-[10px] font-black text-white shadow-md"
               >
                 สินค้าหมด
               </span>
@@ -195,38 +202,39 @@ onMounted(load)
           </div>
 
           <!-- Product Details Body -->
-          <div class="flex flex-1 flex-col p-5">
-            <h2 class="text-base font-bold text-slate-900 group-hover:text-emerald-700 transition-colors line-clamp-1">
+          <div class="flex flex-1 flex-col p-5 space-y-2">
+            <h2 class="text-base font-black text-[#332820] group-hover:text-[#D96C2C] transition line-clamp-1">
               {{ product.productName }}
             </h2>
 
-            <p class="mt-1.5 flex-1 line-clamp-2 text-xs text-slate-500 leading-relaxed">
+            <p class="flex-1 line-clamp-2 text-xs text-[#786B62] font-semibold leading-relaxed">
               {{ product.description || 'ไม่มีรายละเอียดสินค้า' }}
             </p>
 
             <!-- Action Buttons Bar -->
-            <div class="mt-5 flex items-center justify-between border-t border-slate-100 pt-3 text-xs">
+            <div class="mt-4 flex items-center justify-between border-t-2 border-[#E8D9C9] pt-3 text-xs">
               <RouterLink
                 :to="`/products/${product.productId}`"
                 target="_blank"
-                class="inline-flex items-center gap-1 font-semibold text-slate-500 hover:text-emerald-600"
+                class="inline-flex items-center gap-1 font-bold text-[#786B62] hover:text-[#D96C2C] transition"
                 title="ดูหน้าสินค้าลูกค้า"
               >
-                <i class="mdi mdi-eye-outline text-sm"></i>
+                <i class="mdi mdi-eye-outline text-sm text-[#D96C2C]"></i>
                 <span>ดูสินค้า</span>
               </RouterLink>
 
               <div class="flex items-center gap-2">
                 <RouterLink
                   :to="`/my-shop/products/${product.productId}/edit`"
-                  class="inline-flex items-center gap-1 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-1.5 font-bold text-emerald-700 hover:bg-emerald-600 hover:text-white transition"
+                  class="inline-flex items-center gap-1 rounded-xl border border-[#D96C2C]/30 bg-[#D96C2C]/10 px-3 py-1.5 font-black text-[#D96C2C] hover:bg-[#D96C2C] hover:text-white transition shadow-2xs"
                 >
                   <i class="mdi mdi-pencil-outline text-xs"></i>
                   <span>แก้ไข</span>
                 </RouterLink>
 
                 <button
-                  class="inline-flex items-center gap-1 rounded-xl border border-rose-100 bg-rose-50 px-3 py-1.5 font-bold text-rose-600 hover:bg-rose-600 hover:text-white transition"
+                  type="button"
+                  class="inline-flex items-center gap-1 rounded-xl border border-rose-200 bg-rose-50 px-3 py-1.5 font-black text-rose-600 hover:bg-rose-600 hover:text-white transition shadow-2xs cursor-pointer"
                   @click="closeProduct(product)"
                 >
                   <i class="mdi mdi-close-circle-outline text-xs"></i>
@@ -240,20 +248,20 @@ onMounted(load)
     </template>
 
     <!-- State: Merchant Has No Shop Yet -->
-    <div v-else class="my-8 flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-slate-200 bg-white py-16 px-6 text-center shadow-sm">
-      <div class="flex h-20 w-20 items-center justify-center rounded-full bg-amber-50 text-amber-600 mb-4">
+    <div v-else class="my-8 flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-[#E8D9C9] bg-[#FFF9F2] py-16 px-6 text-center shadow-xs space-y-3">
+      <div class="flex h-20 w-20 items-center justify-center rounded-full bg-amber-100 text-amber-800 mb-2 border border-amber-300">
         <i class="mdi mdi-store-plus-outline text-4xl"></i>
       </div>
-      <h2 class="text-xl font-bold text-slate-800">กรุณาสร้างร้านค้าก่อนจัดการสินค้า</h2>
-      <p class="mt-2 max-w-md text-sm text-slate-500">
+      <h2 class="text-xl font-black text-[#332820]">กรุณาสร้างร้านค้าก่อนจัดการสินค้า</h2>
+      <p class="max-w-md text-xs sm:text-sm text-[#786B62] font-semibold leading-relaxed">
         คุณจำเป็นต้องตั้งค่าข้อมูลร้านค้าเบื้องต้นก่อนจึงจะสามารถลงรายการสินค้าสำหรับวางจำหน่ายได้
       </p>
       <RouterLink
         to="/my-shop"
-        class="mt-6 inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-600/20 hover:bg-emerald-700"
+        class="mt-4 inline-flex items-center gap-2 rounded-2xl bg-[#D96C2C] hover:bg-[#BF5720] px-6 py-3 text-xs sm:text-sm font-black text-white shadow-md transition active:scale-95 border border-[#D96C2C]"
       >
-        <i class="mdi mdi-store-cog"></i>
-        <span>ไปยังหน้าตั้งค่าร้านค้า</span>
+        <i class="mdi mdi-store-cog text-lg text-white"></i>
+        <span class="!text-white font-black">ไปยังหน้าตั้งค่าร้านค้า</span>
       </RouterLink>
     </div>
   </div>

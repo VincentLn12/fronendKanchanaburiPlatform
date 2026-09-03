@@ -13,7 +13,7 @@ import AppTextField from '@/components/common/input/AppTextField.vue'
 import { getApiErrorMessage } from '@/features/auth/api/getApiErrorMessage'
 import { useSwal } from '@/plugins/sweetalert'
 import { useAuthStore } from '@/features/auth/stores/auth'
-import { getMyContents, type UserContent } from '@/features/contents/user/api/userContentApi'
+import { archiveMyContent, getMyContents, type UserContent } from '@/features/contents/user/api/userContentApi'
 
 const auth = useAuthStore()
 const router = useRouter()
@@ -46,10 +46,10 @@ function statusLabel(status: UserContent['status']) {
 
 function statusClass(status: UserContent['status']) {
   return status === 'Published'
-    ? 'bg-emerald-100 text-emerald-800'
+    ? 'bg-emerald-600 text-white shadow-xs'
     : status === 'Pending'
-      ? 'bg-amber-100 text-amber-800'
-      : 'bg-slate-200 text-slate-700'
+      ? 'bg-amber-500 text-white shadow-xs'
+      : 'bg-[#E8D9C9] text-[#786B62]'
 }
 
 function youtubeThumbnail(url?: string | null) {
@@ -86,6 +86,10 @@ async function load() {
 }
 
 async function save() {
+  if (!profile.firstName.trim() || !profile.lastName.trim()) {
+    await swal.warning('กรอกข้อมูลไม่ครบ', 'กรุณาระบุชื่อและนามสกุล')
+    return
+  }
   saving.value = true
   try {
     const updated = await updateProfile(profile)
@@ -94,11 +98,23 @@ async function save() {
       auth.user = { ...auth.user, name: updated.name }
       localStorage.setItem('authUser', JSON.stringify(auth.user))
     }
-    await swal.success('บันทึกข้อมูลแล้ว', 'ข้อมูลส่วนตัวของคุณถูกอัปเดตเรียบร้อยแล้ว')
+    await swal.success('บันทึกข้อมูลส่วนตัวสำเร็จ', 'ข้อมูลส่วนตัวของคุณได้รับการอัปเดตเรียบร้อยแล้ว')
   } catch (error) {
     await swal.error('บันทึกโปรไฟล์ไม่สำเร็จ', getApiErrorMessage(error, 'กรุณาลองใหม่อีกครั้ง'))
   } finally {
     saving.value = false
+  }
+}
+
+async function deleteContent(item: UserContent) {
+  const result = await swal.confirm(`ลบคอนเทนต์ "${item.title}"?`, 'เรื่องราวนี้จะไม่แสดงต่อสาธารณะบนแพลตฟอร์มอีกต่อไป')
+  if (!result.isConfirmed) return
+  try {
+    await archiveMyContent(item.contentId)
+    myContents.value = myContents.value.filter((c) => c.contentId !== item.contentId)
+    await swal.success('ลบคอนเทนต์เรียบร้อยแล้ว')
+  } catch (error) {
+    await swal.error('ลบไม่สำเร็จ', getApiErrorMessage(error, 'กรุณาลองใหม่อีกครั้ง'))
   }
 }
 
@@ -114,35 +130,35 @@ onMounted(load)
 </script>
 
 <template>
-  <div class="min-h-screen bg-[#f8faf9] text-slate-800 pb-16">
+  <div class="min-h-screen bg-[#F7F0E6] text-[#332820] pb-16 font-sans">
     <!-- HERO HEADER BANNER SECTION -->
-    <section class="relative bg-[#0d3831] text-white py-12 sm:py-16 overflow-hidden">
+    <section class="relative bg-[#171412] text-white py-12 sm:py-16 overflow-hidden">
       <!-- Ambient Glow Decorative Elements -->
-      <div class="pointer-events-none absolute -right-20 -top-20 h-80 w-80 rounded-full bg-emerald-500/20 blur-3xl" />
-      <div class="pointer-events-none absolute -left-20 -bottom-20 h-80 w-80 rounded-full bg-teal-500/15 blur-3xl" />
+      <div class="pointer-events-none absolute -right-20 -top-20 h-80 w-80 rounded-full bg-[#D96C2C]/20 blur-3xl" />
+      <div class="pointer-events-none absolute -left-20 -bottom-20 h-80 w-80 rounded-full bg-[#F2A65A]/15 blur-3xl" />
 
       <div class="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div class="space-y-2">
-            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-200 text-xs font-bold border border-emerald-400/30">
-              <i class="mdi mdi-account-circle-outline text-emerald-300"></i>
+            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#D96C2C]/30 text-[#F2A65A] text-xs font-black border border-white/20">
+              <i class="mdi mdi-account-circle-outline text-[#F2A65A]"></i>
               <span>ศูนย์จัดการบัญชีผู้ใช้</span>
             </div>
-            <h1 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-              โปรไฟล์ของฉัน
+            <h1 class="text-3xl sm:text-4xl font-black text-white tracking-tight">
+              โปรไฟล์และผลงานของฉัน
             </h1>
-            <p class="text-xs sm:text-sm text-emerald-100/80 max-w-xl font-normal leading-relaxed">
-              จัดการข้อมูลส่วนตัว ติดตามผลงานคอนเทนต์ที่ลง รายการโปรด และประวัติการรับชมเนื้อหา
+            <p class="text-xs sm:text-sm text-[#F7F0E6]/80 max-w-xl font-semibold leading-relaxed">
+              จัดการข้อมูลส่วนตัว แก้ไขบทความที่ลงไว้ ติดตามรายการโปรด และประวัติการรับชม
             </p>
           </div>
 
           <div class="flex items-center gap-3 shrink-0">
             <RouterLink
               to="/create"
-              class="flex items-center gap-2 px-5 py-3 rounded-xl bg-white hover:bg-slate-100 text-[#1c4d3e] font-bold text-xs sm:text-sm shadow-lg transition"
+              class="flex items-center gap-2 px-5 py-3 rounded-2xl bg-[#D96C2C] hover:bg-[#BF5720] text-white font-black text-xs sm:text-sm shadow-lg transition border border-[#D96C2C] active:scale-95"
             >
-              <i class="mdi mdi-plus-circle-outline text-base"></i>
-              <span>สร้างคอนเทนต์ใหม่</span>
+              <i class="mdi mdi-plus-circle-outline text-lg text-white"></i>
+              <span class="!text-white font-black">+ เขียนเรื่องราวใหม่</span>
             </RouterLink>
           </div>
         </div>
@@ -152,8 +168,8 @@ onMounted(load)
     <!-- MAIN CONTAINER -->
     <main class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
       <div v-if="loading" class="grid gap-8 lg:grid-cols-[360px_minmax(0,1fr)]">
-        <div class="h-96 animate-pulse rounded-3xl bg-white border border-slate-200" />
-        <div class="h-96 animate-pulse rounded-3xl bg-white border border-slate-200" />
+        <div class="h-96 animate-pulse rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9]" />
+        <div class="h-96 animate-pulse rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9]" />
       </div>
 
       <div v-else class="grid items-start gap-8 lg:grid-cols-12">
@@ -161,94 +177,95 @@ onMounted(load)
         <!-- LEFT SIDEBAR: USER PROFILE CARD & INFO EDIT -->
         <div class="lg:col-span-4 space-y-6 lg:sticky lg:top-24">
           <!-- Profile Card Box -->
-          <div class="rounded-3xl bg-white border border-slate-200/80 p-6 shadow-xs space-y-6">
+          <div class="rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9] p-6 shadow-xs space-y-6">
             <div class="flex flex-col items-center text-center space-y-3">
               <!-- Circle Avatar Initials Frame -->
-              <div class="relative flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-[#1c4d3e] to-[#0d3831] text-white text-3xl font-black shadow-xl border-4 border-white ring-4 ring-emerald-50">
+              <div class="relative flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-[#D96C2C] via-[#BF5720] to-[#171412] text-white text-3xl font-black shadow-xl border-4 border-white ring-4 ring-[#D96C2C]/30">
                 {{ initials() }}
-                <div class="absolute bottom-0 right-0 h-7 w-7 rounded-full bg-emerald-500 border-2 border-white flex items-center justify-center text-white text-xs">
+                <div class="absolute bottom-0 right-0 h-7 w-7 rounded-full bg-[#D96C2C] border-2 border-white flex items-center justify-center text-white text-xs">
                   <i class="mdi mdi-check"></i>
                 </div>
               </div>
 
               <div>
-                <h2 class="text-xl font-bold text-slate-900">
+                <h2 class="text-xl font-black text-[#332820]">
                   {{ `${profile.firstName} ${profile.lastName}`.trim() || 'ผู้ใช้งาน' }}
                 </h2>
-                <p class="text-xs text-slate-500 mt-0.5">{{ profile.email }}</p>
+                <p class="text-xs text-[#786B62] mt-0.5 font-semibold">{{ profile.email }}</p>
               </div>
 
-              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-[#1c4d3e] font-bold text-xs border border-emerald-100">
-                <i class="mdi mdi-shield-check-outline text-emerald-600"></i>
+              <span class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#D96C2C]/10 text-[#D96C2C] font-black text-xs border border-[#D96C2C]/20">
+                <i class="mdi mdi-shield-check-outline text-[#D96C2C]"></i>
                 {{ profile.role === 'Admin' ? 'ผู้ดูแลระบบ (Admin)' : 'สมาชิกทั่วไป' }}
               </span>
             </div>
 
             <!-- Quick Stats Bar (3 Metrics) -->
-            <div class="grid grid-cols-3 gap-2 py-3 border-y border-slate-100 text-center">
+            <div class="grid grid-cols-3 gap-2 py-3 border-y-2 border-[#E8D9C9] text-center font-extrabold">
               <div class="p-1">
-                <span class="block text-lg font-black text-slate-900">{{ myContents.length }}</span>
-                <span class="text-[11px] text-slate-400">คอนเทนต์</span>
+                <span class="block text-lg font-black text-[#332820]">{{ myContents.length }}</span>
+                <span class="text-[11px] text-[#786B62]">คอนเทนต์</span>
               </div>
-              <div class="p-1 border-x border-slate-100">
+              <div class="p-1 border-x-2 border-[#E8D9C9]">
                 <span class="block text-lg font-black text-rose-600">{{ favorites.length }}</span>
-                <span class="text-[11px] text-slate-400">รายการโปรด</span>
+                <span class="text-[11px] text-[#786B62]">รายการโปรด</span>
               </div>
               <div class="p-1">
-                <span class="block text-lg font-black text-[#1c4d3e]">{{ history.length }}</span>
-                <span class="text-[11px] text-slate-400">ประวัติการดู</span>
+                <span class="block text-lg font-black text-[#D96C2C]">{{ history.length }}</span>
+                <span class="text-[11px] text-[#786B62]">ประวัติการดู</span>
               </div>
             </div>
 
             <!-- Personal Info Edit Form -->
             <form class="space-y-4 pt-1" @submit.prevent="save">
-              <h3 class="text-sm font-bold text-slate-900 flex items-center gap-1.5">
-                <i class="mdi mdi-account-edit-outline text-[#1c4d3e]"></i>
+              <h3 class="text-base font-black text-[#332820] flex items-center gap-2 border-b-2 border-[#E8D9C9] pb-2">
+                <i class="mdi mdi-account-edit-outline text-[#D96C2C] text-lg"></i>
                 <span>แก้ไขข้อมูลส่วนตัว</span>
               </h3>
 
               <div class="space-y-3">
-                <AppTextField v-model="profile.firstName" label="ชื่อ" placeholder="พิมพ์ชื่อของคุณ" />
-                <AppTextField v-model="profile.lastName" label="นามสกุล" placeholder="พิมพ์นามสกุลของคุณ" />
-                <AppTextField v-model="profile.email" label="อีเมล" type="email" disabled />
+                <AppTextField v-model="profile.firstName" label="ชื่อ *" placeholder="พิมพ์ชื่อของคุณ" />
+                <AppTextField v-model="profile.lastName" label="นามสกุล *" placeholder="พิมพ์นามสกุลของคุณ" />
+                <AppTextField v-model="profile.email" label="อีเมลบัญชีผู้ใช้" type="email" disabled />
               </div>
 
               <button
                 type="submit"
-                class="w-full py-3 rounded-xl bg-[#1c4d3e] hover:bg-[#14392e] text-white font-bold text-xs sm:text-sm shadow-md transition disabled:opacity-50"
+                class="w-full py-3 rounded-2xl bg-[#D96C2C] hover:bg-[#BF5720] text-white font-black text-xs sm:text-sm shadow-md transition disabled:opacity-50 border border-[#D96C2C] cursor-pointer active:scale-95"
                 :disabled="saving"
               >
-                {{ saving ? 'กำลังบันทึก...' : 'บันทึกข้อมูลส่วนตัว' }}
+                <i class="mdi text-base text-white mr-1" :class="saving ? 'mdi-loading animate-spin' : 'mdi-content-save-outline'"></i>
+                <span class="!text-white font-black">{{ saving ? 'กำลังบันทึก...' : 'บันทึกข้อมูลส่วนตัว' }}</span>
               </button>
             </form>
 
             <!-- Quick Links -->
-            <div class="pt-4 border-t border-slate-100 space-y-2">
+            <div class="pt-4 border-t-2 border-[#E8D9C9] space-y-2">
               <RouterLink
                 to="/orders"
-                class="flex items-center justify-between p-3 rounded-xl bg-slate-50 hover:bg-slate-100 text-xs font-bold text-slate-700 transition"
+                class="flex items-center justify-between p-3 rounded-2xl bg-[#F7F0E6] hover:bg-[#E8D9C9]/50 text-xs font-black text-[#332820] transition border-2 border-[#E8D9C9]"
               >
                 <span class="flex items-center gap-2">
-                  <i class="mdi mdi-shopping-outline text-[#1c4d3e] text-base"></i>
+                  <i class="mdi mdi-shopping-outline text-[#D96C2C] text-base"></i>
                   ประวัติการสั่งซื้อของฉัน
                 </span>
-                <i class="mdi mdi-chevron-right text-slate-400"></i>
+                <i class="mdi mdi-chevron-right text-[#786B62]"></i>
               </RouterLink>
 
               <RouterLink
                 to="/my-shop"
-                class="flex items-center justify-between p-3 rounded-xl bg-slate-50 hover:bg-slate-100 text-xs font-bold text-slate-700 transition"
+                class="flex items-center justify-between p-3 rounded-2xl bg-[#F7F0E6] hover:bg-[#E8D9C9]/50 text-xs font-black text-[#332820] transition border-2 border-[#E8D9C9]"
               >
                 <span class="flex items-center gap-2">
-                  <i class="mdi mdi-storefront-outline text-[#1c4d3e] text-base"></i>
-                  ร้านค้าของฉัน
+                  <i class="mdi mdi-storefront-outline text-[#D96C2C] text-base"></i>
+                  ศูนย์จัดการร้านค้าของฉัน
                 </span>
-                <i class="mdi mdi-chevron-right text-slate-400"></i>
+                <i class="mdi mdi-chevron-right text-[#786B62]"></i>
               </RouterLink>
 
               <button
                 type="button"
-                class="w-full flex items-center justify-between p-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-xs font-bold text-rose-600 transition"
+                class="w-full flex items-center justify-between p-3 rounded-2xl bg-rose-50 hover:bg-rose-100 text-xs font-black text-rose-600 transition border-2 border-rose-200 cursor-pointer"
                 @click="handleLogout"
               >
                 <span class="flex items-center gap-2">
@@ -263,117 +280,141 @@ onMounted(load)
 
         <!-- RIGHT CONTENT: TABS CONTAINER -->
         <div class="lg:col-span-8 space-y-6">
-          <div class="rounded-3xl bg-white border border-slate-200/80 p-6 shadow-xs space-y-6">
+          <div class="rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9] p-6 shadow-xs space-y-6">
             <!-- Tabs Navigation Header -->
-            <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+            <div class="flex items-center justify-between border-b-2 border-[#E8D9C9] pb-4">
               <div>
-                <h2 class="text-xl font-bold text-slate-900">กิจกรรมคอนเทนต์</h2>
-                <p class="text-xs text-slate-500 mt-0.5">รวมผลงานที่คุณเคยสร้าง รายการที่ถูกใจ และประวัติการเข้าชม</p>
+                <h2 class="text-2xl font-black text-[#332820]">กิจกรรมและคอนเทนต์ของคุณ</h2>
+                <p class="text-xs text-[#786B62] font-semibold mt-0.5">รวมเรื่องราวที่คุณลง สามารถกดแก้ไขเรื่องราว ดูบทความ หรือจัดการรายการโปรดได้ทันที</p>
               </div>
             </div>
 
             <!-- Tab Buttons Strip -->
-            <div class="flex items-center gap-2 border-b border-slate-200 overflow-x-auto scrollbar-none pb-0.5">
+            <div class="flex items-center gap-2 border-b-2 border-[#E8D9C9] overflow-x-auto scrollbar-none pb-0.5">
               <button
                 type="button"
-                class="py-3 px-4 text-xs sm:text-sm font-bold border-b-2 transition shrink-0 flex items-center gap-2"
-                :class="activeTab === 'published' ? 'border-[#1c4d3e] text-[#1c4d3e]' : 'border-transparent text-slate-500 hover:text-slate-900'"
+                class="py-3 px-4 text-xs sm:text-sm font-black border-b-4 transition shrink-0 flex items-center gap-2 cursor-pointer"
+                :class="activeTab === 'published' ? 'border-[#D96C2C] text-[#D96C2C]' : 'border-transparent text-[#786B62] hover:text-[#332820]'"
                 @click="activeTab = 'published'"
               >
                 <i class="mdi mdi-file-document-outline text-base"></i>
-                <span>คอนเทนต์ที่เคยลง</span>
-                <span class="px-2 py-0.5 rounded-full text-[11px]" :class="activeTab === 'published' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'">
+                <span>คอนเทนต์ที่ลงไว้</span>
+                <span class="px-2 py-0.5 rounded-full text-[11px]" :class="activeTab === 'published' ? 'bg-[#D96C2C] text-white font-black' : 'bg-[#F7F0E6] text-[#786B62]'">
                   {{ myContents.length }}
                 </span>
               </button>
 
               <button
                 type="button"
-                class="py-3 px-4 text-xs sm:text-sm font-bold border-b-2 transition shrink-0 flex items-center gap-2"
-                :class="activeTab === 'favorites' ? 'border-[#1c4d3e] text-[#1c4d3e]' : 'border-transparent text-slate-500 hover:text-slate-900'"
+                class="py-3 px-4 text-xs sm:text-sm font-black border-b-4 transition shrink-0 flex items-center gap-2 cursor-pointer"
+                :class="activeTab === 'favorites' ? 'border-[#D96C2C] text-[#D96C2C]' : 'border-transparent text-[#786B62] hover:text-[#332820]'"
                 @click="activeTab = 'favorites'"
               >
                 <i class="mdi mdi-heart-outline text-base"></i>
                 <span>รายการโปรด</span>
-                <span class="px-2 py-0.5 rounded-full text-[11px]" :class="activeTab === 'favorites' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'">
+                <span class="px-2 py-0.5 rounded-full text-[11px]" :class="activeTab === 'favorites' ? 'bg-[#D96C2C] text-white font-black' : 'bg-[#F7F0E6] text-[#786B62]'">
                   {{ favorites.length }}
                 </span>
               </button>
 
               <button
                 type="button"
-                class="py-3 px-4 text-xs sm:text-sm font-bold border-b-2 transition shrink-0 flex items-center gap-2"
-                :class="activeTab === 'history' ? 'border-[#1c4d3e] text-[#1c4d3e]' : 'border-transparent text-slate-500 hover:text-slate-900'"
+                class="py-3 px-4 text-xs sm:text-sm font-black border-b-4 transition shrink-0 flex items-center gap-2 cursor-pointer"
+                :class="activeTab === 'history' ? 'border-[#D96C2C] text-[#D96C2C]' : 'border-transparent text-[#786B62] hover:text-[#332820]'"
                 @click="activeTab = 'history'"
               >
                 <i class="mdi mdi-history text-base"></i>
                 <span>ประวัติการดู</span>
-                <span class="px-2 py-0.5 rounded-full text-[11px]" :class="activeTab === 'history' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'">
+                <span class="px-2 py-0.5 rounded-full text-[11px]" :class="activeTab === 'history' ? 'bg-[#D96C2C] text-white font-black' : 'bg-[#F7F0E6] text-[#786B62]'">
                   {{ history.length }}
                 </span>
               </button>
             </div>
 
-            <!-- TAB 1: คอนเทนต์ที่เคยลง (PUBLISHED CONTENTS) -->
+            <!-- TAB 1: คอนเทนต์ที่เคยลง (MY CONTENTS WITH EDIT ACTION) -->
             <div v-if="activeTab === 'published'">
               <div v-if="!myContents.length" class="py-14 text-center space-y-3">
-                <div class="flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 text-slate-400 mx-auto">
+                <div class="flex h-16 w-16 items-center justify-center rounded-full bg-[#D96C2C]/15 text-[#D96C2C] mx-auto border border-[#D96C2C]/30">
                   <i class="mdi mdi-file-document-plus-outline text-3xl"></i>
                 </div>
-                <h4 class="font-bold text-slate-800 text-base">ยังไม่มีคอนเทนต์ที่ลงไว้</h4>
-                <p class="text-xs text-slate-500 max-w-sm mx-auto">เริ่มต้นบอกเล่าเรื่องราวดี ๆ วัฒนธรรม หรือสถานที่น่าสนใจในกาญจนบุรีได้ทันที</p>
+                <h4 class="font-black text-[#332820] text-base">ยังไม่มีคอนเทนต์ที่ลงไว้</h4>
+                <p class="text-xs text-[#786B62] max-w-sm mx-auto font-semibold">เริ่มต้นบอกเล่าเรื่องราวดี ๆ วัฒนธรรม หรือสถานที่น่าสนใจในกาญจนบุรีได้ทันที</p>
                 <RouterLink
                   to="/create"
-                  class="mt-2 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#1c4d3e] hover:bg-[#14392e] text-white font-bold text-xs transition"
+                  class="mt-2 inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-[#D96C2C] hover:bg-[#BF5720] text-white font-black text-xs transition border border-[#D96C2C]"
                 >
-                  <i class="mdi mdi-plus"></i>
-                  <span>สร้างคอนเทนต์ใหม่</span>
+                  <i class="mdi mdi-plus text-white text-base"></i>
+                  <span class="text-white font-black">เขียนเรื่องราวใหม่</span>
                 </RouterLink>
               </div>
 
-              <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <article
                   v-for="item in myContents"
                   :key="item.contentId"
-                  class="group bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-xs hover:shadow-md hover:-translate-y-1 transition duration-300 flex flex-col justify-between"
+                  class="group bg-white rounded-3xl overflow-hidden border-2 border-[#E8D9C9] shadow-2xs hover:shadow-xl hover:border-[#D96C2C] hover:-translate-y-1 transition duration-300 flex flex-col justify-between"
                 >
                   <div>
-                    <div class="relative aspect-16/10 bg-slate-900 overflow-hidden">
+                    <div class="relative aspect-16/10 bg-[#171412] overflow-hidden">
                       <img
                         v-if="youtubeThumbnail(item.youtubeUrl)"
                         :src="youtubeThumbnail(item.youtubeUrl)"
                         :alt="item.title"
-                        class="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                        class="w-full h-full object-cover group-hover:scale-108 transition duration-500"
                       />
-                      <div v-else class="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#1c4d3e] to-[#0d3831] text-white">
-                        <i class="mdi mdi-file-document-outline text-4xl opacity-40"></i>
+                      <div v-else class="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#D96C2C] to-[#171412] text-white">
+                        <i class="mdi mdi-file-document-outline text-5xl opacity-40"></i>
                       </div>
                       <span
-                        class="absolute top-2.5 right-2.5 px-2.5 py-1 rounded-md text-[11px] font-bold shadow-xs"
+                        class="absolute top-2.5 right-2.5 px-3 py-0.5 rounded-full text-[10px] font-black border"
                         :class="statusClass(item.status)"
                       >
                         {{ statusLabel(item.status) }}
                       </span>
                     </div>
 
-                    <div class="p-4 space-y-1.5">
-                      <h4 class="font-bold text-slate-900 text-sm group-hover:text-[#1c4d3e] transition line-clamp-1">
+                    <div class="p-5 space-y-2">
+                      <h4 class="font-black text-[#332820] text-base group-hover:text-[#D96C2C] transition line-clamp-1 leading-snug">
                         {{ item.title }}
                       </h4>
-                      <p class="text-xs text-slate-500 line-clamp-2 leading-relaxed">
-                        {{ item.summary || 'คอนเทนต์จากกาญจนบุรี' }}
+                      <p class="text-xs text-[#786B62] line-clamp-2 leading-relaxed font-semibold">
+                        {{ item.summary || 'เรื่องราวจากกาญจนบุรี' }}
                       </p>
                     </div>
                   </div>
 
-                  <div class="px-4 pb-4 pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
-                    <span class="text-slate-400 text-[11px]">อัปเดต {{ formatDate(item.updatedAt) }}</span>
+                  <!-- ACTION BUTTONS BAR FOR THE AUTHOR -->
+                  <div class="px-5 pb-4 pt-3 border-t-2 border-[#E8D9C9] flex items-center justify-between text-xs font-bold">
                     <RouterLink
-                      :to="item.status === 'Published' ? `/contents/${item.contentId}` : `/my-contents/${item.contentId}/edit`"
-                      class="font-bold text-[#1c4d3e] hover:underline"
+                      :to="`/contents/${item.contentId}`"
+                      target="_blank"
+                      class="inline-flex items-center gap-1 font-bold text-[#786B62] hover:text-[#D96C2C]"
+                      title="ดูหน้าบทความสาธารณะ"
                     >
-                      {{ item.status === 'Published' ? 'ดูคอนเทนต์' : 'แก้ไข' }}
+                      <i class="mdi mdi-eye-outline text-sm text-[#D96C2C]"></i>
+                      <span>ดูบทความ</span>
                     </RouterLink>
+
+                    <div class="flex items-center gap-2">
+                      <!-- EDIT BUTTON FOR THE AUTHOR -->
+                      <RouterLink
+                        :to="item.shopId ? `/my-shop/contents/${item.contentId}/edit` : `/my-contents/${item.contentId}/edit`"
+                        class="inline-flex items-center gap-1 rounded-xl border border-[#D96C2C]/30 bg-[#D96C2C]/10 px-3 py-1.5 font-black text-[#D96C2C] hover:bg-[#D96C2C] hover:text-white transition shadow-2xs"
+                      >
+                        <i class="mdi mdi-pencil-outline text-xs"></i>
+                        <span>แก้ไข</span>
+                      </RouterLink>
+
+                      <!-- DELETE BUTTON FOR THE AUTHOR -->
+                      <button
+                        type="button"
+                        class="inline-flex items-center gap-1 rounded-xl border border-rose-200 bg-rose-50 px-3 py-1.5 font-black text-rose-600 hover:bg-rose-600 hover:text-white transition shadow-2xs cursor-pointer"
+                        @click="deleteContent(item)"
+                      >
+                        <i class="mdi mdi-trash-can-outline text-xs"></i>
+                        <span>ลบ</span>
+                      </button>
+                    </div>
                   </div>
                 </article>
               </div>
@@ -382,56 +423,56 @@ onMounted(load)
             <!-- TAB 2: รายการโปรด (FAVORITES) -->
             <div v-else-if="activeTab === 'favorites'">
               <div v-if="!favorites.length" class="py-14 text-center space-y-3">
-                <div class="flex h-16 w-16 items-center justify-center rounded-full bg-rose-50 text-rose-500 mx-auto">
+                <div class="flex h-16 w-16 items-center justify-center rounded-full bg-rose-50 text-rose-500 mx-auto border border-rose-200">
                   <i class="mdi mdi-heart-outline text-3xl"></i>
                 </div>
-                <h4 class="font-bold text-slate-800 text-base">ยังไม่มีคอนเทนต์ในรายการโปรด</h4>
-                <p class="text-xs text-slate-500 max-w-sm mx-auto">เมื่อคุณกดหัวใจบันทึกคอนเทนต์ที่ชอบ จะมาปรากฏที่นี่</p>
+                <h4 class="font-black text-[#332820] text-base">ยังไม่มีคอนเทนต์ในรายการโปรด</h4>
+                <p class="text-xs text-[#786B62] max-w-sm mx-auto font-semibold">เมื่อคุณกดหัวใจบันทึกคอนเทนต์ที่ชอบ จะมาปรากฏที่นี่</p>
                 <RouterLink
                   to="/contents"
-                  class="mt-2 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#1c4d3e] hover:bg-[#14392e] text-white font-bold text-xs transition"
+                  class="mt-2 inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-[#D96C2C] hover:bg-[#BF5720] text-white font-black text-xs transition border border-[#D96C2C]"
                 >
-                  <i class="mdi mdi-compass-outline"></i>
-                  <span>สำรวจคอนเทนต์</span>
+                  <i class="mdi mdi-compass-outline text-white text-base"></i>
+                  <span class="text-white font-black">สำรวจคอนเทนต์</span>
                 </RouterLink>
               </div>
 
-              <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <RouterLink
                   v-for="item in favorites"
                   :key="item.contentId"
                   :to="`/contents/${item.contentId}`"
-                  class="group bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-xs hover:shadow-md hover:-translate-y-1 transition duration-300 flex flex-col justify-between"
+                  class="group bg-white rounded-3xl overflow-hidden border-2 border-[#E8D9C9] shadow-2xs hover:shadow-xl hover:border-[#D96C2C] hover:-translate-y-1 transition duration-300 flex flex-col justify-between"
                 >
                   <div>
-                    <div class="relative aspect-16/10 bg-slate-900 overflow-hidden">
+                    <div class="relative aspect-16/10 bg-[#171412] overflow-hidden">
                       <img
                         v-if="youtubeThumbnail(item.youtubeUrl)"
                         :src="youtubeThumbnail(item.youtubeUrl)"
                         :alt="item.title"
-                        class="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                        class="w-full h-full object-cover group-hover:scale-108 transition duration-500"
                       />
-                      <div v-else class="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#1c4d3e] to-[#0d3831] text-white">
-                        <i class="mdi mdi-heart-outline text-4xl opacity-40"></i>
+                      <div v-else class="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#D96C2C] to-[#171412] text-white">
+                        <i class="mdi mdi-heart-outline text-5xl opacity-40"></i>
                       </div>
                       <span class="absolute top-2.5 right-2.5 h-8 w-8 rounded-full bg-white/95 text-rose-500 shadow-xs flex items-center justify-center">
                         <i class="mdi mdi-heart"></i>
                       </span>
                     </div>
 
-                    <div class="p-4 space-y-1.5">
-                      <h4 class="font-bold text-slate-900 text-sm group-hover:text-[#1c4d3e] transition line-clamp-1">
+                    <div class="p-5 space-y-2">
+                      <h4 class="font-black text-[#332820] text-base group-hover:text-[#D96C2C] transition line-clamp-1 leading-snug">
                         {{ item.title }}
                       </h4>
-                      <p class="text-xs text-slate-500 line-clamp-2 leading-relaxed">
+                      <p class="text-xs text-[#786B62] line-clamp-2 leading-relaxed font-semibold">
                         {{ item.summary || 'คอนเทนต์วัฒนธรรมกาญจนบุรี' }}
                       </p>
                     </div>
                   </div>
 
-                  <div class="px-4 pb-4 pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
-                    <span class="text-[#1c4d3e] font-bold text-[11px]"><i class="mdi mdi-heart-outline mr-1"></i>บันทึกเมื่อ {{ formatDate(item.createdAt) }}</span>
-                    <span class="font-bold text-[#1c4d3e]">เข้าดู</span>
+                  <div class="px-5 pb-4 pt-3 border-t-2 border-[#E8D9C9] flex items-center justify-between text-xs font-bold">
+                    <span class="text-[#D96C2C] font-black text-[11px]"><i class="mdi mdi-heart-outline mr-1"></i>บันทึกแล้ว</span>
+                    <span class="font-black text-[#D96C2C]">เข้าดูเรื่องราว</span>
                   </div>
                 </RouterLink>
               </div>
@@ -440,53 +481,53 @@ onMounted(load)
             <!-- TAB 3: ประวัติการดู (WATCH HISTORY) -->
             <div v-else-if="activeTab === 'history'">
               <div v-if="!history.length" class="py-14 text-center space-y-3">
-                <div class="flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 text-slate-400 mx-auto">
+                <div class="flex h-16 w-16 items-center justify-center rounded-full bg-[#F7F0E6] text-[#786B62] mx-auto border border-[#E8D9C9]">
                   <i class="mdi mdi-history text-3xl"></i>
                 </div>
-                <h4 class="font-bold text-slate-800 text-base">ยังไม่มีประวัติการเข้าชม</h4>
-                <p class="text-xs text-slate-500 max-w-sm mx-auto">คอนเทนต์ที่คุณเปิดเข้าดูจะถูกบันทึกไว้อัตโนมัติที่นี่</p>
+                <h4 class="font-black text-[#332820] text-base">ยังไม่มีประวัติการเข้าชม</h4>
+                <p class="text-xs text-[#786B62] max-w-sm mx-auto font-semibold">คอนเทนต์ที่คุณเปิดเข้าดูจะถูกบันทึกไว้อัตโนมัติที่นี่</p>
                 <RouterLink
                   to="/contents"
-                  class="mt-2 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#1c4d3e] hover:bg-[#14392e] text-white font-bold text-xs transition"
+                  class="mt-2 inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-[#D96C2C] hover:bg-[#BF5720] text-white font-black text-xs transition border border-[#D96C2C]"
                 >
-                  <i class="mdi mdi-compass-outline"></i>
-                  <span>สำรวจคอนเทนต์</span>
+                  <i class="mdi mdi-compass-outline text-white text-base"></i>
+                  <span class="text-white font-black">สำรวจคอนเทนต์</span>
                 </RouterLink>
               </div>
 
-              <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <RouterLink
                   v-for="item in history"
                   :key="item.contentId"
                   :to="`/contents/${item.contentId}`"
-                  class="group bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-xs hover:shadow-md hover:-translate-y-1 transition duration-300 flex flex-col justify-between"
+                  class="group bg-white rounded-3xl overflow-hidden border-2 border-[#E8D9C9] shadow-2xs hover:shadow-xl hover:border-[#D96C2C] hover:-translate-y-1 transition duration-300 flex flex-col justify-between"
                 >
                   <div>
-                    <div class="relative aspect-16/10 bg-slate-900 overflow-hidden">
+                    <div class="relative aspect-16/10 bg-[#171412] overflow-hidden">
                       <img
                         v-if="youtubeThumbnail(item.youtubeUrl)"
                         :src="youtubeThumbnail(item.youtubeUrl)"
                         :alt="item.title"
-                        class="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                        class="w-full h-full object-cover group-hover:scale-108 transition duration-500"
                       />
-                      <div v-else class="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#1c4d3e] to-[#0d3831] text-white">
-                        <i class="mdi mdi-eye-outline text-4xl opacity-40"></i>
+                      <div v-else class="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#D96C2C] to-[#171412] text-white">
+                        <i class="mdi mdi-eye-outline text-5xl opacity-40"></i>
                       </div>
                     </div>
 
-                    <div class="p-4 space-y-1.5">
-                      <h4 class="font-bold text-slate-900 text-sm group-hover:text-[#1c4d3e] transition line-clamp-1">
+                    <div class="p-5 space-y-2">
+                      <h4 class="font-black text-[#332820] text-base group-hover:text-[#D96C2C] transition line-clamp-1 leading-snug">
                         {{ item.title }}
                       </h4>
-                      <p class="text-xs text-slate-500 line-clamp-2 leading-relaxed">
+                      <p class="text-xs text-[#786B62] line-clamp-2 leading-relaxed font-semibold">
                         {{ item.summary || 'คอนเทนต์จากกาญจนบุรี' }}
                       </p>
                     </div>
                   </div>
 
-                  <div class="px-4 pb-4 pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
-                    <span class="text-slate-400 text-[11px]"><i class="mdi mdi-clock-outline mr-1"></i>ดูเมื่อ {{ formatDate(item.viewedAt) }}</span>
-                    <span class="font-bold text-[#1c4d3e]">เข้าดูอีกครั้ง</span>
+                  <div class="px-5 pb-4 pt-3 border-t-2 border-[#E8D9C9] flex items-center justify-between text-xs font-bold">
+                    <span class="text-[#786B62] text-[11px]"><i class="mdi mdi-clock-outline mr-1"></i>ดูเมื่อ {{ formatDate(item.viewedAt) }}</span>
+                    <span class="font-black text-[#D96C2C]">เข้าดูอีกครั้ง</span>
                   </div>
                 </RouterLink>
               </div>

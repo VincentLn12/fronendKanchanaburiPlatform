@@ -7,6 +7,7 @@ const props = defineProps<{ latitude: number | null; longitude: number | null }>
 const emit = defineEmits<{
   'update:latitude': [value: number]
   'update:longitude': [value: number]
+  'address-detected': [data: { districtName?: string; subDistrictName?: string; fullAddress?: string }]
 }>()
 
 const mapElement = ref<HTMLElement | null>(null)
@@ -50,9 +51,42 @@ function setLocation(latitude: number, longitude: number, moveMap = true) {
   if (moveMap) map.setView(point, Math.max(map.getZoom(), 15))
 }
 
+async function reverseGeocode(latitude: number, longitude: number) {
+  try {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}&accept-language=th`,
+    )
+    if (!response.ok) return
+    const data = (await response.json()) as {
+      display_name?: string
+      address?: Record<string, string>
+    }
+    const addr = data.address || {}
+
+    // Extract district (อำเภอ)
+    let districtName = addr.county || addr.district || addr.city_district || addr.state_district || ''
+    districtName = districtName.replace(/^(อำเภอ|อ\.)\s*/, '').trim()
+
+    // Extract sub-district (ตำบล)
+    let subDistrictName = addr.subdistrict || addr.quarter || addr.village || addr.suburb || addr.town || addr.neighbourhood || ''
+    subDistrictName = subDistrictName.replace(/^(ตำบล|ต\.)\s*/, '').trim()
+
+    emit('address-detected', {
+      districtName,
+      subDistrictName,
+      fullAddress: data.display_name,
+    })
+  } catch (error) {
+    console.warn('Reverse geocoding error:', error)
+  }
+}
+
 function publishLocation(latitude: number, longitude: number) {
-  emit('update:latitude', Number(latitude.toFixed(6)))
-  emit('update:longitude', Number(longitude.toFixed(6)))
+  const lat = Number(latitude.toFixed(6))
+  const lng = Number(longitude.toFixed(6))
+  emit('update:latitude', lat)
+  emit('update:longitude', lng)
+  void reverseGeocode(lat, lng)
 }
 
 function locateMe() {
@@ -87,11 +121,13 @@ async function searchPlace() {
     const params = new URLSearchParams({ format: 'jsonv2', limit: '5', countrycodes: 'th', q: query })
     const response = await fetch(`https://nominatim.openstreetmap.org/search?${params}`)
     if (!response.ok) throw new Error('Search request failed')
-    searchResults.value = await response.json() as PlaceResult[]
+    searchResults.value = (await response.json()) as PlaceResult[]
     if (!searchResults.value.length) errorMessage.value = 'ไม่พบสถานที่ที่ค้นหา ลองระบุชื่อ อำเภอ หรือจังหวัดเพิ่ม'
   } catch {
     errorMessage.value = 'ค้นหาสถานที่ไม่สำเร็จ กรุณาลองใหม่อีกครั้ง'
-  } finally { searching.value = false }
+  } finally {
+    searching.value = false
+  }
 }
 
 function selectPlace(place: PlaceResult) {
@@ -105,7 +141,17 @@ function selectPlace(place: PlaceResult) {
 }
 
 onMounted(() => {
-  map = L.map(mapElement.value!, { scrollWheelZoom: false }).setView(
+  const KANCHANABURI_BOUNDS: L.LatLngBoundsExpression = [
+    [13.70, 98.00],
+    [15.85, 100.00],
+  ]
+  map = L.map(mapElement.value!, {
+    scrollWheelZoom: false,
+    minZoom: 9,
+    maxZoom: 18,
+    maxBounds: KANCHANABURI_BOUNDS,
+    maxBoundsViscosity: 0.4,
+  }).setView(
     hasLocation() ? [props.latitude!, props.longitude!] : defaultLocation,
     hasLocation() ? 15 : 10,
   )
@@ -113,6 +159,8 @@ onMounted(() => {
     maxZoom: 19,
     attribution:
       '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    bounds: KANCHANABURI_BOUNDS,
+    keepBuffer: 6,
   }).addTo(map)
   map.on('click', (event: L.LeafletMouseEvent) => {
     setLocation(event.latlng.lat, event.latlng.lng, false)
@@ -135,33 +183,60 @@ onBeforeUnmount(() => map?.remove())
 <template>
   <section class="space-y-3">
     <div class="flex gap-2">
-      <input v-model="searchQuery" type="search" class="min-w-0 flex-1 rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-indigo-500" placeholder="ค้นหาสถานที่ เช่น น้ำตกเอราวัณ" @keyup.enter="searchPlace" />
-      <button type="button" class="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-700 disabled:opacity-60" :disabled="searching || !searchQuery.trim()" @click="searchPlace"><i class="mdi" :class="searching ? 'mdi-loading animate-spin' : 'mdi-magnify'" /></button>
+      <input
+        v-model="searchQuery"
+        type="search"
+        class="min-w-0 flex-1 rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-[#D96C2C]"
+        placeholder="ค้นหาสถานที่ เช่น น้ำตกเอราวัณ"
+        @keyup.enter="searchPlace"
+      />
+      <button
+        type="button"
+        class="rounded-xl bg-[#D96C2C] hover:bg-[#BF5720] px-4 py-2 text-sm font-bold text-white shadow-sm disabled:opacity-60 cursor-pointer"
+        :disabled="searching || !searchQuery.trim()"
+        @click="searchPlace"
+      >
+        <i class="mdi text-white" :class="searching ? 'mdi-loading animate-spin' : 'mdi-magnify'" />
+      </button>
     </div>
-    <div v-if="searchResults.length" class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-      <button v-for="place in searchResults" :key="place.place_id" type="button" class="block w-full border-b border-slate-100 px-3 py-2.5 text-left text-sm text-slate-700 last:border-b-0 hover:bg-indigo-50" @click="selectPlace(place)">{{ place.display_name }}</button>
+    <div
+      v-if="searchResults.length"
+      class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"
+    >
+      <button
+        v-for="place in searchResults"
+        :key="place.place_id"
+        type="button"
+        class="block w-full border-b border-slate-100 px-3 py-2.5 text-left text-sm text-slate-700 last:border-b-0 hover:bg-[#D96C2C]/10 cursor-pointer"
+        @click="selectPlace(place)"
+      >
+        {{ place.display_name }}
+      </button>
     </div>
     <div class="flex flex-wrap items-center justify-between gap-3">
       <div>
-        <h3 class="font-semibold text-slate-800">ตำแหน่งบนแผนที่</h3>
-        <p class="text-xs text-slate-500">คลิกบนแผนที่หรือลากหมุดเพื่อระบุตำแหน่ง</p>
+        <h3 class="font-bold text-[#332820]">ตำแหน่งบนแผนที่</h3>
+        <p class="text-xs text-[#786B62] font-semibold">คลิกบนแผนที่หรือลากหมุดเพื่อระบุตำแหน่ง</p>
       </div>
       <button
         type="button"
-        class="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-700 hover:bg-indigo-100 disabled:opacity-60"
+        class="inline-flex items-center gap-1.5 rounded-xl border-2 border-[#D96C2C] bg-[#D96C2C]/10 px-3 py-2 text-xs font-black text-[#D96C2C] hover:bg-[#D96C2C] hover:text-white transition disabled:opacity-60 cursor-pointer"
         :disabled="locating"
         @click="locateMe"
       >
         <i class="mdi" :class="locating ? 'mdi-loading animate-spin' : 'mdi-crosshairs-gps'" />{{
-          locating ? 'กำลังค้นหา...' : 'ใช้ตำแหน่งปัจจุบัน'
+          locating ? 'กำลังค้นหาพิกัด...' : 'ใช้ตำแหน่งปัจจุบัน'
         }}
       </button>
     </div>
-    <div ref="mapElement" class="h-80 overflow-hidden rounded-2xl border border-slate-200" />
-    <p class="text-xs text-slate-500">
+    <div
+      ref="mapElement"
+      class="h-80 overflow-hidden rounded-2xl border-2 border-[#E8D9C9] shadow-xs"
+    />
+    <p class="text-xs text-[#786B62] font-semibold">
       ละติจูด {{ latitude ?? '-' }} · ลองจิจูด {{ longitude ?? '-' }}
     </p>
-    <p v-if="errorMessage" class="text-xs text-rose-600">{{ errorMessage }}</p>
+    <p v-if="errorMessage" class="text-xs text-rose-600 font-bold">{{ errorMessage }}</p>
   </section>
 </template>
 
@@ -178,12 +253,13 @@ onBeforeUnmount(() => map?.remove())
   justify-content: center;
   border-radius: 9999px 9999px 9999px 0;
   transform: rotate(-45deg);
-  background: #4f46e5;
+  background: #d96c2c;
   color: white;
-  box-shadow: 0 4px 12px rgb(79 70 229 / 0.35);
+  box-shadow: 0 4px 12px rgba(217, 108, 44, 0.4);
 }
 :deep(.location-picker-pin i) {
   transform: rotate(45deg);
   font-size: 22px;
+  color: white;
 }
 </style>

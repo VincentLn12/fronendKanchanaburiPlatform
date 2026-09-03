@@ -3,14 +3,14 @@ import heroCoverImage from '@/assets/รูปปก.png'
 
 interface Props {
   search: string
-  viewMode: 'contents' | 'map'
+  viewMode: 'shops' | 'map'
 }
 
 defineProps<Props>()
 
 const emit = defineEmits<{
   'update:search': [value: string]
-  'update:viewMode': [value: 'contents' | 'map']
+  'update:viewMode': [value: 'shops' | 'map']
   search: []
 }>()
 
@@ -28,12 +28,12 @@ function onSearchSubmit() {
   <section class="relative isolate overflow-hidden bg-[#171412] text-white">
     <img
       :src="heroCoverImage"
-      alt="สำรวจคอนเทนต์กาญจนบุรี"
+      alt="สำรวจร้านค้าและผลิตภัณฑ์กาญจนบุรี"
       class="absolute inset-0 -z-20 h-full w-full object-cover object-center opacity-100 brightness-105 contrast-105"
     />
     <!-- Neutral dark gradient overlay for text legibility -->
     <div
-      class="absolute inset-0 -z-10 bg-gradient-to-r from-[#171412]/95 via-[#171412]/80 to-transparent"
+      class="absolute inset-0 -z-10 bg-gradient-to-r from-[#171412]/95 via-[#171412]/85 to-transparent"
     ></div>
     <div
       class="absolute inset-0 -z-10 bg-gradient-to-t from-[#F7F0E6] via-transparent to-black/40"
@@ -42,18 +42,18 @@ function onSearchSubmit() {
     <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
       <div class="max-w-3xl">
         <p class="text-xs font-black tracking-widest text-[#F2A65A] uppercase flex items-center gap-1.5 drop-shadow-sm">
-          <i class="mdi mdi-compass-rose text-base"></i>
-          KANCHANABURI CULTURAL TOURISM PLATFORM
+          <i class="mdi mdi-storefront-outline text-base"></i>
+          KANCHANABURI COMMUNITY MARKETPLACE
         </p>
         <div class="mt-3 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h1 class="text-3xl font-black leading-tight text-white drop-shadow-md sm:text-5xl">
-              สำรวจเรื่องราวกาญจนบุรี
+              ร้านค้าและผลิตภัณฑ์ชุมชน
             </h1>
             <p
               class="mt-3 max-w-2xl text-sm leading-relaxed text-[#F7F0E6] drop-shadow-sm sm:text-base font-semibold"
             >
-              สัมผัสความงดงามทางวัฒนธรรม วิถีชีวิตท้องถิ่น และสถานที่ท่องเที่ยวที่คุณไม่ควรพลาด
+              อุดหนุนสินค้าภูมิปัญญาท้องถิ่น งานหัตถกรรม อาหารพื้นเมือง และบริการจากชุมชนจังหวัดกาญจนบุรี
             </p>
           </div>
           <div
@@ -64,14 +64,14 @@ function onSearchSubmit() {
               type="button"
               class="flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-black transition cursor-pointer"
               :class="
-                viewMode === 'contents'
+                viewMode === 'shops'
                   ? 'bg-[#D96C2C] text-white shadow-md border border-white/20'
                   : 'text-white/80 hover:bg-white/10 hover:text-white'
               "
-              @click="emit('update:viewMode', 'contents')"
+              @click="emit('update:viewMode', 'shops')"
             >
-              <i class="mdi mdi-play-box-multiple-outline text-base text-white"></i>
-              <span class="!text-white font-black">รายการวิดีโอ</span>
+              <i class="mdi mdi-store-outline text-base text-white"></i>
+              <span class="!text-white font-black">ร้านค้าทั้งหมด</span>
             </button>
             <button
               type="button"
@@ -98,7 +98,7 @@ function onSearchSubmit() {
               :value="search"
               @input="onSearchInput"
               type="text"
-              placeholder="ค้นหาคอนเทนต์ เช่น รำมอญ, ที่เที่ยวสังขละบุรี, วัฒนธรรม..."
+              placeholder="ค้นหาร้านค้า เช่น ร้านของฝากสังขละบุรี, คาเฟ่กาญจนบุรี, ผ้าไหม..."
               class="w-full bg-transparent py-2 text-sm font-extrabold text-[#332820] focus:outline-none placeholder:text-[#786B62]"
               @keyup.enter="onSearchSubmit"
             />

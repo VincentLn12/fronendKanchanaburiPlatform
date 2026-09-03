@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { ContentCategory } from '../api/contentApi'
+import type { ShopCategory } from '../../shared/types/shop'
 
 interface Props {
-  categories: ContentCategory[]
+  categories: ShopCategory[]
   selectedCategoryId: string | null
 }
 
@@ -32,26 +32,26 @@ const emit = defineEmits<{
           class="h-6 w-6 rounded-xl flex items-center justify-center text-xs"
           :class="selectedCategoryId === null ? 'bg-white text-[#D96C2C] font-black' : 'bg-[#D96C2C]/10 text-[#D96C2C]'"
         >
-          <i class="mdi mdi-compass-outline"></i>
+          <i class="mdi mdi-store-outline"></i>
         </div>
-        <span class="font-black">คอนเทนต์ทั้งหมด</span>
+        <span class="font-black">ร้านค้าทั้งหมด</span>
       </button>
 
       <button
         v-for="cat in categories"
-        :key="cat.contentCategoryId"
+        :key="cat.shopCategoryId"
         type="button"
         class="shrink-0 rounded-2xl border-2 px-5 py-2.5 text-xs font-black transition-all cursor-pointer shadow-xs active:scale-95 flex items-center gap-2"
         :class="
-          selectedCategoryId === cat.contentCategoryId
+          selectedCategoryId === cat.shopCategoryId
             ? 'border-[#D96C2C] bg-[#D96C2C] text-white shadow-md'
             : 'border-[#E8D9C9] bg-white text-[#332820] hover:border-[#D96C2C] hover:text-[#D96C2C]'
         "
-        @click="emit('select', cat.contentCategoryId)"
+        @click="emit('select', cat.shopCategoryId)"
       >
         <div
           class="h-6 w-6 rounded-xl flex items-center justify-center text-xs"
-          :class="selectedCategoryId === cat.contentCategoryId ? 'bg-white text-[#D96C2C] font-black' : 'bg-[#D96C2C]/10 text-[#D96C2C]'"
+          :class="selectedCategoryId === cat.shopCategoryId ? 'bg-white text-[#D96C2C] font-black' : 'bg-[#D96C2C]/10 text-[#D96C2C]'"
         >
           <i class="mdi mdi-shape-outline"></i>
         </div>

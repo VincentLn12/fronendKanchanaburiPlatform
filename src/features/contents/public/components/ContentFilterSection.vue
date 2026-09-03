@@ -34,36 +34,36 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <section class="rounded-3xl border border-[#E8E2D5] bg-white shadow-sm overflow-hidden text-slate-800">
+  <section class="rounded-3xl border-2 border-[#E8D9C9] bg-[#FFF9F2] shadow-sm overflow-hidden text-[#332820]">
     <button
       type="button"
-      class="flex w-full items-center justify-between px-6 py-4 text-left cursor-pointer bg-[#FFFDF9]"
+      class="flex w-full items-center justify-between px-6 py-4 text-left cursor-pointer bg-[#FFF9F2]"
       :aria-expanded="filtersOpen"
       @click="emit('update:filtersOpen', !filtersOpen)"
     >
-      <span class="flex items-center gap-2.5 text-base font-extrabold text-[#1C4D3E]">
-        <div class="h-8 w-8 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-[#1C4D3E]">
+      <span class="flex items-center gap-2.5 text-base font-black text-[#D96C2C]">
+        <div class="h-8 w-8 rounded-xl bg-[#D96C2C]/15 border border-[#D96C2C]/30 flex items-center justify-center text-[#D96C2C]">
           <i class="mdi mdi-tune-variant text-lg" />
         </div>
         <span>ค้นหาและกรองคอนเทนต์</span>
         <span
           v-if="activeFilterCount"
-          class="bg-amber-100 border border-amber-300 px-2 py-0.5 text-xs text-[#D99A32] rounded-full font-black shadow-2xs"
+          class="bg-[#D96C2C]/20 border border-[#D96C2C]/40 px-2.5 py-0.5 text-xs text-[#D96C2C] rounded-full font-black shadow-2xs"
         >
           {{ activeFilterCount }} ตัวกรอง
         </span>
       </span>
       <i
-        class="mdi text-xl text-slate-500 transition-transform"
+        class="mdi text-xl text-[#786B62] transition-transform"
         :class="filtersOpen ? 'mdi-chevron-up' : 'mdi-chevron-down'"
       />
     </button>
 
-    <div v-show="filtersOpen" class="space-y-5 border-t border-[#E8E2D5] px-6 py-6 bg-white">
+    <div v-show="filtersOpen" class="space-y-5 border-t-2 border-[#E8D9C9] px-6 py-6 bg-[#FFF9F2]">
       <!-- Dropdowns Row -->
       <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 items-end">
         <div>
-          <label class="block text-xs font-bold text-slate-600 mb-1.5">หมวดหมู่</label>
+          <label class="block text-xs font-bold text-[#786B62] mb-1.5">หมวดหมู่</label>
           <AppSelect
             :model-value="categoryId"
             @update:model-value="
@@ -81,7 +81,7 @@ const emit = defineEmits<{
         </div>
 
         <div>
-          <label class="block text-xs font-bold text-slate-600 mb-1.5">อำเภอ</label>
+          <label class="block text-xs font-bold text-[#786B62] mb-1.5">อำเภอ</label>
           <AppSelect
             :model-value="districtId"
             @update:model-value="
@@ -99,7 +99,7 @@ const emit = defineEmits<{
         </div>
 
         <div>
-          <label class="block text-xs font-bold text-slate-600 mb-1.5">ตำบล</label>
+          <label class="block text-xs font-bold text-[#786B62] mb-1.5">ตำบล</label>
           <AppSelect
             :model-value="subDistrictId"
             @update:model-value="
@@ -118,7 +118,7 @@ const emit = defineEmits<{
         </div>
 
         <div>
-          <label class="block text-xs font-bold text-slate-600 mb-1.5">แท็กคำค้น</label>
+          <label class="block text-xs font-bold text-[#786B62] mb-1.5">แท็กคำค้น</label>
           <AppSelect
             :model-value="tagId"
             @update:model-value="
@@ -136,7 +136,7 @@ const emit = defineEmits<{
         </div>
 
         <div>
-          <label class="block text-xs font-bold text-slate-600 mb-1.5">เรียงตาม</label>
+          <label class="block text-xs font-bold text-[#786B62] mb-1.5">เรียงตาม</label>
           <AppSelect
             :model-value="sortBy"
             @update:model-value="(val: any) => emit('update:sortBy', (val as 'latest' | 'popular' | 'title') ?? 'latest')"
@@ -151,19 +151,19 @@ const emit = defineEmits<{
       <!-- Tag Pills Filter -->
       <div
         v-if="tags.length"
-        class="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4"
+        class="flex flex-wrap items-center justify-between gap-3 border-t-2 border-[#E8D9C9] pt-4"
       >
         <div class="flex flex-wrap items-center gap-2">
-          <span class="text-xs font-bold text-slate-500">แท็กนิยม:</span>
+          <span class="text-xs font-extrabold text-[#786B62]">แท็กนิยม:</span>
           <button
             v-for="tg in tags"
             :key="tg.tagId"
             type="button"
-            class="px-3.5 py-1 rounded-full border text-xs font-bold transition cursor-pointer active:scale-95 shadow-2xs"
+            class="px-3.5 py-1 rounded-full border-2 text-xs font-black transition cursor-pointer active:scale-95 shadow-2xs"
             :class="
               tagId === tg.tagId
-                ? 'bg-[#1C4D3E] text-amber-300 border-[#1C4D3E]'
-                : 'bg-[#F9F7F2] border-[#E8E2D5] text-slate-700 hover:border-[#1C4D3E] hover:text-[#1C4D3E]'
+                ? 'bg-[#D96C2C] text-white border-[#D96C2C]'
+                : 'bg-white border-[#E8D9C9] text-[#332820] hover:border-[#D96C2C] hover:text-[#D96C2C]'
             "
             @click="emit('select-tag', tg.tagId)"
           >
@@ -174,7 +174,7 @@ const emit = defineEmits<{
         <button
           v-if="activeFilterCount"
           type="button"
-          class="text-xs font-bold text-[#D99A32] hover:underline flex items-center gap-1 transition cursor-pointer"
+          class="text-xs font-black text-[#D96C2C] hover:underline flex items-center gap-1 transition cursor-pointer"
           @click="emit('clear-filters')"
         >
           <i class="mdi mdi-refresh"></i>

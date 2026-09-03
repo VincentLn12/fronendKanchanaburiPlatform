@@ -72,7 +72,7 @@ async function load() {
       getContentReviews(id.value).catch(() => ({ totalCount: 0, reviews: [] })),
       content.value.shopId
         ? getShop(content.value.shopId).then((shop) => [shop]).catch(() => [])
-        : getShops({ districtId: content.value.districtId, pageSize: 3 }).catch(() => []),
+        : getShops({ districtId: content.value.districtId, pageSize: 3 }).catch(() => ({ items: [] as Shop[] })),
       getPublicContents({ categoryId: content.value.contentCategoryId, pageSize: 4 }).catch(
         () => ({ items: [] }),
       ),
@@ -80,7 +80,7 @@ async function load() {
     schedules.value = scheduleItems
     products.value = productItems
     reviewData.value = reviews
-    relatedShops.value = shops
+    relatedShops.value = 'items' in shops ? shops.items : (shops as Shop[])
     relatedContents.value = (relatedData.items || []).filter((item) => item.contentId !== id.value)
 
     if (auth.isLoggedIn) {
@@ -221,19 +221,19 @@ onMounted(load)
 </script>
 
 <template>
-  <div v-if="content" class="min-h-screen bg-[#F9F7F2] text-slate-800 pb-16">
+  <div v-if="content" class="min-h-screen bg-[#F7F0E6] text-[#332820] pb-16">
     <!-- BREADCRUMB BAR -->
-    <div class="bg-white border-b border-[#E8E2D5] py-3 shadow-2xs">
+    <div class="bg-[#FFF9F2] border-b-2 border-[#E8D9C9] py-3 shadow-2xs">
       <div
-        class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-xs text-slate-600 flex items-center gap-2 font-medium"
+        class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-xs text-[#786B62] flex items-center gap-2 font-bold"
       >
-        <RouterLink to="/" class="hover:text-[#1C4D3E] transition">หน้าแรก</RouterLink>
-        <i class="mdi mdi-chevron-right text-slate-400"></i>
-        <RouterLink to="/contents" class="hover:text-[#1C4D3E] transition">สำรวจคอนเทนต์</RouterLink>
-        <i class="mdi mdi-chevron-right text-slate-400"></i>
-        <span class="text-[#1C4D3E] font-bold">{{ content.contentCategoryName || 'ศิลปะการแสดง' }}</span>
-        <i class="mdi mdi-chevron-right text-slate-400"></i>
-        <span class="text-slate-900 font-extrabold line-clamp-1">{{ content.title }}</span>
+        <RouterLink to="/" class="hover:text-[#D96C2C] transition">หน้าแรก</RouterLink>
+        <i class="mdi mdi-chevron-right text-[#E8D9C9]"></i>
+        <RouterLink to="/contents" class="hover:text-[#D96C2C] transition">สำรวจคอนเทนต์</RouterLink>
+        <i class="mdi mdi-chevron-right text-[#E8D9C9]"></i>
+        <span class="text-[#D96C2C] font-black">{{ content.contentCategoryName || 'ศิลปะการแสดง' }}</span>
+        <i class="mdi mdi-chevron-right text-[#E8D9C9]"></i>
+        <span class="text-[#332820] font-black line-clamp-1">{{ content.title }}</span>
       </div>
     </div>
 
@@ -252,27 +252,27 @@ onMounted(load)
             @share="shareContent"
           />
 
-          <section v-if="content.summary" class="rounded-2xl border border-[#EADBCE] bg-[#FFFDF9] p-6 shadow-sm">
-            <h2 class="text-xl font-black text-[#1F4D3A]">เกี่ยวกับวิดีโอนี้</h2>
-            <p class="mt-3 text-sm leading-relaxed text-slate-700">{{ content.summary }}</p>
+          <section v-if="content.summary" class="rounded-3xl border-2 border-[#E8D9C9] bg-[#FFF9F2] p-6 sm:p-7 shadow-xs">
+            <h2 class="text-xl font-black text-[#D96C2C]">เกี่ยวกับวิดีโอนี้</h2>
+            <p class="mt-3 text-sm leading-relaxed text-[#786B62] font-semibold">{{ content.summary }}</p>
           </section>
 
           <!-- 3. Schedules & Events (Only if schedule exists) -->
           <section
             v-if="schedules.length"
-            class="rounded-3xl bg-white border border-[#E8E2D5] p-6 sm:p-8 shadow-sm space-y-6"
+            class="rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9] p-6 sm:p-8 shadow-xs space-y-6"
           >
-            <div class="flex items-center justify-between border-b border-[#E8E2D5] pb-4">
+            <div class="flex items-center justify-between border-b-2 border-[#E8D9C9] pb-4">
               <div class="flex items-center gap-3">
-                <div class="h-10 w-10 rounded-xl bg-[#1C4D3E] text-amber-300 flex items-center justify-center font-bold">
-                  <i class="mdi mdi-calendar-clock-outline text-xl"></i>
+                <div class="h-10 w-10 rounded-2xl bg-[#D96C2C] text-white flex items-center justify-center font-bold shadow-md">
+                  <i class="mdi mdi-calendar-clock-outline text-xl text-white"></i>
                 </div>
                 <div>
-                  <h2 class="text-xl font-black text-[#1C4D3E]">รอบการแสดง / กิจกรรม</h2>
-                  <p class="text-xs text-slate-500 font-medium">รอบการแสดงสดและกิจกรรมวัฒนธรรมที่กำลังจะเกิดขึ้น</p>
+                  <h2 class="text-xl font-black text-[#332820]">รอบการแสดง / กิจกรรม</h2>
+                  <p class="text-xs text-[#786B62] font-medium">รอบการแสดงสดและกิจกรรมวัฒนธรรมที่กำลังจะเกิดขึ้น</p>
                 </div>
               </div>
-              <span class="text-xs font-extrabold text-[#1C4D3E] bg-amber-50 border border-amber-200 px-3 py-1 rounded-full">
+              <span class="text-xs font-black text-[#D96C2C] bg-[#D96C2C]/10 border border-[#D96C2C]/20 px-3.5 py-1 rounded-full shadow-2xs">
                 มี {{ schedules.length }} รอบการแสดง
               </span>
             </div>
@@ -281,15 +281,15 @@ onMounted(load)
               <div
                 v-for="sch in schedules"
                 :key="sch.scheduleId"
-                class="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 space-y-2 shadow-2xs hover:border-[#1C4D3E] transition"
+                class="rounded-2xl border-2 border-[#E8D9C9] bg-[#F7F0E6] p-4 space-y-2 shadow-2xs hover:border-[#D96C2C] transition"
               >
-                <span class="font-extrabold text-[#1C4D3E] text-sm block">{{ sch.title }}</span>
-                <p class="text-xs text-slate-700 flex items-center gap-1.5 font-medium">
-                  <i class="mdi mdi-clock-outline text-[#D99A32]"></i>
+                <span class="font-black text-[#332820] text-sm block">{{ sch.title }}</span>
+                <p class="text-xs text-[#786B62] flex items-center gap-1.5 font-bold">
+                  <i class="mdi mdi-clock-outline text-[#D96C2C]"></i>
                   <span>{{ formatDate(sch.startDateTime) }}</span>
                 </p>
-                <p v-if="sch.address" class="text-xs text-slate-600 flex items-center gap-1.5">
-                  <i class="mdi mdi-map-marker-outline text-[#1C4D3E]"></i>
+                <p v-if="sch.address" class="text-xs text-[#786B62] flex items-center gap-1.5 font-medium">
+                  <i class="mdi mdi-map-marker-outline text-[#D96C2C]"></i>
                   <span>{{ sch.address }}</span>
                 </p>
               </div>
@@ -324,37 +324,37 @@ onMounted(load)
 
       <!-- FOOTER SHARE / REPORT SECTION -->
       <section
-        class="flex flex-wrap items-center justify-end gap-4 border-t border-[#E8E2D5] pt-6 text-xs text-slate-500"
+        class="flex flex-wrap items-center justify-end gap-4 border-t-2 border-[#E8D9C9] pt-6 text-xs text-[#786B62]"
       >
         <div class="flex items-center gap-4">
           <div class="flex items-center gap-2">
-            <span class="font-bold text-[#1C4D3E]">แชร์คอนเทนต์</span>
+            <span class="font-black text-[#332820]">แชร์คอนเทนต์</span>
             <button
               type="button"
               class="h-8 w-8 rounded-full bg-blue-600 text-white flex items-center justify-center hover:opacity-90 transition cursor-pointer shadow-2xs"
               @click="shareContent('fb')"
             >
-              <i class="mdi mdi-facebook text-base"></i>
+              <i class="mdi mdi-facebook text-base text-white"></i>
             </button>
             <button
               type="button"
               class="h-8 w-8 rounded-full bg-emerald-600 text-white flex items-center justify-center hover:opacity-90 transition cursor-pointer shadow-2xs"
               @click="shareContent('line')"
             >
-              <i class="mdi mdi-forum-outline text-base"></i>
+              <i class="mdi mdi-forum-outline text-base text-white"></i>
             </button>
             <button
               type="button"
-              class="h-8 w-8 rounded-full bg-white text-slate-700 flex items-center justify-center hover:bg-slate-100 transition cursor-pointer border border-[#E8E2D5]"
+              class="h-8 w-8 rounded-full bg-white text-[#332820] flex items-center justify-center hover:bg-[#F7F0E6] transition cursor-pointer border-2 border-[#E8D9C9]"
               @click="shareContent()"
             >
-              <i class="mdi mdi-link-variant text-base"></i>
+              <i class="mdi mdi-link-variant text-base text-[#D96C2C]"></i>
             </button>
           </div>
 
           <button
             type="button"
-            class="text-xs font-semibold text-slate-500 hover:text-rose-600 flex items-center gap-1 transition cursor-pointer"
+            class="text-xs font-bold text-[#786B62] hover:text-rose-600 flex items-center gap-1 transition cursor-pointer"
             @click="openReport({ contentId: content.contentId, label: content.title })"
           >
             <i class="mdi mdi-flag-outline"></i>

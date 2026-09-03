@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// Public storefront - Emerald Nature Buyer Orders List View ("การซื้อของฉัน")
+// Public storefront - Orange + Cream Buyer Orders List View ("การซื้อของฉัน")
 import { computed, onMounted, ref } from 'vue'
 import http from '@/shared/api/http'
 import { getApiErrorMessage } from '@/features/auth/api/getApiErrorMessage'
@@ -69,12 +69,12 @@ function getStatusTitle(status: string) {
 }
 
 function getStatusBadgeClass(status: string) {
-  if (status === 'Pending') return 'bg-amber-50 text-amber-700 border-amber-200/80'
-  if (status === 'Confirmed') return 'bg-sky-50 text-sky-700 border-sky-200/80'
-  if (status === 'Shipped') return 'bg-indigo-50 text-indigo-700 border-indigo-200/80'
-  if (status === 'Completed') return 'bg-emerald-50 text-emerald-700 border-emerald-200/80'
-  if (status === 'Cancelled') return 'bg-rose-50 text-rose-700 border-rose-200/80'
-  return 'bg-slate-50 text-slate-700 border-slate-200'
+  if (status === 'Pending') return 'bg-amber-100 text-amber-900 border-amber-300'
+  if (status === 'Confirmed') return 'bg-[#D96C2C]/15 text-[#D96C2C] border-[#D96C2C]/30'
+  if (status === 'Shipped') return 'bg-sky-100 text-sky-900 border-sky-300'
+  if (status === 'Completed') return 'bg-emerald-100 text-emerald-900 border-emerald-300'
+  if (status === 'Cancelled') return 'bg-rose-100 text-rose-900 border-rose-300'
+  return 'bg-[#F7F0E6] text-[#786B62] border-[#E8D9C9]'
 }
 
 function getStatusIcon(status: string) {
@@ -104,37 +104,37 @@ onMounted(load)
 </script>
 
 <template>
-  <div class="min-h-screen bg-slate-50/70 pb-24">
+  <div class="min-h-screen bg-[#F7F0E6] text-[#332820] pb-24">
     <!-- Header Hero Banner Section -->
-    <section class="relative overflow-hidden bg-gradient-to-br from-emerald-950 via-teal-950 to-slate-900 pt-12 pb-16 text-white shadow-md">
+    <section class="relative overflow-hidden bg-[#171412] pt-12 pb-16 text-white shadow-md">
       <!-- Ambient Decorative Glows -->
-      <div class="absolute -top-24 -left-24 h-96 w-96 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none"></div>
-      <div class="absolute -bottom-24 -right-24 h-96 w-96 rounded-full bg-teal-500/10 blur-3xl pointer-events-none"></div>
+      <div class="absolute -top-24 -left-24 h-96 w-96 rounded-full bg-[#D96C2C]/20 blur-3xl pointer-events-none"></div>
+      <div class="absolute -bottom-24 -right-24 h-96 w-96 rounded-full bg-[#F2A65A]/15 blur-3xl pointer-events-none"></div>
 
       <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div class="space-y-2">
-            <div class="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-500/15 px-3.5 py-1 text-xs font-semibold text-emerald-200 backdrop-blur-md">
+            <div class="inline-flex items-center gap-2 rounded-full border border-white/20 bg-[#D96C2C]/30 px-3.5 py-1 text-xs font-black text-[#F2A65A] backdrop-blur-md">
               <span class="relative flex h-2 w-2">
-                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#F2A65A] opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2 w-2 bg-[#F2A65A]"></span>
               </span>
               <span>ศูนย์รวมการสั่งซื้อสินค้ากาญจนบุรี</span>
             </div>
             <h1 class="text-3xl font-black tracking-tight text-white sm:text-4xl lg:text-5xl">
               การซื้อของฉัน
             </h1>
-            <p class="text-xs sm:text-sm text-emerald-100/70 max-w-lg">
+            <p class="text-xs sm:text-sm text-[#F7F0E6]/80 max-w-lg font-semibold">
               ติดตามสถานะ ตรวจสอบประวัติ และจัดการคำสั่งซื้อสินค้าเมืองกาญจน์ได้ครบในที่เดียว
             </p>
           </div>
 
           <RouterLink
             to="/shops"
-            class="inline-flex items-center gap-2 rounded-2xl border border-white/20 bg-white/10 px-5 py-3 text-xs font-bold text-white backdrop-blur-md shadow-lg transition duration-200 hover:bg-white/20 hover:scale-105 active:scale-95"
+            class="inline-flex items-center gap-2 rounded-2xl border-2 border-white/20 bg-white/10 px-5 py-3 text-xs font-black text-white backdrop-blur-md shadow-lg transition duration-200 hover:bg-white/20 hover:scale-105 active:scale-95 cursor-pointer"
           >
-            <i class="mdi mdi-storefront-outline text-base text-emerald-300"></i>
-            <span>เลือกซื้อสินค้าเพิ่ม</span>
+            <i class="mdi mdi-storefront-outline text-base text-[#F2A65A]"></i>
+            <span class="text-white font-black">เลือกซื้อสินค้าเพิ่ม</span>
           </RouterLink>
         </div>
       </div>
@@ -144,24 +144,24 @@ onMounted(load)
     <main class="relative mx-auto max-w-5xl px-4 py-8 sm:px-6 -mt-8">
       <!-- Loading Skeleton -->
       <div v-if="loading" class="space-y-4">
-        <div v-for="i in 3" :key="i" class="h-36 animate-pulse rounded-3xl bg-white border border-slate-200/60 p-6 shadow-sm">
-          <div class="h-4 w-1/3 bg-slate-200 rounded mb-4"></div>
-          <div class="h-4 w-1/4 bg-slate-200 rounded mb-2"></div>
-          <div class="h-8 w-24 bg-slate-200 rounded float-right"></div>
+        <div v-for="i in 3" :key="i" class="h-36 animate-pulse rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9] p-6 shadow-sm">
+          <div class="h-4 w-1/3 bg-[#E8D9C9]/60 rounded mb-4"></div>
+          <div class="h-4 w-1/4 bg-[#E8D9C9]/40 rounded mb-2"></div>
+          <div class="h-8 w-24 bg-[#D96C2C]/30 rounded float-right"></div>
         </div>
       </div>
 
       <template v-else>
         <!-- Navigation Tabs Container (High Contrast & Clear) -->
-        <div class="mb-6 rounded-3xl border border-slate-300/80 bg-white p-2 shadow-md">
+        <div class="mb-6 rounded-3xl border-2 border-[#E8D9C9] bg-[#FFF9F2] p-2 shadow-md">
           <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
             <!-- 1. ทั้งหมด -->
             <button
-              class="flex items-center justify-center gap-2 rounded-2xl px-3.5 py-3 text-xs sm:text-sm font-extrabold transition-all duration-200 cursor-pointer text-center"
+              class="flex items-center justify-center gap-2 rounded-2xl px-3.5 py-3 text-xs sm:text-sm font-black transition-all duration-200 cursor-pointer text-center"
               :class="
                 selectedFilter === 'all'
-                  ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30 scale-[1.02]'
-                  : 'bg-slate-100/80 border border-slate-200 text-slate-800 hover:bg-emerald-50 hover:text-emerald-800 hover:border-emerald-300'
+                  ? 'bg-[#D96C2C] text-white shadow-md shadow-[#D96C2C]/30 scale-[1.02] border border-[#D96C2C]'
+                  : 'bg-[#F7F0E6] border border-[#E8D9C9] text-[#332820] hover:border-[#D96C2C] hover:text-[#D96C2C]'
               "
               @click="selectedFilter = 'all'"
             >
@@ -169,7 +169,7 @@ onMounted(load)
               <span>ทั้งหมด</span>
               <span
                 class="rounded-full px-2 py-0.5 text-xs font-black"
-                :class="selectedFilter === 'all' ? 'bg-white/25 text-white' : 'bg-slate-200 text-slate-900'"
+                :class="selectedFilter === 'all' ? 'bg-white/25 text-white' : 'bg-[#E8D9C9] text-[#332820]'"
               >
                 {{ counts.all }}
               </span>
@@ -177,11 +177,11 @@ onMounted(load)
 
             <!-- 2. ที่ต้องชำระ -->
             <button
-              class="flex items-center justify-center gap-2 rounded-2xl px-3.5 py-3 text-xs sm:text-sm font-extrabold transition-all duration-200 cursor-pointer text-center"
+              class="flex items-center justify-center gap-2 rounded-2xl px-3.5 py-3 text-xs sm:text-sm font-black transition-all duration-200 cursor-pointer text-center"
               :class="
                 selectedFilter === 'to_pay'
-                  ? 'bg-amber-600 text-white shadow-md shadow-amber-600/30 scale-[1.02]'
-                  : 'bg-amber-50/80 border border-amber-200 text-amber-900 hover:bg-amber-100 hover:border-amber-400'
+                  ? 'bg-[#D96C2C] text-white shadow-md shadow-[#D96C2C]/30 scale-[1.02] border border-[#D96C2C]'
+                  : 'bg-[#F7F0E6] border border-[#E8D9C9] text-[#332820] hover:border-[#D96C2C] hover:text-[#D96C2C]'
               "
               @click="selectedFilter = 'to_pay'"
             >
@@ -189,7 +189,7 @@ onMounted(load)
               <span>ที่ต้องชำระ</span>
               <span
                 class="rounded-full px-2 py-0.5 text-xs font-black"
-                :class="selectedFilter === 'to_pay' ? 'bg-white/25 text-white' : 'bg-amber-200 text-amber-950'"
+                :class="selectedFilter === 'to_pay' ? 'bg-white/25 text-white' : 'bg-[#E8D9C9] text-[#332820]'"
               >
                 {{ counts.to_pay }}
               </span>
@@ -197,11 +197,11 @@ onMounted(load)
 
             <!-- 3. ที่ต้องได้รับ -->
             <button
-              class="flex items-center justify-center gap-2 rounded-2xl px-3.5 py-3 text-xs sm:text-sm font-extrabold transition-all duration-200 cursor-pointer text-center"
+              class="flex items-center justify-center gap-2 rounded-2xl px-3.5 py-3 text-xs sm:text-sm font-black transition-all duration-200 cursor-pointer text-center"
               :class="
                 selectedFilter === 'to_receive'
-                  ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30 scale-[1.02]'
-                  : 'bg-blue-50/80 border border-blue-200 text-blue-900 hover:bg-blue-100 hover:border-blue-400'
+                  ? 'bg-[#D96C2C] text-white shadow-md shadow-[#D96C2C]/30 scale-[1.02] border border-[#D96C2C]'
+                  : 'bg-[#F7F0E6] border border-[#E8D9C9] text-[#332820] hover:border-[#D96C2C] hover:text-[#D96C2C]'
               "
               @click="selectedFilter = 'to_receive'"
             >
@@ -209,7 +209,7 @@ onMounted(load)
               <span>ที่ต้องได้รับ</span>
               <span
                 class="rounded-full px-2 py-0.5 text-xs font-black"
-                :class="selectedFilter === 'to_receive' ? 'bg-white/25 text-white' : 'bg-blue-200 text-blue-950'"
+                :class="selectedFilter === 'to_receive' ? 'bg-white/25 text-white' : 'bg-[#E8D9C9] text-[#332820]'"
               >
                 {{ counts.to_receive }}
               </span>
@@ -217,11 +217,11 @@ onMounted(load)
 
             <!-- 4. สำเร็จ -->
             <button
-              class="flex items-center justify-center gap-2 rounded-2xl px-3.5 py-3 text-xs sm:text-sm font-extrabold transition-all duration-200 cursor-pointer text-center"
+              class="flex items-center justify-center gap-2 rounded-2xl px-3.5 py-3 text-xs sm:text-sm font-black transition-all duration-200 cursor-pointer text-center"
               :class="
                 selectedFilter === 'completed'
-                  ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30 scale-[1.02]'
-                  : 'bg-emerald-50/80 border border-emerald-200 text-emerald-900 hover:bg-emerald-100 hover:border-emerald-400'
+                  ? 'bg-[#D96C2C] text-white shadow-md shadow-[#D96C2C]/30 scale-[1.02] border border-[#D96C2C]'
+                  : 'bg-[#F7F0E6] border border-[#E8D9C9] text-[#332820] hover:border-[#D96C2C] hover:text-[#D96C2C]'
               "
               @click="selectedFilter = 'completed'"
             >
@@ -229,7 +229,7 @@ onMounted(load)
               <span>สำเร็จ</span>
               <span
                 class="rounded-full px-2 py-0.5 text-xs font-black"
-                :class="selectedFilter === 'completed' ? 'bg-white/25 text-white' : 'bg-emerald-200 text-emerald-950'"
+                :class="selectedFilter === 'completed' ? 'bg-white/25 text-white' : 'bg-[#E8D9C9] text-[#332820]'"
               >
                 {{ counts.completed }}
               </span>
@@ -237,11 +237,11 @@ onMounted(load)
 
             <!-- 5. ยกเลิกแล้ว -->
             <button
-              class="flex items-center justify-center gap-2 rounded-2xl px-3.5 py-3 text-xs sm:text-sm font-extrabold transition-all duration-200 cursor-pointer text-center col-span-2 sm:col-span-1"
+              class="flex items-center justify-center gap-2 rounded-2xl px-3.5 py-3 text-xs sm:text-sm font-black transition-all duration-200 cursor-pointer text-center col-span-2 sm:col-span-1"
               :class="
                 selectedFilter === 'cancelled'
-                  ? 'bg-rose-600 text-white shadow-md shadow-rose-600/30 scale-[1.02]'
-                  : 'bg-rose-50/80 border border-rose-200 text-rose-900 hover:bg-rose-100 hover:border-rose-400'
+                  ? 'bg-rose-600 text-white shadow-md shadow-rose-600/30 scale-[1.02] border border-rose-600'
+                  : 'bg-[#F7F0E6] border border-[#E8D9C9] text-[#332820] hover:border-rose-500 hover:text-rose-600'
               "
               @click="selectedFilter = 'cancelled'"
             >
@@ -249,7 +249,7 @@ onMounted(load)
               <span>ยกเลิกแล้ว</span>
               <span
                 class="rounded-full px-2 py-0.5 text-xs font-black"
-                :class="selectedFilter === 'cancelled' ? 'bg-white/25 text-white' : 'bg-rose-200 text-rose-950'"
+                :class="selectedFilter === 'cancelled' ? 'bg-white/25 text-white' : 'bg-[#E8D9C9] text-[#332820]'"
               >
                 {{ counts.cancelled }}
               </span>
@@ -260,34 +260,34 @@ onMounted(load)
         <!-- Global Empty State -->
         <div
           v-if="!orders.length"
-          class="my-8 flex flex-col items-center justify-center rounded-3xl border border-slate-200/80 bg-white py-20 px-6 text-center shadow-sm"
+          class="my-8 flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-[#E8D9C9] bg-[#FFF9F2] py-20 px-6 text-center shadow-sm space-y-3"
         >
-          <div class="flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-tr from-emerald-100 to-teal-50 text-emerald-600 mb-5 shadow-inner">
+          <div class="flex h-24 w-24 items-center justify-center rounded-full bg-[#D96C2C]/15 text-[#D96C2C] border border-[#D96C2C]/30 shadow-inner">
             <i class="mdi mdi-cart-remove text-5xl"></i>
           </div>
-          <h2 class="text-2xl font-black text-slate-800 tracking-tight">คุณยังไม่มีรายการสั่งซื้อ</h2>
-          <p class="mt-2 max-w-md text-sm text-slate-500 leading-relaxed">
+          <h2 class="text-2xl font-black text-[#332820] tracking-tight">คุณยังไม่มีรายการสั่งซื้อ</h2>
+          <p class="mt-2 max-w-md text-xs sm:text-sm text-[#786B62] leading-relaxed font-semibold">
             เริ่มต้นค้นหาสินค้าดี สินค้าเด็ด ชุมชนเมืองกาญจน์ แล้วสั่งซื้อผ่านระบบได้อย่างรวดเร็ว
           </p>
           <RouterLink
             to="/shops"
-            class="mt-6 inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 px-7 py-3.5 text-xs font-extrabold text-white shadow-lg shadow-emerald-600/25 transition duration-200 hover:shadow-xl hover:shadow-emerald-600/35 hover:scale-105 active:scale-95"
+            class="mt-6 inline-flex items-center gap-2 rounded-2xl bg-[#D96C2C] hover:bg-[#BF5720] px-7 py-3.5 text-xs sm:text-sm font-black text-white shadow-lg transition duration-200 border border-[#D96C2C] active:scale-95 cursor-pointer"
           >
-            <i class="mdi mdi-storefront text-base"></i>
-            <span>สำรวจร้านค้ากาญจนบุรี</span>
+            <i class="mdi mdi-storefront text-base text-white"></i>
+            <span class="!text-white font-black">สำรวจร้านค้ากาญจนบุรี</span>
           </RouterLink>
         </div>
 
         <!-- No Filter Matches Empty State -->
         <div
           v-else-if="filteredOrders.length === 0"
-          class="rounded-3xl border border-slate-200/80 bg-white p-16 text-center shadow-sm"
+          class="rounded-3xl border-2 border-[#E8D9C9] bg-[#FFF9F2] p-16 text-center shadow-sm space-y-2"
         >
-          <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 text-slate-400 mb-3">
-            <i class="mdi mdi-text-box-search-outline text-3xl"></i>
+          <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#F7F0E6] text-[#786B62] border border-[#E8D9C9]">
+            <i class="mdi mdi-text-box-search-outline text-3xl text-[#D96C2C]"></i>
           </div>
-          <p class="text-base font-bold text-slate-700">ไม่พบรายการคำสั่งซื้อในหมวดหมู่นี้</p>
-          <p class="text-xs text-slate-400 mt-1">ลองเลือกสลับไปยังแท็บอื่นเพื่อดูรายการสั่งซื้อของคุณ</p>
+          <p class="text-base font-black text-[#332820]">ไม่พบรายการคำสั่งซื้อในหมวดหมู่นี้</p>
+          <p class="text-xs text-[#786B62] font-semibold">ลองเลือกสลับไปยังแท็บอื่นเพื่อดูรายการสั่งซื้อของคุณ</p>
         </div>
 
         <!-- Orders List Grid -->
@@ -295,27 +295,27 @@ onMounted(load)
           <article
             v-for="order in filteredOrders"
             :key="order.orderId"
-            class="group rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-xl hover:shadow-emerald-900/5 hover:-translate-y-0.5 hover:border-emerald-300"
+            class="group rounded-3xl border-2 border-[#E8D9C9] bg-[#FFF9F2] p-6 shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5 hover:border-[#D96C2C]"
           >
             <!-- Card Header -->
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-2 border-[#E8D9C9] pb-4">
               <div class="space-y-1">
                 <div class="flex items-center gap-2.5">
-                  <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">คำสั่งซื้อ:</span>
-                  <span class="inline-flex items-center rounded-xl bg-slate-100 px-2.5 py-1 text-sm font-black text-slate-900 font-mono tracking-tight">
+                  <span class="text-xs font-extrabold text-[#786B62] uppercase tracking-wider">คำสั่งซื้อ:</span>
+                  <span class="inline-flex items-center rounded-xl bg-[#F7F0E6] px-3 py-1 text-sm font-black text-[#332820] font-mono tracking-tight border border-[#E8D9C9]">
                     #{{ order.orderNumber }}
                   </span>
                 </div>
-                <div class="text-xs text-slate-500 flex items-center gap-1.5">
-                  <i class="mdi mdi-clock-time-four-outline text-slate-400"></i>
+                <div class="text-xs text-[#786B62] font-semibold flex items-center gap-1.5">
+                  <i class="mdi mdi-clock-time-four-outline text-[#D96C2C]"></i>
                   <span>วันที่สั่งซื้อ: {{ formatDate(order.createdAt) }}</span>
                 </div>
               </div>
 
               <!-- Price Tag -->
               <div class="text-left sm:text-right">
-                <span class="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">ยอดเงินสุทธิ</span>
-                <span class="text-2xl font-black text-emerald-700 tracking-tight">
+                <span class="block text-[10px] text-[#786B62] font-black uppercase tracking-wider">ยอดเงินสุทธิ</span>
+                <span class="text-2xl font-black text-[#D96C2C] tracking-tight">
                   ฿ {{ Number(order.totalAmount).toLocaleString('th-TH') }}
                 </span>
               </div>
@@ -327,11 +327,11 @@ onMounted(load)
               <div class="flex flex-wrap items-center gap-2">
                 <!-- Payment Status Badge -->
                 <span
-                  class="inline-flex items-center gap-1.5 rounded-full px-3.5 py-1 text-xs font-bold border transition"
+                  class="inline-flex items-center gap-1.5 rounded-full px-3.5 py-1 text-xs font-black border transition"
                   :class="
                     order.paymentStatus === 'Paid'
-                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200/80'
-                      : 'bg-amber-50 text-amber-700 border-amber-200/80'
+                      ? 'bg-emerald-100 text-emerald-900 border-emerald-300'
+                      : 'bg-amber-100 text-amber-900 border-amber-300'
                   "
                 >
                   <i :class="['mdi', order.paymentStatus === 'Paid' ? 'mdi-check-circle' : 'mdi-clock-outline']"></i>
@@ -340,7 +340,7 @@ onMounted(load)
 
                 <!-- Order Status Badge -->
                 <span
-                  class="inline-flex items-center gap-1.5 rounded-full px-3.5 py-1 text-xs font-bold border transition"
+                  class="inline-flex items-center gap-1.5 rounded-full px-3.5 py-1 text-xs font-black border transition"
                   :class="getStatusBadgeClass(order.orderStatus)"
                 >
                   <i :class="['mdi', getStatusIcon(order.orderStatus)]"></i>
@@ -353,20 +353,20 @@ onMounted(load)
                 <!-- View Detail Button -->
                 <RouterLink
                   :to="`/orders/${order.orderId}`"
-                  class="inline-flex items-center gap-1.5 rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-2.5 text-xs font-bold text-slate-700 transition hover:bg-slate-100 hover:border-slate-300 hover:text-slate-900 active:scale-95"
+                  class="inline-flex items-center gap-1.5 rounded-2xl border-2 border-[#E8D9C9] bg-white px-4 py-2.5 text-xs font-black text-[#332820] transition hover:border-[#D96C2C] hover:text-[#D96C2C] active:scale-95 shadow-2xs"
                 >
-                  <i class="mdi mdi-file-document-outline text-sm text-slate-500"></i>
+                  <i class="mdi mdi-file-document-outline text-sm text-[#D96C2C]"></i>
                   <span>ดูรายละเอียด</span>
                 </RouterLink>
 
-                <!-- Pay Button (If unpaid & not cancelled) -->
+                <!-- Pay Button (SOLID VIBRANT ORANGE WITH CRISP WHITE BOLD TEXT) -->
                 <RouterLink
                   v-if="order.paymentStatus !== 'Paid' && order.orderStatus !== 'Cancelled'"
                   :to="`/orders/${order.orderId}/pay`"
-                  class="inline-flex items-center gap-1.5 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-emerald-600/25 transition duration-200 hover:shadow-lg hover:shadow-emerald-600/35 hover:scale-105 active:scale-95"
+                  class="inline-flex items-center gap-1.5 rounded-2xl bg-[#D96C2C] hover:bg-[#BF5720] px-5 py-2.5 text-xs font-black text-white shadow-md transition duration-200 border border-[#D96C2C] active:scale-95 cursor-pointer"
                 >
-                  <i class="mdi mdi-credit-card-outline text-sm"></i>
-                  <span>ชำระเงิน</span>
+                  <i class="mdi mdi-credit-card-outline text-sm text-white"></i>
+                  <span class="!text-white font-black">ชำระเงิน</span>
                 </RouterLink>
               </div>
             </div>
@@ -386,5 +386,3 @@ onMounted(load)
   scrollbar-width: none;
 }
 </style>
-
-

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// Public storefront - Emerald Nature Shopping Cart View
+// Public storefront - Orange + Cream Shopping Cart View
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { checkout } from '../api/cartApi'
@@ -124,21 +124,21 @@ onMounted(load)
 </script>
 
 <template>
-  <div class="min-h-screen bg-slate-50/60 pb-24">
+  <div class="min-h-screen bg-[#F7F0E6] text-[#332820] pb-24">
     <!-- Header Banner Section -->
     <section
-      class="bg-gradient-to-br from-emerald-950 via-teal-950 to-slate-900 py-12 text-white shadow-sm"
+      class="bg-[#171412] py-12 text-white shadow-sm relative overflow-hidden"
     >
-      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div
-              class="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-500/15 px-3.5 py-1 text-xs font-semibold text-emerald-200 backdrop-blur-md mb-2"
+              class="inline-flex items-center gap-2 rounded-full border border-white/20 bg-[#D96C2C]/30 px-3.5 py-1 text-xs font-black text-[#F2A65A] backdrop-blur-md mb-2"
             >
-              <i class="mdi mdi-cart-outline text-emerald-300"></i>
+              <i class="mdi mdi-cart-outline text-[#F2A65A]"></i>
               <span>ตระกร้าสินค้าเมืองกาญจน์</span>
             </div>
-            <h1 class="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+            <h1 class="text-3xl font-black tracking-tight text-white sm:text-4xl">
               ตะกร้าสินค้าของคุณ
             </h1>
           </div>
@@ -146,10 +146,10 @@ onMounted(load)
           <div class="flex items-center gap-3">
             <RouterLink
               to="/shops"
-              class="inline-flex items-center gap-2 rounded-2xl border border-white/20 bg-white/10 px-4 py-2.5 text-xs font-bold text-white backdrop-blur-md transition hover:bg-white/20"
+              class="inline-flex items-center gap-2 rounded-2xl border-2 border-white/20 bg-white/10 px-4 py-2.5 text-xs font-black text-white backdrop-blur-md transition hover:bg-white/20"
             >
-              <i class="mdi mdi-storefront-outline text-base"></i>
-              <span>เลือกซื้อสินค้าเพิ่ม</span>
+              <i class="mdi mdi-storefront-outline text-base text-[#F2A65A]"></i>
+              <span class="text-white font-black">เลือกซื้อสินค้าเพิ่ม</span>
             </RouterLink>
           </div>
         </div>
@@ -160,30 +160,30 @@ onMounted(load)
     <main class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 -mt-6">
       <!-- Loading Skeleton -->
       <div v-if="loading" class="space-y-4">
-        <div v-for="i in 3" :key="i" class="h-28 animate-pulse rounded-3xl bg-slate-200"></div>
+        <div v-for="i in 3" :key="i" class="h-28 animate-pulse rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9]"></div>
       </div>
 
       <!-- Empty Cart State -->
       <div
         v-else-if="!cart.items.length"
-        class="my-8 flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-slate-200 bg-white py-20 px-6 text-center shadow-sm"
+        class="my-8 flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-[#E8D9C9] bg-[#FFF9F2] py-20 px-6 text-center shadow-sm"
       >
         <div
-          class="flex h-20 w-20 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 mb-4"
+          class="flex h-20 w-20 items-center justify-center rounded-full bg-[#D96C2C]/15 text-[#D96C2C] mb-4 border border-[#D96C2C]/30"
         >
           <i class="mdi mdi-cart-off text-4xl"></i>
         </div>
-        <h2 class="text-2xl font-bold text-slate-800">ตะกร้าสินค้าของคุณยังว่างอยู่</h2>
-        <p class="mt-2 max-w-md text-sm text-slate-500">
+        <h2 class="text-2xl font-black text-[#332820]">ตะกร้าสินค้าของคุณยังว่างอยู่</h2>
+        <p class="mt-2 max-w-md text-xs sm:text-sm text-[#786B62] font-semibold">
           คุณยังไม่มีสินค้าในตะกร้า สามารถเลือกดูสินค้าขึ้นชื่อและของฝากจากร้านค้าต่างๆ
           ในกาญจนบุรีได้ทันที
         </p>
         <RouterLink
           to="/shops"
-          class="mt-6 inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-600/20 transition hover:bg-emerald-700 active:scale-95"
+          class="mt-6 inline-flex items-center gap-2 rounded-2xl bg-[#D96C2C] hover:bg-[#BF5720] px-6 py-3 text-xs sm:text-sm font-black text-white shadow-lg transition active:scale-95 border border-[#D96C2C]"
         >
-          <i class="mdi mdi-storefront"></i>
-          <span>สำรวจร้านค้าเมืองกาญจน์</span>
+          <i class="mdi mdi-storefront text-white"></i>
+          <span class="!text-white font-black">สำรวจร้านค้าเมืองกาญจน์</span>
         </RouterLink>
       </div>
 
@@ -193,23 +193,23 @@ onMounted(load)
         <section class="lg:col-span-8 space-y-4">
           <!-- Item Count Header -->
           <div
-            class="flex items-center justify-between rounded-2xl bg-white p-4 border border-slate-200/80 shadow-xs"
+            class="flex items-center justify-between rounded-2xl bg-[#FFF9F2] p-4 border-2 border-[#E8D9C9] shadow-xs"
           >
-            <span class="text-sm font-bold text-slate-800">
-              รายการสินค้าทั้งหมด ({{ itemCount }} ชิ้น)
+            <span class="text-sm font-black text-[#332820]">
+              รายการสินค้าทั้งหมด (<span class="text-[#D96C2C]">{{ itemCount }}</span> ชิ้น)
             </span>
-            <span class="text-xs text-slate-500"> สินค้าจากร้านค้าชุมชนกาญจนบุรี </span>
+            <span class="text-xs font-semibold text-[#786B62]"> สินค้าจากร้านค้าชุมชนกาญจนบุรี </span>
           </div>
 
           <!-- Item Card -->
           <article
             v-for="item in cart.items"
             :key="item.cartItemId"
-            class="group relative flex flex-col sm:flex-row items-start sm:items-center gap-5 rounded-3xl border border-slate-200/80 bg-white p-5 shadow-xs transition hover:shadow-md hover:border-emerald-300"
+            class="group relative flex flex-col sm:flex-row items-start sm:items-center gap-5 rounded-3xl border-2 border-[#E8D9C9] bg-[#FFF9F2] p-5 shadow-xs transition hover:shadow-md hover:border-[#D96C2C]"
           >
             <!-- Product Thumbnail Image -->
             <div
-              class="relative h-28 w-28 shrink-0 overflow-hidden rounded-2xl bg-slate-100 border border-slate-100"
+              class="relative h-28 w-28 shrink-0 overflow-hidden rounded-2xl bg-[#171412] border border-[#E8D9C9]"
             >
               <img
                 v-if="item.imageUrl"
@@ -217,67 +217,67 @@ onMounted(load)
                 :alt="item.productName"
                 class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
-              <div v-else class="flex h-full w-full items-center justify-center text-slate-400">
+              <div v-else class="flex h-full w-full items-center justify-center text-[#786B62]">
                 <i class="mdi mdi-image-off-outline text-3xl"></i>
               </div>
             </div>
 
             <!-- Product Details -->
             <div class="min-w-0 flex-1 space-y-1">
-              <h2 class="text-lg font-bold text-slate-900 line-clamp-1">
+              <h2 class="text-lg font-black text-[#332820] line-clamp-1">
                 {{ item.productName }}
               </h2>
-              <div class="flex items-center gap-2 text-xs text-slate-500">
-                <span class="font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
+              <div class="flex items-center gap-2 text-xs text-[#786B62]">
+                <span class="font-black text-[#D96C2C] bg-[#D96C2C]/10 px-2.5 py-0.5 rounded-md border border-[#D96C2C]/20">
                   ฿ {{ Number(item.unitPrice).toLocaleString('th-TH') }} / ชิ้น
                 </span>
               </div>
 
               <!-- Item Total Price & Controls -->
               <div
-                class="pt-3 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 mt-2"
+                class="pt-3 flex flex-wrap items-center justify-between gap-3 border-t-2 border-[#E8D9C9] mt-2"
               >
                 <!-- Quantity Counter -->
-                <div class="flex items-center rounded-xl border border-slate-200 bg-slate-50 p-1">
+                <div class="flex items-center rounded-xl border-2 border-[#E8D9C9] bg-[#F7F0E6] p-1">
                   <button
-                    class="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-slate-700 shadow-xs transition hover:bg-slate-100 disabled:opacity-40"
+                    class="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-[#332820] font-black shadow-xs transition hover:bg-[#E8D9C9]/50 disabled:opacity-40"
                     :disabled="updating === item.cartItemId || item.quantity <= 1"
                     @click="setQuantity(item.cartItemId, item.quantity - 1)"
                   >
                     <i class="mdi mdi-minus text-xs"></i>
                   </button>
 
-                  <span class="min-w-[40px] text-center font-bold text-slate-900 text-sm">
+                  <span class="min-w-[40px] text-center font-black text-[#332820] text-sm">
                     <i
                       v-if="updating === item.cartItemId"
-                      class="mdi mdi-loading animate-spin text-emerald-600"
+                      class="mdi mdi-loading animate-spin text-[#D96C2C]"
                     ></i>
                     <template v-else>{{ item.quantity }}</template>
                   </span>
 
                   <button
-                    class="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-slate-700 shadow-xs transition hover:bg-slate-100 disabled:opacity-40"
+                    class="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-[#332820] font-black shadow-xs transition hover:bg-[#E8D9C9]/50 disabled:opacity-40"
                     :disabled="updating === item.cartItemId || item.quantity >= item.availableQuantity"
                     @click="setQuantity(item.cartItemId, item.quantity + 1)"
                   >
                     <i class="mdi mdi-plus text-xs"></i>
                   </button>
-                  <span class="ml-2 text-xs text-slate-400">เหลือ {{ item.availableQuantity }} ชิ้น</span>
+                  <span class="ml-2 text-xs text-[#786B62] font-semibold">เหลือ {{ item.availableQuantity }} ชิ้น</span>
                 </div>
 
                 <!-- Price Subtotal & Remove Button -->
                 <div class="flex items-center gap-4">
                   <div class="text-right">
-                    <span class="block text-[10px] text-slate-400 font-semibold uppercase"
+                    <span class="block text-[10px] text-[#786B62] font-black uppercase"
                       >รวมชิ้นนี้</span
                     >
-                    <span class="text-base font-extrabold text-emerald-700">
+                    <span class="text-base font-black text-[#D96C2C]">
                       ฿ {{ (Number(item.unitPrice) * item.quantity).toLocaleString('th-TH') }}
                     </span>
                   </div>
 
                   <button
-                    class="flex h-9 w-9 items-center justify-center rounded-xl border border-rose-100 bg-rose-50 text-rose-600 transition hover:bg-rose-600 hover:text-white"
+                    class="flex h-9 w-9 items-center justify-center rounded-xl border-2 border-rose-200 bg-rose-50 text-rose-600 transition hover:bg-rose-600 hover:text-white cursor-pointer"
                     title="ลบรายการนี้"
                     @click="remove(item.cartItemId)"
                   >
@@ -292,73 +292,73 @@ onMounted(load)
         <!-- Order Summary Sidebar (Right Column) -->
         <aside class="lg:col-span-4">
           <div
-            class="sticky top-24 rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm space-y-6"
+            class="sticky top-24 rounded-3xl border-2 border-[#E8D9C9] bg-[#FFF9F2] p-6 shadow-sm space-y-6"
           >
             <h2
-              class="flex items-center gap-2 text-lg font-extrabold text-slate-900 border-b border-slate-100 pb-4"
+              class="flex items-center gap-2 text-lg font-black text-[#332820] border-b-2 border-[#E8D9C9] pb-4"
             >
-              <i class="mdi mdi-receipt-text-outline text-emerald-600 text-xl"></i>
+              <i class="mdi mdi-receipt-text-outline text-[#D96C2C] text-xl"></i>
               สรุปคำสั่งซื้อ
             </h2>
 
             <!-- Cost Breakdown -->
-            <div class="space-y-3 border-b border-slate-100 pb-5">
-              <p class="text-sm font-bold text-slate-900">วิธีรับสินค้า</p>
+            <div class="space-y-3 border-b-2 border-[#E8D9C9] pb-5">
+              <p class="text-sm font-black text-[#332820]">วิธีรับสินค้า</p>
               <label
-                class="flex cursor-pointer items-center gap-3 rounded-xl border p-3"
+                class="flex cursor-pointer items-center gap-3 rounded-xl border-2 p-3 transition"
                 :class="
                   shippingMethod === 'Delivery'
-                    ? 'border-emerald-500 bg-emerald-50'
-                    : 'border-slate-200'
+                    ? 'border-[#D96C2C] bg-[#D96C2C]/10 font-black'
+                    : 'border-[#E8D9C9] bg-white'
                 "
               >
                 <input
                   v-model="shippingMethod"
                   value="Delivery"
                   type="radio"
-                  class="accent-emerald-600"
+                  class="accent-[#D96C2C]"
                 />
-                <span class="text-sm font-semibold text-slate-800"
-                  >จัดส่งถึงที่อยู่ <span class="font-normal text-slate-500">(+50 บาท)</span></span
+                <span class="text-sm font-extrabold text-[#332820]"
+                  >จัดส่งถึงที่อยู่ <span class="font-semibold text-[#786B62]">(+50 บาท)</span></span
                 >
               </label>
               <label
-                class="flex cursor-pointer items-center gap-3 rounded-xl border p-3"
+                class="flex cursor-pointer items-center gap-3 rounded-xl border-2 p-3 transition"
                 :class="
                   shippingMethod === 'Pickup'
-                    ? 'border-emerald-500 bg-emerald-50'
-                    : 'border-slate-200'
+                    ? 'border-[#D96C2C] bg-[#D96C2C]/10 font-black'
+                    : 'border-[#E8D9C9] bg-white'
                 "
               >
                 <input
                   v-model="shippingMethod"
                   value="Pickup"
                   type="radio"
-                  class="accent-emerald-600"
+                  class="accent-[#D96C2C]"
                 />
-                <span class="text-sm font-semibold text-slate-800"
-                  >รับสินค้าที่ร้าน <span class="font-normal text-slate-500">(ฟรี)</span></span
+                <span class="text-sm font-extrabold text-[#332820]"
+                  >รับสินค้าที่ร้าน <span class="font-semibold text-[#786B62]">(ฟรี)</span></span
                 >
               </label>
               <div v-if="shippingMethod === 'Delivery'" class="space-y-3 pt-1">
                 <div v-if="addresses.length" class="space-y-2">
-                  <p class="text-sm font-bold text-slate-900">เลือกที่อยู่ที่บันทึกไว้</p>
+                  <p class="text-sm font-black text-[#332820]">เลือกที่อยู่ที่บันทึกไว้</p>
                   <button
                     v-for="address in addresses"
                     :key="address.userAddressId"
                     type="button"
-                    class="w-full rounded-xl border p-3 text-left text-sm"
+                    class="w-full rounded-xl border-2 p-3 text-left text-sm cursor-pointer transition"
                     :class="
                       selectedAddressId === address.userAddressId
-                        ? 'border-emerald-500 bg-emerald-50'
-                        : 'border-slate-200'
+                        ? 'border-[#D96C2C] bg-[#D96C2C]/10'
+                        : 'border-[#E8D9C9] bg-white'
                     "
                     @click="selectAddress(address)"
                   >
-                    <span class="font-bold"
+                    <span class="font-black text-[#332820]"
                       >{{ address.recipientName }} · {{ address.recipientPhone }}</span
                     >
-                    <span class="mt-1 block text-slate-600">{{
+                    <span class="mt-1 block text-xs text-[#786B62] font-semibold">{{
                       [
                         address.addressLine,
                         address.subDistrict,
@@ -388,19 +388,19 @@ onMounted(load)
                 />
               </div>
             </div>
-            <div class="space-y-3 text-sm text-slate-600">
+            <div class="space-y-3 text-sm text-[#786B62] font-bold">
               <div class="flex justify-between">
                 <span>จำนวนสินค้าทั้งหมด</span>
-                <span class="font-bold text-slate-900">{{ itemCount }} ชิ้น</span>
+                <span class="font-black text-[#332820]">{{ itemCount }} ชิ้น</span>
               </div>
               <div class="flex justify-between">
                 <span>ยอดรวมสินค้า</span>
-                <span class="font-bold text-slate-900">฿ {{ total.toLocaleString('th-TH') }}</span>
+                <span class="font-black text-[#332820]">฿ {{ total.toLocaleString('th-TH') }}</span>
               </div>
-              <div class="flex justify-between text-emerald-700 font-medium">
+              <div class="flex justify-between text-[#D96C2C] font-black">
                 <span>ค่าจัดส่ง</span>
                 <span
-                  class="inline-flex items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded-md text-xs font-bold"
+                  class="inline-flex items-center gap-1 bg-[#D96C2C]/10 px-2.5 py-0.5 rounded-md text-xs font-black border border-[#D96C2C]/20"
                 >
                   <i class="mdi mdi-truck-check-outline"></i> ฿
                   {{ shippingFee.toLocaleString('th-TH') }}
@@ -409,41 +409,41 @@ onMounted(load)
             </div>
 
             <!-- Grand Total -->
-            <div class="border-t border-slate-100 pt-4">
+            <div class="border-t-2 border-[#E8D9C9] pt-4">
               <div class="flex items-baseline justify-between">
                 <div>
-                  <span class="block text-sm font-bold text-slate-900">ยอดรวมสุทธิ</span>
-                  <span class="text-[11px] text-slate-400">ราคารวมภาษีมูลค่าเพิ่มแล้ว</span>
+                  <span class="block text-sm font-black text-[#332820]">ยอดรวมสุทธิ</span>
+                  <span class="text-[11px] text-[#786B62] font-semibold">ราคารวมภาษีมูลค่าเพิ่มแล้ว</span>
                 </div>
-                <div class="text-2xl font-black text-emerald-700">
+                <div class="text-2xl font-black text-[#D96C2C]">
                   ฿ {{ grandTotal.toLocaleString('th-TH') }}
                 </div>
               </div>
             </div>
 
-            <!-- Checkout Button -->
+            <!-- Checkout Button (SOLID VIBRANT ORANGE WITH CRISP WHITE BOLD TEXT) -->
             <button
-              class="flex h-13 w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 font-bold text-white shadow-lg shadow-emerald-600/25 transition hover:bg-emerald-700 active:scale-95 disabled:opacity-60"
+              class="flex h-13 w-full items-center justify-center gap-2 rounded-2xl bg-[#D96C2C] hover:bg-[#BF5720] font-black text-white shadow-lg transition active:scale-95 disabled:opacity-60 cursor-pointer border border-[#D96C2C]"
               :disabled="checkingOut || !cart.items.length"
               @click="placeOrder"
             >
               <i
-                class="mdi mdi-credit-card-outline text-xl"
+                class="mdi mdi-credit-card-outline text-xl text-white"
                 :class="{ 'animate-spin mdi-loading': checkingOut }"
               ></i>
-              <span>{{ checkingOut ? 'กำลังดำเนินการ...' : 'ยืนยันสั่งซื้อสินค้า' }}</span>
+              <span class="!text-white font-black text-base">{{ checkingOut ? 'กำลังดำเนินการ...' : 'ยืนยันสั่งซื้อสินค้า' }}</span>
             </button>
 
             <!-- Trust / Security badges -->
             <div
-              class="rounded-2xl bg-slate-50 p-4 text-xs text-slate-500 space-y-2 border border-slate-100"
+              class="rounded-2xl bg-[#F7F0E6] p-4 text-xs text-[#786B62] space-y-2 border-2 border-[#E8D9C9] font-semibold"
             >
               <div class="flex items-center gap-2">
-                <i class="mdi mdi-shield-check-outline text-emerald-600 text-base"></i>
+                <i class="mdi mdi-shield-check-outline text-[#D96C2C] text-base"></i>
                 <span>สั่งซื้อง่าย ปลอดภัย ผ่านระบบชำระเงินมาตรฐาน</span>
               </div>
               <div class="flex items-center gap-2">
-                <i class="mdi mdi-store-check-outline text-emerald-600 text-base"></i>
+                <i class="mdi mdi-store-check-outline text-[#D96C2C] text-base"></i>
                 <span>รับประกันสินค้าส่งตรงจากร้านค้าในจังหวัดกาญจนบุรี</span>
               </div>
             </div>

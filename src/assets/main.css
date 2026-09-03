@@ -1,14 +1,29 @@
 @import "@mdi/font/css/materialdesignicons.css";
 @import "tailwindcss";
 
-html {
-  font-size: 17px;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  scroll-behavior: smooth;
+@theme {
+  --color-orange-primary: #D96C2C;
+  --color-orange-hover: #BF5720;
+  --color-orange-accent: #F2A65A;
+  --color-cream-bg: #F7F0E6;
+  --color-cream-surface: #FFF9F2;
+  --color-brown-text: #332820;
+  --color-brown-muted: #786B62;
+  --color-cream-border: #E8D9C9;
+  --color-video-dark: #171412;
 }
 
 :root {
+  --primary: #D96C2C;
+  --primary-hover: #BF5720;
+  --accent: #F2A65A;
+  --background: #F7F0E6;
+  --surface: #FFF9F2;
+  --text: #332820;
+  --text-secondary: #786B62;
+  --border: #E8D9C9;
+  --video: #171412;
+
   font-family: 'Noto Sans Thai', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
@@ -17,8 +32,8 @@ body, button, input, select, textarea {
 }
 
 body {
-  background-color: #f8fafc; /* Light Mode bg-slate-50 */
-  color: #0f172a; /* Sharp text-slate-900 */
+  background-color: var(--background);
+  color: var(--text);
   font-size: 1.05rem;
   line-height: 1.65;
 }

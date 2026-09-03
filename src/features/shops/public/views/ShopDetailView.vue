@@ -57,7 +57,6 @@ const businessHours = computed(() => {
   return `เปิดบริการทุกวัน ${shop.value.openingTime} - ${shop.value.closingTime} น.`
 })
 
-// Live open/closed indicator based on shop hours (falls back to "open" if hours unknown)
 const isOpenNow = computed(() => {
   const open = shop.value?.openingTime
   const close = shop.value?.closingTime
@@ -71,7 +70,6 @@ const isOpenNow = computed(() => {
   const openMinutes = toMinutes(open)
   const closeMinutes = toMinutes(close)
   if (closeMinutes <= openMinutes) {
-    // overnight hours, e.g. 20:00 - 02:00
     return nowMinutes >= openMinutes || nowMinutes <= closeMinutes
   }
   return nowMinutes >= openMinutes && nowMinutes <= closeMinutes
@@ -129,13 +127,12 @@ async function copyShopLink() {
     text: shop.value?.description ?? 'ดูร้านค้านี้',
     url: window.location.href,
   }
-  // Prefer native share sheet on mobile, fall back to clipboard copy on desktop
   if (navigator.share) {
     try {
       await navigator.share(shareData)
       return
     } catch {
-      // user cancelled the share sheet — fall through to clipboard copy
+      // User cancelled native share sheet
     }
   }
   await navigator.clipboard.writeText(window.location.href)
@@ -163,7 +160,6 @@ const productCategories = computed(() => [
     })),
 ])
 
-// Filtered products list
 const filteredProducts = computed(() => {
   let list = products.value
   if (selectedCategory.value) {
@@ -183,7 +179,6 @@ function productCategoryName(productCategoryId: string) {
   )
 }
 
-// Fallback image helper
 function getProductImage(product: Product, index: number) {
   if (product.imageUrl) return imageUrl(product.imageUrl)
   const defaults = [
@@ -214,13 +209,13 @@ async function getNearbyShops(currentShop: Shop) {
   const withoutCurrentShop = (items: Shop[]) =>
     items.filter((item) => item.shopId !== currentShop.shopId)
   if (currentShop.subDistrictId) {
-    const sameSubDistrict = withoutCurrentShop(
-      await getShops({ subDistrictId: currentShop.subDistrictId }),
-    )
+    const res = await getShops({ subDistrictId: currentShop.subDistrictId })
+    const sameSubDistrict = withoutCurrentShop(res.items || [])
     if (sameSubDistrict.length) return sameSubDistrict.slice(0, 4)
   }
   if (currentShop.districtId) {
-    const sameDistrict = withoutCurrentShop(await getShops({ districtId: currentShop.districtId }))
+    const res = await getShops({ districtId: currentShop.districtId })
+    const sameDistrict = withoutCurrentShop(res.items || [])
     return sameDistrict.slice(0, 4)
   }
   return []
@@ -233,7 +228,6 @@ function getNearbyShopImage(nearbyShop: Shop) {
   )
 }
 
-// Leaflet Map Initialization
 const mapContainer = ref<HTMLElement | null>(null)
 let mapInstance: L.Map | null = null
 
@@ -243,19 +237,30 @@ function initMap() {
   const lat = shop.value.latitude!
   const lng = shop.value.longitude!
 
+  const KANCHANABURI_BOUNDS: L.LatLngBoundsExpression = [
+    [13.70, 98.00],
+    [15.85, 100.00],
+  ]
+
   mapInstance = L.map(mapContainer.value, {
     scrollWheelZoom: false,
     zoomControl: false,
+    minZoom: 9,
+    maxZoom: 18,
+    maxBounds: KANCHANABURI_BOUNDS,
+    maxBoundsViscosity: 0.4,
   }).setView([lat, lng], 14)
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 18,
     attribution: '&copy; OpenStreetMap',
+    bounds: KANCHANABURI_BOUNDS,
+    keepBuffer: 6,
   }).addTo(mapInstance)
 
   const icon = L.divIcon({
     className: 'custom-shop-detail-marker',
-    html: `<div class="flex items-center justify-center h-10 w-10 rounded-full bg-[#1c4d3e] text-white font-bold shadow-2xl border-2 border-white ring-4 ring-emerald-500/20"><i class="mdi mdi-storefront text-xl"></i></div>`,
+    html: `<div class="flex items-center justify-center h-10 w-10 rounded-2xl bg-[#D96C2C] text-white font-bold shadow-2xl border-2 border-white ring-4 ring-[#F2A65A]/40"><i class="mdi mdi-storefront text-xl"></i></div>`,
     iconSize: [40, 40],
     iconAnchor: [20, 20],
   })
@@ -263,7 +268,7 @@ function initMap() {
   L.marker([lat, lng], { icon })
     .addTo(mapInstance)
     .bindPopup(
-      `<div class="p-1 font-bold text-slate-900">${shop.value.shopName}</div><div class="text-xs text-slate-500">${shopArea.value}</div>`,
+      `<div class="p-1 font-bold text-[#332820]">${shop.value.shopName}</div><div class="text-xs text-[#786B62]">${shopArea.value}</div>`,
     )
     .openPopup()
 }
@@ -299,14 +304,7 @@ onMounted(async () => {
       products.value = shopProducts
       categories.value = productCategories
 
-      let contentItems = contents.items || []
-      if (!contentItems.length) {
-        const fallbackRes = await getPublicContents({ page: 1, pageSize: 3 }).catch(() => ({
-          items: [],
-        }))
-        contentItems = fallbackRes.items || []
-      }
-      shopContents.value = contentItems
+      shopContents.value = contents.items || []
       nearbyShops.value = nearby
       reviewData.value = reviews
     }
@@ -336,48 +334,48 @@ onBeforeUnmount(() => {
 
 <template>
   <!-- LOADING SKELETON STATE -->
-  <div v-if="loading" class="min-h-screen bg-[#f8faf9] animate-pulse">
-    <div class="bg-slate-200/70 h-[340px] sm:h-[380px] w-full"></div>
+  <div v-if="loading" class="min-h-screen bg-[#F7F0E6] animate-pulse">
+    <div class="bg-[#D96C2C]/30 h-[340px] sm:h-[380px] w-full"></div>
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 -mt-6 relative z-20">
-      <div class="rounded-3xl bg-white h-28 shadow-xl border border-slate-100"></div>
+      <div class="rounded-3xl bg-[#FFF9F2] h-28 shadow-xl border-2 border-[#E8D9C9]"></div>
     </div>
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-10 space-y-6">
-      <div class="rounded-3xl bg-white h-72 border border-slate-200/80"></div>
-      <div class="rounded-3xl bg-white h-56 border border-slate-200/80"></div>
+      <div class="rounded-3xl bg-[#FFF9F2] h-72 border-2 border-[#E8D9C9]"></div>
+      <div class="rounded-3xl bg-[#FFF9F2] h-56 border-2 border-[#E8D9C9]"></div>
     </div>
   </div>
 
-  <div v-else-if="shop" class="min-h-screen bg-[#f8faf9] text-slate-800 pb-24 sm:pb-20">
+  <div v-else-if="shop" class="min-h-screen bg-[#F7F0E6] text-[#332820] pb-24 sm:pb-20">
     <!-- BREADCRUMB BAR -->
-    <div class="bg-white border-b border-slate-200/80 py-3 shadow-2xs">
+    <div class="bg-[#FFF9F2] border-b-2 border-[#E8D9C9] py-3 shadow-2xs">
       <div
-        class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-xs text-slate-500 flex items-center justify-between gap-3"
+        class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-xs text-[#786B62] flex items-center justify-between gap-3"
       >
         <div class="flex items-center gap-2 overflow-x-auto scrollbar-none">
-          <RouterLink to="/" class="hover:text-[#1c4d3e] transition shrink-0">หน้าแรก</RouterLink>
-          <i class="mdi mdi-chevron-right text-slate-300 shrink-0"></i>
-          <RouterLink to="/shops" class="hover:text-[#1c4d3e] transition shrink-0"
+          <RouterLink to="/" class="hover:text-[#D96C2C] transition shrink-0">หน้าแรก</RouterLink>
+          <i class="mdi mdi-chevron-right text-[#E8D9C9] shrink-0"></i>
+          <RouterLink to="/shops" class="hover:text-[#D96C2C] transition shrink-0"
             >ร้านค้าทั้งหมด</RouterLink
           >
-          <i class="mdi mdi-chevron-right text-slate-300 shrink-0"></i>
-          <span class="text-slate-900 font-bold line-clamp-1">{{ shop.shopName }}</span>
+          <i class="mdi mdi-chevron-right text-[#E8D9C9] shrink-0"></i>
+          <span class="text-[#332820] font-bold line-clamp-1">{{ shop.shopName }}</span>
         </div>
 
         <button
           type="button"
-          class="hidden sm:flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-[#1c4d3e] transition shrink-0"
+          class="hidden sm:flex items-center gap-1.5 text-xs font-bold text-[#786B62] hover:text-[#D96C2C] transition shrink-0 cursor-pointer"
           aria-label="แชร์ร้านค้านี้"
           @click="copyShopLink"
         >
-          <i class="mdi mdi-share-variant-outline text-emerald-700"></i>
+          <i class="mdi mdi-share-variant-outline text-[#D96C2C]"></i>
           <span>แชร์ร้านค้านี้</span>
         </button>
       </div>
     </div>
 
-    <!-- HERO HEADER SECTION (MODERN DARK EMERALD GLASSMORPHISM) -->
+    <!-- HERO HEADER SECTION (ORANGE & DARK BROWN GLASSMORPHISM) -->
     <section
-      class="relative bg-slate-950 text-white min-h-[340px] sm:min-h-[380px] flex items-end overflow-hidden"
+      class="relative bg-[#171412] text-white min-h-[340px] sm:min-h-[380px] flex items-end overflow-hidden"
     >
       <!-- Background Cover Image with Ambient Overlay -->
       <img
@@ -390,15 +388,15 @@ onBeforeUnmount(() => {
         class="absolute inset-0 w-full h-full object-cover opacity-50 scale-105 transition duration-700 hover:scale-100"
       />
       <div
-        class="absolute inset-0 bg-gradient-to-t from-[#0d3831] via-[#0d3831]/75 to-slate-950/40"
+        class="absolute inset-0 bg-gradient-to-t from-[#171412] via-[#171412]/85 to-black/50"
       ></div>
 
       <!-- Floating Glow Orbs -->
       <div
-        class="pointer-events-none absolute -right-20 top-10 h-72 w-72 rounded-full bg-emerald-500/20 blur-3xl"
+        class="pointer-events-none absolute -right-20 top-10 h-72 w-72 rounded-full bg-[#D96C2C]/20 blur-3xl"
       ></div>
       <div
-        class="pointer-events-none absolute -left-20 bottom-0 h-72 w-72 rounded-full bg-teal-500/20 blur-3xl"
+        class="pointer-events-none absolute -left-20 bottom-0 h-72 w-72 rounded-full bg-[#F2A65A]/20 blur-3xl"
       ></div>
 
       <!-- Hero Profile Header Container -->
@@ -408,7 +406,7 @@ onBeforeUnmount(() => {
           <div class="flex flex-col sm:flex-row items-start sm:items-end gap-5 sm:gap-6">
             <!-- Avatar Logo Container -->
             <div
-              class="relative flex h-28 w-28 sm:h-32 sm:w-32 shrink-0 items-center justify-center overflow-hidden rounded-3xl border-4 border-white/90 bg-slate-900 shadow-2xl ring-4 ring-emerald-500/20"
+              class="relative flex h-28 w-28 sm:h-32 sm:w-32 shrink-0 items-center justify-center overflow-hidden rounded-3xl border-4 border-white/90 bg-[#171412] shadow-2xl ring-4 ring-[#D96C2C]/40"
             >
               <img
                 :src="
@@ -419,7 +417,7 @@ onBeforeUnmount(() => {
                 class="w-full h-full object-cover"
               />
               <span
-                class="absolute bottom-1 right-1 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg text-xs"
+                class="absolute bottom-1 right-1 flex h-6 w-6 items-center justify-center rounded-full bg-[#D96C2C] text-white shadow-lg text-xs font-black"
                 title="ร้านค้าได้รับการยืนยัน"
               >
                 <i class="mdi mdi-check-bold"></i>
@@ -430,16 +428,16 @@ onBeforeUnmount(() => {
             <div class="space-y-2.5">
               <div class="flex flex-wrap items-center gap-2">
                 <span
-                  class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/25 text-emerald-200 text-xs font-bold border border-emerald-400/30 backdrop-blur-md"
+                  class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#D96C2C]/30 text-[#F2A65A] text-xs font-bold border border-[#F2A65A]/40 backdrop-blur-md"
                 >
-                  <i class="mdi mdi-tag-outline text-emerald-300"></i>
+                  <i class="mdi mdi-tag-outline text-[#F2A65A]"></i>
                   {{ shop.categoryName || 'ร้านค้าชุมชน' }}
                 </span>
                 <span
                   class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-md"
                   :class="
                     isOpenNow
-                      ? 'bg-emerald-400/20 text-emerald-300'
+                      ? 'bg-emerald-500/25 text-emerald-200 border border-emerald-400/30'
                       : 'bg-slate-500/20 text-slate-300'
                   "
                 >
@@ -459,31 +457,31 @@ onBeforeUnmount(() => {
 
               <!-- Location & Rating -->
               <div
-                class="flex flex-wrap items-center gap-4 text-xs sm:text-sm text-emerald-100/90 font-medium"
+                class="flex flex-wrap items-center gap-4 text-xs sm:text-sm text-[#F7F0E6]/90 font-medium"
               >
                 <span class="flex items-center gap-1.5">
-                  <i class="mdi mdi-map-marker text-emerald-400 text-base"></i>
+                  <i class="mdi mdi-map-marker text-[#F2A65A] text-base"></i>
                   {{ shopArea }}
                 </span>
 
-                <span class="text-emerald-400/50">•</span>
+                <span class="text-[#F2A65A]/50">•</span>
 
                 <span
                   v-if="reviewData.totalCount"
-                  class="flex items-center gap-1.5 font-bold text-amber-400 bg-amber-400/10 px-3 py-0.5 rounded-full border border-amber-400/20"
+                  class="flex items-center gap-1.5 font-bold text-[#F2A65A] bg-[#D96C2C]/20 px-3 py-0.5 rounded-full border border-[#F2A65A]/40"
                 >
                   <i class="mdi mdi-star"></i>
                   {{ reviewData.averageRating.toFixed(1) }}
-                  <span class="text-emerald-100 font-normal"
+                  <span class="text-[#F7F0E6] font-normal"
                     >({{ reviewData.totalCount }} รีวิว)</span
                   >
                 </span>
-                <span v-else class="text-emerald-200/80">ยังไม่มีรีวิว</span>
+                <span v-else class="text-[#F7F0E6]/80">ยังไม่มีรีวิว</span>
               </div>
 
               <!-- Shop Description Snippet -->
               <p
-                class="text-xs sm:text-sm text-emerald-100/80 max-w-2xl line-clamp-2 leading-relaxed font-normal"
+                class="text-xs sm:text-sm text-[#F7F0E6]/80 max-w-2xl line-clamp-2 leading-relaxed font-normal"
               >
                 {{
                   shop.description ||
@@ -499,31 +497,31 @@ onBeforeUnmount(() => {
           >
             <button
               type="button"
-              class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-bold text-xs sm:text-sm shadow-xl transition-all duration-200 active:scale-95"
+              class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-black text-xs sm:text-sm shadow-xl transition-all duration-200 active:scale-95 cursor-pointer border-2 border-[#D96C2C]"
               :class="
                 isFollowing
-                  ? 'bg-slate-800 text-white border border-slate-700'
-                  : 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-emerald-900/30'
+                  ? 'bg-slate-800 text-white border-slate-700'
+                  : 'bg-[#D96C2C] hover:bg-[#BF5720] text-white shadow-[#D96C2C]/30'
               "
               :aria-pressed="isFollowing"
               @click="toggleFollow"
             >
               <i class="mdi text-base" :class="isFollowing ? 'mdi-check' : 'mdi-heart-outline'"></i>
-              <span>{{ isFollowing ? 'ติดตามแล้ว' : 'ติดตามร้านค้า' }}</span>
+              <span class="!text-white">{{ isFollowing ? 'ติดตามแล้ว' : 'ติดตามร้านค้า' }}</span>
             </button>
 
             <a
               v-if="shop.phone"
               :href="`tel:${shop.phone}`"
-              class="flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-white/95 hover:bg-white text-slate-800 font-bold text-xs sm:text-sm shadow-lg transition active:scale-95"
+              class="flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-[#FFF9F2] hover:bg-white text-[#332820] font-extrabold text-xs sm:text-sm shadow-lg transition active:scale-95 border-2 border-[#E8D9C9]"
             >
-              <i class="mdi mdi-phone-outline text-emerald-700 text-base"></i>
+              <i class="mdi mdi-phone-outline text-[#D96C2C] text-base"></i>
               <span>โทรติดต่อ</span>
             </a>
 
             <button
               type="button"
-              class="flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs sm:text-sm backdrop-blur-md border border-white/20 transition active:scale-95"
+              class="flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs sm:text-sm backdrop-blur-md border border-white/20 transition active:scale-95 cursor-pointer"
               aria-label="แชร์ร้านค้านี้"
               @click="copyShopLink"
             >
@@ -538,43 +536,43 @@ onBeforeUnmount(() => {
     <!-- SHOP QUICK INFO BAR (FLOATING 4 COLUMNS CARD) -->
     <section class="relative z-20 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 -mt-6">
       <div
-        class="rounded-3xl bg-white p-5 sm:p-6 shadow-xl shadow-emerald-950/5 border border-slate-100"
+        class="rounded-3xl bg-[#FFF9F2] p-5 sm:p-6 shadow-xl border-2 border-[#E8D9C9]"
       >
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           <!-- Contact Phone -->
           <div class="flex items-center gap-3.5 p-2">
             <div
-              class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-[#1c4d3e] shadow-2xs"
+              class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#D96C2C]/15 text-[#D96C2C] shadow-2xs border border-[#D96C2C]/30"
             >
               <i class="mdi mdi-phone-outline text-xl"></i>
             </div>
             <div class="min-w-0">
-              <span class="text-[11px] font-semibold text-slate-400 block uppercase tracking-wider"
+              <span class="text-[11px] font-bold text-[#786B62] block uppercase tracking-wider"
                 >เบอร์โทรศัพท์</span
               >
               <a
                 v-if="shop.phone"
                 :href="`tel:${shop.phone}`"
-                class="font-bold text-slate-900 text-sm hover:text-[#1c4d3e] transition"
+                class="font-black text-[#D96C2C] text-sm hover:text-[#BF5720] transition"
               >
                 {{ shop.phone }}
               </a>
-              <span v-else class="font-medium text-slate-400 text-sm">ยังไม่ระบุ</span>
+              <span v-else class="font-medium text-[#786B62] text-sm">ยังไม่ระบุ</span>
             </div>
           </div>
 
           <!-- Contact Email -->
           <div class="flex items-center gap-3.5 p-2">
             <div
-              class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-teal-50 text-teal-700 shadow-2xs"
+              class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#D96C2C]/10 text-[#D96C2C] shadow-2xs border border-[#D96C2C]/20"
             >
               <i class="mdi mdi-email-outline text-xl"></i>
             </div>
             <div class="min-w-0">
-              <span class="text-[11px] font-semibold text-slate-400 block uppercase tracking-wider"
+              <span class="text-[11px] font-bold text-[#786B62] block uppercase tracking-wider"
                 >อีเมลร้านค้า</span
               >
-              <span class="font-bold text-slate-900 text-sm line-clamp-1 block">{{
+              <span class="font-black text-[#332820] text-sm line-clamp-1 block">{{
                 shop.email || 'ยังไม่ระบุ'
               }}</span>
             </div>
@@ -583,15 +581,15 @@ onBeforeUnmount(() => {
           <!-- Business Hours -->
           <div class="flex items-center gap-3.5 p-2">
             <div
-              class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 shadow-2xs"
+              class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#D96C2C]/15 text-[#D96C2C] shadow-2xs border border-[#D96C2C]/30"
             >
               <i class="mdi mdi-clock-outline text-xl"></i>
             </div>
             <div class="min-w-0">
-              <span class="text-[11px] font-semibold text-slate-400 block uppercase tracking-wider"
+              <span class="text-[11px] font-bold text-[#786B62] block uppercase tracking-wider"
                 >เวลาทำการ</span
               >
-              <span class="font-bold text-slate-900 text-xs sm:text-sm block leading-snug">{{
+              <span class="font-extrabold text-[#332820] text-xs sm:text-sm block leading-snug">{{
                 businessHours
               }}</span>
             </div>
@@ -600,15 +598,15 @@ onBeforeUnmount(() => {
           <!-- Shop Location Address -->
           <div class="flex items-center gap-3.5 p-2">
             <div
-              class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-[#1c4d3e] shadow-2xs"
+              class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#D96C2C]/10 text-[#D96C2C] shadow-2xs border border-[#D96C2C]/20"
             >
               <i class="mdi mdi-map-marker-outline text-xl"></i>
             </div>
             <div class="min-w-0">
-              <span class="text-[11px] font-semibold text-slate-400 block uppercase tracking-wider"
+              <span class="text-[11px] font-bold text-[#786B62] block uppercase tracking-wider"
                 >ที่อยู่และพิกัด</span
               >
-              <span class="font-bold text-slate-900 text-xs sm:text-sm line-clamp-1 block">{{
+              <span class="font-black text-[#332820] text-xs sm:text-sm line-clamp-1 block">{{
                 shopAddress
               }}</span>
             </div>
@@ -624,47 +622,68 @@ onBeforeUnmount(() => {
         <div class="lg:col-span-8 space-y-10">
           <!-- SECTION 1: สินค้าในร้าน (SHOP PRODUCTS GRID) -->
           <section
-            class="rounded-3xl border border-slate-200/80 bg-white p-6 sm:p-7 shadow-xs space-y-6"
+            class="rounded-3xl border-2 border-[#E8D9C9] bg-[#FFF9F2] p-6 sm:p-7 shadow-xs space-y-6"
           >
             <!-- Header Toolbar -->
             <div
-              class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5"
+              class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-2 border-[#E8D9C9] pb-5"
             >
-              <div class="flex items-center gap-3">
-                <div
-                  class="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#1c4d3e] text-white shadow-md shadow-emerald-950/10"
+              <div class="flex items-center justify-between w-full sm:w-auto">
+                <div class="flex items-center gap-3">
+                  <div
+                    class="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#D96C2C] text-white shadow-md font-bold"
+                  >
+                    <i class="mdi mdi-shopping-outline text-xl"></i>
+                  </div>
+                  <div>
+                    <h2 class="text-xl font-black text-[#332820]">สินค้าในร้าน</h2>
+                    <p class="text-xs text-[#786B62]">
+                      แสดง {{ Math.min(filteredProducts.length, 6) }} จาก {{ products.length }} รายการ
+                    </p>
+                  </div>
+                </div>
+
+                <RouterLink
+                  v-if="shop"
+                  :to="`/shops/${shop.shopId}/products`"
+                  class="sm:hidden text-xs font-black text-[#D96C2C] hover:underline flex items-center gap-0.5"
                 >
-                  <i class="mdi mdi-shopping-outline text-xl"></i>
-                </div>
-                <div>
-                  <h2 class="text-xl font-extrabold text-slate-900">สินค้าในร้าน</h2>
-                  <p class="text-xs text-slate-500">
-                    พบสินค้า {{ filteredProducts.length }} จาก {{ products.length }} รายการ
-                  </p>
-                </div>
+                  <span>ดูทั้งหมด ></span>
+                </RouterLink>
               </div>
 
-              <!-- Product Search Box inside shop -->
-              <div class="relative min-w-[220px]">
-                <input
-                  v-model="productSearchInput"
-                  type="text"
-                  placeholder="ค้นหาสินค้าในร้าน..."
-                  aria-label="ค้นหาสินค้าในร้าน"
-                  class="w-full rounded-2xl border border-slate-200 bg-slate-50 pl-9 pr-9 py-2 text-xs text-slate-700 outline-none focus:border-[#1c4d3e] focus:bg-white transition"
-                />
-                <i
-                  class="mdi mdi-magnify absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-base"
-                ></i>
-                <button
-                  v-if="productSearchInput"
-                  type="button"
-                  aria-label="ล้างคำค้นหา"
-                  class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                  @click="clearSearch"
+              <!-- Right Actions: Search Box & View All Link -->
+              <div class="flex items-center gap-3">
+                <div class="relative min-w-[220px] flex-1 sm:flex-none">
+                  <input
+                    v-model="productSearchInput"
+                    type="text"
+                    placeholder="ค้นหาสินค้าในร้าน..."
+                    aria-label="ค้นหาสินค้าในร้าน"
+                    class="w-full rounded-2xl border-2 border-[#E8D9C9] bg-white pl-9 pr-9 py-2 text-xs text-[#332820] outline-none focus:border-[#D96C2C] transition font-medium"
+                  />
+                  <i
+                    class="mdi mdi-magnify absolute left-3 top-1/2 -translate-y-1/2 text-[#D96C2C] text-base"
+                  ></i>
+                  <button
+                    v-if="productSearchInput"
+                    type="button"
+                    aria-label="ล้างคำค้นหา"
+                    class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#786B62] hover:text-[#332820]"
+                    @click="clearSearch"
+                  >
+                    <i class="mdi mdi-close-circle text-base"></i>
+                  </button>
+                </div>
+
+                <RouterLink
+                  v-if="shop"
+                  :to="`/shops/${shop.shopId}/products`"
+                  class="hidden sm:inline-flex items-center gap-1 text-xs font-black text-[#D96C2C] hover:underline shrink-0"
                 >
-                  <i class="mdi mdi-close-circle text-base"></i>
-                </button>
+                  <span>ดูสินค้าทั้งหมด ({{ products.length }})</span>
+                  <i class="mdi mdi-chevron-right text-base"></i>
+                </RouterLink>
               </div>
             </div>
 
@@ -677,33 +696,33 @@ onBeforeUnmount(() => {
                 v-for="cat in productCategories"
                 :key="cat.name"
                 type="button"
-                class="px-4 py-2 rounded-2xl text-xs font-bold transition shrink-0 flex items-center gap-1.5"
+                class="px-4 py-2 rounded-2xl text-xs font-bold transition shrink-0 flex items-center gap-1.5 cursor-pointer border-2"
                 :class="
                   selectedCategory === cat.id
-                    ? 'bg-[#1c4d3e] text-white shadow-md shadow-emerald-950/20'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    ? 'border-[#D96C2C] bg-[#D96C2C] text-white shadow-md'
+                    : 'border-[#E8D9C9] bg-white text-[#332820] hover:border-[#D96C2C]'
                 "
                 @click="selectedCategory = cat.id"
               >
                 <span>{{ cat.name }}</span>
                 <span
                   class="text-[10px] rounded-full px-1.5 py-0.5"
-                  :class="selectedCategory === cat.id ? 'bg-white/20' : 'bg-white text-slate-500'"
+                  :class="selectedCategory === cat.id ? 'bg-white text-[#D96C2C] font-bold' : 'bg-[#F7F0E6] text-[#786B62]'"
                   >{{ cat.count }}</span
                 >
               </button>
             </div>
 
-            <!-- Products Grid Cards -->
+            <!-- Products Grid Cards (Showing 6 Preview Items) -->
             <div v-if="filteredProducts.length" class="grid grid-cols-2 sm:grid-cols-3 gap-5">
               <RouterLink
-                v-for="(prod, idx) in filteredProducts"
+                v-for="(prod, idx) in filteredProducts.slice(0, 6)"
                 :key="prod.productId"
                 :to="`/products/${prod.productId}`"
-                class="group bg-white rounded-2xl overflow-hidden border border-slate-200/80 p-3 shadow-2xs hover:shadow-xl hover:-translate-y-1 transition duration-300 flex flex-col justify-between"
+                class="group bg-white rounded-2xl overflow-hidden border-2 border-[#E8D9C9] p-3 shadow-2xs hover:shadow-xl hover:border-[#D96C2C] hover:-translate-y-1 transition duration-300 flex flex-col justify-between"
               >
                 <div>
-                  <div class="relative aspect-4/3 rounded-xl overflow-hidden bg-slate-100 mb-3">
+                  <div class="relative aspect-4/3 rounded-xl overflow-hidden bg-slate-900 mb-3">
                     <img
                       :src="getProductImage(prod, idx)"
                       :alt="prod.productName"
@@ -711,51 +730,63 @@ onBeforeUnmount(() => {
                       class="w-full h-full object-cover group-hover:scale-108 transition duration-500"
                     />
                     <span
-                      class="absolute top-2 left-2 px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-[#1c4d3e] text-white shadow-xs"
+                      class="absolute top-2 left-2 px-2.5 py-0.5 rounded-md text-[10px] font-extrabold bg-[#D96C2C] text-white shadow-xs"
                     >
                       พร้อมส่ง
                     </span>
                   </div>
 
                   <h4
-                    class="font-bold text-slate-900 text-xs sm:text-sm line-clamp-1 group-hover:text-[#1c4d3e] transition"
+                    class="font-black text-[#332820] text-xs sm:text-sm line-clamp-1 group-hover:text-[#D96C2C] transition"
                   >
                     {{ prod.productName }}
                   </h4>
-                  <p class="text-[11px] text-slate-400 mt-0.5 line-clamp-1">
+                  <p class="text-[11px] text-[#786B62] mt-0.5 line-clamp-1 font-medium">
                     {{ productCategoryName(prod.productCategoryId) }}
                   </p>
                 </div>
 
-                <div class="flex items-center justify-between mt-3 pt-2 border-t border-slate-100">
-                  <span class="font-black text-[#1c4d3e] text-sm">{{
+                <div class="flex items-center justify-between mt-3 pt-2 border-t border-[#E8D9C9]">
+                  <span class="font-black text-[#D96C2C] text-sm sm:text-base">{{
                     formatPrice(prod.price)
                   }}</span>
                   <button
                     type="button"
-                    class="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 text-slate-700 hover:bg-[#1c4d3e] hover:text-white transition shadow-2xs"
+                    class="flex h-8 w-8 items-center justify-center rounded-xl bg-[#D96C2C] text-white hover:bg-[#BF5720] transition shadow-2xs cursor-pointer border border-[#D96C2C]"
                     :aria-label="`ดูรายละเอียดสินค้า ${prod.productName}`"
                   >
-                    <i class="mdi mdi-cart-plus text-base"></i>
+                    <i class="mdi mdi-cart-plus text-base text-white"></i>
                   </button>
                 </div>
+              </RouterLink>
+            </div>
+
+            <!-- View All Products Prominent Button -->
+            <div v-if="shop && products.length > 0" class="pt-2">
+              <RouterLink
+                :to="`/shops/${shop.shopId}/products`"
+                class="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl bg-[#D96C2C]/10 hover:bg-[#D96C2C] text-[#D96C2C] hover:text-white border-2 border-[#D96C2C] font-black text-xs sm:text-sm shadow-md transition duration-200 cursor-pointer group"
+              >
+                <i class="mdi mdi-grid text-lg group-hover:text-white"></i>
+                <span class="group-hover:text-white">ดูสินค้าทั้งหมดของร้านนี้ ({{ products.length }} รายการ)</span>
+                <i class="mdi mdi-arrow-right text-base group-hover:text-white"></i>
               </RouterLink>
             </div>
 
             <!-- Empty Products State -->
             <div
               v-else
-              class="rounded-3xl border-2 border-dashed border-slate-200 bg-slate-50/50 py-12 text-center text-xs text-slate-500"
+              class="rounded-3xl border-2 border-dashed border-[#E8D9C9] bg-[#F7F0E6]/60 py-12 text-center text-xs text-[#786B62]"
             >
-              <i class="mdi mdi-package-variant-remove text-4xl text-slate-300 block mb-2"></i>
-              <span class="font-bold text-slate-700 text-sm">ไม่พบสินค้าในรายการนี้</span>
-              <p class="mt-1 text-slate-400">
+              <i class="mdi mdi-package-variant-remove text-4xl text-[#D96C2C] block mb-2"></i>
+              <span class="font-black text-[#332820] text-sm">ไม่พบสินค้าในรายการนี้</span>
+              <p class="mt-1 text-[#786B62]">
                 ลองเปลี่ยนคำค้นหา หรือเลือกหมวดหมู่อื่นเพื่อดูสินค้าทั้งหมด
               </p>
               <button
                 v-if="productSearchInput || selectedCategory"
                 type="button"
-                class="mt-3 text-[#1c4d3e] font-bold text-xs hover:underline"
+                class="mt-3 text-[#D96C2C] font-bold text-xs hover:underline cursor-pointer"
                 @click="
                   () => {
                     clearSearch()
@@ -770,23 +801,24 @@ onBeforeUnmount(() => {
 
           <!-- SECTION 2: คอนเทนต์จากร้าน (CONTENT FROM SHOP) -->
           <section
-            class="rounded-3xl border border-slate-200/80 bg-white p-6 sm:p-7 shadow-xs space-y-6"
+            class="rounded-3xl border-2 border-[#E8D9C9] bg-[#FFF9F2] p-6 sm:p-7 shadow-xs space-y-6"
           >
-            <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+            <div class="flex items-center justify-between border-b-2 border-[#E8D9C9] pb-4">
               <div class="flex items-center gap-3">
                 <div
-                  class="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#1c4d3e] text-white shadow-md"
+                  class="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#D96C2C] text-white shadow-md font-bold"
                 >
                   <i class="mdi mdi-play-box-outline text-xl"></i>
                 </div>
                 <div>
-                  <h2 class="text-xl font-extrabold text-slate-900">เรื่องราวและคอนเทนต์</h2>
-                  <p class="text-xs text-slate-500">เรื่องราววิถีชีวิตและภูมิปัญญาจากร้านค้า</p>
+                  <h2 class="text-xl font-black text-[#332820]">เรื่องราวและคอนเทนต์</h2>
+                  <p class="text-xs text-[#786B62]">เรื่องราววิถีชีวิตและภูมิปัญญาจากร้านค้า</p>
                 </div>
               </div>
 
-              <RouterLink to="/contents" class="text-xs font-bold text-[#1c4d3e] hover:underline">
-                ดูทั้งหมด >
+              <RouterLink v-if="shop" :to="`/shops/${shop.shopId}/contents`" class="text-xs font-black text-[#D96C2C] hover:underline flex items-center gap-1">
+                <span>ดูเรื่องราวทั้งหมด</span>
+                <i class="mdi mdi-chevron-right text-base"></i>
               </RouterLink>
             </div>
 
@@ -795,10 +827,10 @@ onBeforeUnmount(() => {
                 v-for="cnt in shopContents"
                 :key="cnt.contentId"
                 :to="`/contents/${cnt.contentId}`"
-                class="group bg-white rounded-2xl overflow-hidden border border-slate-200 p-3 shadow-2xs hover:shadow-md transition flex flex-col justify-between"
+                class="group bg-white rounded-2xl overflow-hidden border-2 border-[#E8D9C9] p-3 shadow-2xs hover:shadow-md hover:border-[#D96C2C] transition flex flex-col justify-between"
               >
                 <div>
-                  <div class="relative aspect-16/10 rounded-xl overflow-hidden bg-slate-900 mb-3">
+                  <div class="relative aspect-16/10 rounded-xl overflow-hidden bg-[#171412] mb-3">
                     <img
                       v-if="youtubeThumbnail(cnt.youtubeUrl)"
                       :src="youtubeThumbnail(cnt.youtubeUrl)"
@@ -808,65 +840,77 @@ onBeforeUnmount(() => {
                     />
                     <div
                       v-else
-                      class="flex h-full items-center justify-center bg-[#1c4d3e] text-white"
+                      class="flex h-full items-center justify-center bg-[#D96C2C] text-white"
                     >
-                      <i class="mdi mdi-play-circle-outline text-4xl"></i>
+                      <i class="mdi mdi-play-circle-outline text-4xl text-white"></i>
                     </div>
                     <span
-                      class="absolute top-2 left-2 px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-[#1c4d3e] text-white shadow-xs"
+                      class="absolute top-2 left-2 px-2.5 py-0.5 rounded-md text-[10px] font-extrabold bg-[#D96C2C] text-white shadow-xs"
                     >
                       {{ cnt.contentCategoryName || 'คอนเทนต์' }}
                     </span>
                   </div>
 
                   <h4
-                    class="font-bold text-slate-900 text-xs sm:text-sm group-hover:text-[#1c4d3e] transition line-clamp-1"
+                    class="font-black text-[#332820] text-xs sm:text-sm group-hover:text-[#D96C2C] transition line-clamp-1"
                   >
                     {{ cnt.title }}
                   </h4>
-                  <p class="text-[11px] text-slate-500 mt-1 line-clamp-2 leading-relaxed">
+                  <p class="text-[11px] text-[#786B62] mt-1 line-clamp-2 leading-relaxed">
                     {{ cnt.summary || 'เรื่องราวจากร้านค้า' }}
                   </p>
                 </div>
 
                 <div
-                  class="flex items-center justify-between text-[11px] text-slate-400 mt-3 pt-2 border-t border-slate-100 font-medium"
+                  class="flex items-center justify-between text-[11px] text-[#786B62] mt-3 pt-2 border-t border-[#E8D9C9] font-semibold"
                 >
-                  <span>อ่านเรื่องราว</span>
+                  <span class="group-hover:text-[#D96C2C]">อ่านเรื่องราว</span>
                   <i
-                    class="mdi mdi-arrow-right text-xs transition-transform group-hover:translate-x-1"
+                    class="mdi mdi-arrow-right text-xs text-[#D96C2C] transition-transform group-hover:translate-x-1"
                   ></i>
                 </div>
               </RouterLink>
             </div>
 
-            <div v-else class="rounded-2xl bg-slate-50 p-8 text-center text-xs text-slate-500">
-              <i class="mdi mdi-play-box-remove-outline text-3xl text-slate-300 block mb-2"></i>
-              <span class="font-bold text-slate-700">ร้านค้านี้ยังไม่มีคอนเทนต์เฉพาะ</span>
+            <!-- Prominent View All Stories Button -->
+            <div v-if="shop && shopContents.length > 0" class="pt-2">
+              <RouterLink
+                :to="`/shops/${shop.shopId}/contents`"
+                class="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl bg-[#D96C2C]/10 hover:bg-[#D96C2C] text-[#D96C2C] hover:text-white border-2 border-[#D96C2C] font-black text-xs sm:text-sm shadow-md transition duration-200 cursor-pointer group"
+              >
+                <i class="mdi mdi-book-open-variant text-lg group-hover:text-white"></i>
+                <span class="group-hover:text-white">ดูเรื่องราวและคอนเทนต์ทั้งหมดของร้านนี้</span>
+                <i class="mdi mdi-arrow-right text-base group-hover:text-white"></i>
+              </RouterLink>
+            </div>
+
+            <div v-else class="rounded-2xl bg-[#F7F0E6]/60 p-8 text-center text-xs text-[#786B62]">
+              <i class="mdi mdi-play-box-remove-outline text-3xl text-[#D96C2C] block mb-2"></i>
+              <span class="font-bold text-[#332820]">ร้านค้านี้ยังไม่มีคอนเทนต์เฉพาะ</span>
             </div>
           </section>
 
           <!-- SECTION 3: ร้านค้าใกล้เคียง (NEARBY SHOPS) -->
           <section
             v-if="nearbyShops.length"
-            class="rounded-3xl border border-slate-200/80 bg-white p-6 sm:p-7 shadow-xs space-y-6"
+            class="rounded-3xl border-2 border-[#E8D9C9] bg-[#FFF9F2] p-6 sm:p-7 shadow-xs space-y-6"
           >
-            <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+            <div class="flex items-center justify-between border-b-2 border-[#E8D9C9] pb-4">
               <div class="flex items-center gap-3">
                 <div
-                  class="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-500 text-white shadow-md"
+                  class="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#D96C2C] text-white shadow-md font-bold"
                 >
                   <i class="mdi mdi-map-marker-radius-outline text-xl"></i>
                 </div>
                 <div>
-                  <h2 class="text-xl font-extrabold text-slate-900">ร้านค้าในละแวกใกล้เคียง</h2>
-                  <p class="text-xs text-slate-500">
+                  <h2 class="text-xl font-black text-[#332820]">ร้านค้าในละแวกใกล้เคียง</h2>
+                  <p class="text-xs text-[#786B62]">
                     ค้นพบร้านค้าท้องถิ่นอื่น ๆ ในพื้นที่ใกล้เคียง
                   </p>
                 </div>
               </div>
 
-              <RouterLink to="/shops" class="text-xs font-bold text-[#1c4d3e] hover:underline">
+              <RouterLink to="/shops" class="text-xs font-bold text-[#D96C2C] hover:underline">
                 ดูร้านค้าทั้งหมด >
               </RouterLink>
             </div>
@@ -876,10 +920,10 @@ onBeforeUnmount(() => {
                 v-for="nb in nearbyShops"
                 :key="nb.shopId"
                 :to="`/shops/${nb.shopId}`"
-                class="group bg-white rounded-2xl overflow-hidden border border-slate-200 p-3 shadow-2xs hover:shadow-md transition flex flex-col justify-between"
+                class="group bg-white rounded-2xl overflow-hidden border-2 border-[#E8D9C9] p-3 shadow-2xs hover:shadow-md hover:border-[#D96C2C] transition flex flex-col justify-between"
               >
                 <div>
-                  <div class="aspect-16/10 rounded-xl overflow-hidden bg-slate-100 mb-2.5">
+                  <div class="aspect-16/10 rounded-xl overflow-hidden bg-slate-900 mb-2.5">
                     <img
                       :src="getNearbyShopImage(nb)"
                       :alt="nb.shopName"
@@ -888,20 +932,20 @@ onBeforeUnmount(() => {
                     />
                   </div>
                   <h4
-                    class="font-bold text-slate-900 text-xs group-hover:text-[#1c4d3e] transition line-clamp-1"
+                    class="font-black text-[#332820] text-xs group-hover:text-[#D96C2C] transition line-clamp-1"
                   >
                     {{ nb.shopName }}
                   </h4>
-                  <p class="text-[10px] text-slate-500 mt-0.5">{{ formatShopArea(nb) }}</p>
+                  <p class="text-[10px] text-[#786B62] mt-0.5 font-medium">{{ formatShopArea(nb) }}</p>
                 </div>
 
                 <div
-                  class="flex items-center justify-between text-[10px] text-slate-500 mt-3 pt-2 border-t border-slate-100"
+                  class="flex items-center justify-between text-[10px] text-[#786B62] mt-3 pt-2 border-t border-[#E8D9C9]"
                 >
-                  <span class="font-semibold text-[#1c4d3e]">{{
+                  <span class="font-extrabold text-[#D96C2C]">{{
                     nb.categoryName || 'ร้านค้าชุมชน'
                   }}</span>
-                  <span class="font-bold text-[#1c4d3e]">เข้าชมร้าน</span>
+                  <span class="font-bold text-[#D96C2C]">เข้าชมร้าน</span>
                 </div>
               </RouterLink>
             </div>
@@ -911,15 +955,15 @@ onBeforeUnmount(() => {
         <!-- RIGHT SIDEBAR COLUMN: ABOUT, LOCATION & REVIEWS -->
         <div class="lg:col-span-4 space-y-6 lg:sticky lg:top-24">
           <!-- CARD 1: เกี่ยวกับร้าน -->
-          <div class="rounded-3xl bg-white border border-slate-200/80 p-6 shadow-xs space-y-4">
+          <div class="rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9] p-6 shadow-xs space-y-4">
             <h3
-              class="font-bold text-slate-900 text-base border-b border-slate-100 pb-3 flex items-center gap-2"
+              class="font-black text-[#332820] text-base border-b-2 border-[#E8D9C9] pb-3 flex items-center gap-2"
             >
-              <i class="mdi mdi-information-outline text-[#1c4d3e] text-lg"></i>
+              <i class="mdi mdi-information-outline text-[#D96C2C] text-lg"></i>
               <span>เกี่ยวกับร้านค้า</span>
             </h3>
 
-            <p class="text-xs sm:text-sm text-slate-600 leading-relaxed whitespace-pre-line">
+            <p class="text-xs sm:text-sm text-[#786B62] leading-relaxed whitespace-pre-line font-semibold">
               {{
                 shop.description ||
                 'ยินดีต้อนรับสู่ร้านค้าท้องถิ่นคุณภาพ พร้อมให้บริการสินค้าหลากหลายในจังหวัดกาญจนบุรี'
@@ -927,49 +971,49 @@ onBeforeUnmount(() => {
             </p>
 
             <div
-              class="space-y-2.5 pt-2 border-t border-slate-100 text-xs font-medium text-slate-700"
+              class="space-y-2.5 pt-2 border-t border-[#E8D9C9] text-xs font-extrabold text-[#332820]"
             >
               <div class="flex items-center gap-2">
-                <i class="mdi mdi-check-circle text-emerald-600 text-base"></i>
+                <i class="mdi mdi-check-circle text-[#D96C2C] text-base"></i>
                 <span>สินค้าตรงจากชุมชนท้องถิ่น</span>
               </div>
               <div class="flex items-center gap-2">
-                <i class="mdi mdi-check-circle text-emerald-600 text-base"></i>
+                <i class="mdi mdi-check-circle text-[#D96C2C] text-base"></i>
                 <span>ผ่านการยืนยันตัวตนในระบบ</span>
               </div>
               <div class="flex items-center gap-2">
-                <i class="mdi mdi-check-circle text-emerald-600 text-base"></i>
+                <i class="mdi mdi-check-circle text-[#D96C2C] text-base"></i>
                 <span>สนับสนุนเศรษฐกิจชุมชนกาญจนบุรี</span>
               </div>
             </div>
           </div>
 
           <!-- CARD 2: ตำแหน่งร้าน (LEAFLET INTERACTIVE MAP) -->
-          <div class="rounded-3xl bg-white border border-slate-200/80 p-6 shadow-xs space-y-4">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
-                <i class="mdi mdi-map-marker-radius-outline text-[#1c4d3e] text-lg"></i>
+          <div class="rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9] p-6 shadow-xs space-y-4">
+            <div class="flex items-center justify-between border-b-2 border-[#E8D9C9] pb-3">
+              <h3 class="font-black text-[#332820] text-base flex items-center gap-2">
+                <i class="mdi mdi-map-marker-radius-outline text-[#D96C2C] text-lg"></i>
                 <span>ตำแหน่งและแผนที่</span>
               </h3>
             </div>
 
             <div
               v-if="hasShopLocation"
-              class="rounded-2xl overflow-hidden border border-slate-200 h-52 relative z-10"
+              class="rounded-2xl overflow-hidden border-2 border-[#E8D9C9] h-52 relative z-10"
             >
-              <div ref="mapContainer" class="w-full h-full bg-emerald-50/50"></div>
+              <div ref="mapContainer" class="w-full h-full bg-[#F7F0E6]"></div>
             </div>
 
             <div
               v-else
-              class="flex h-44 items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-5 text-center text-xs text-slate-500"
+              class="flex h-44 items-center justify-center rounded-2xl border-2 border-dashed border-[#E8D9C9] bg-[#F7F0E6]/50 px-5 text-center text-xs text-[#786B62]"
             >
               ร้านค้ายังไม่ได้ระบุพิกัดบนแผนที่
             </div>
 
             <div class="flex items-center justify-between pt-1 text-xs">
-              <span class="font-semibold text-slate-500 flex items-center gap-1">
-                <i class="mdi mdi-compass-outline text-slate-400"></i>
+              <span class="font-semibold text-[#786B62] flex items-center gap-1">
+                <i class="mdi mdi-compass-outline text-[#D96C2C]"></i>
                 {{
                   shop.latitude != null && shop.longitude != null
                     ? `${shop.latitude.toFixed(4)}°, ${shop.longitude.toFixed(4)}°`
@@ -980,31 +1024,31 @@ onBeforeUnmount(() => {
               <button
                 v-if="hasShopLocation"
                 type="button"
-                class="px-4 py-2 rounded-xl bg-[#1c4d3e] hover:bg-[#14392e] text-white font-bold transition flex items-center gap-1.5 shadow-xs"
+                class="px-4 py-2 rounded-xl bg-[#D96C2C] hover:bg-[#BF5720] text-white font-black transition flex items-center gap-1.5 shadow-xs cursor-pointer border border-[#D96C2C]"
                 @click="openDirections"
               >
-                <i class="mdi mdi-navigation-variant"></i>
-                <span>นำทาง Google Maps</span>
+                <i class="mdi mdi-navigation-variant text-white"></i>
+                <span class="text-white">นำทาง Google Maps</span>
               </button>
             </div>
           </div>
 
           <!-- CARD 3: รีวิวจากลูกค้า (CUSTOMER REVIEWS CARD) -->
-          <div class="rounded-3xl bg-white border border-slate-200/80 p-6 shadow-xs space-y-4">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div class="rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9] p-6 shadow-xs space-y-4">
+            <div class="flex items-center justify-between border-b-2 border-[#E8D9C9] pb-3">
               <div>
-                <h3 class="font-bold text-slate-900 text-base">รีวิวจากลูกค้า</h3>
+                <h3 class="font-black text-[#332820] text-base">รีวิวจากลูกค้า</h3>
                 <span
                   v-if="reviewData.totalCount"
-                  class="text-xs font-bold text-amber-500 flex items-center gap-1 mt-0.5"
+                  class="text-xs font-black text-[#D96C2C] flex items-center gap-1 mt-0.5"
                 >
                   <i class="mdi mdi-star"></i>
                   {{ reviewData.averageRating.toFixed(1) }}
-                  <span class="text-slate-400 font-normal"
+                  <span class="text-[#786B62] font-normal"
                     >จาก {{ reviewData.totalCount }} รีวิว</span
                   >
                 </span>
-                <span v-else class="mt-0.5 block text-xs text-slate-400"
+                <span v-else class="mt-0.5 block text-xs text-[#786B62]"
                   >ยังไม่มีรีวิวจากผู้ซื้อ</span
                 >
               </div>
@@ -1012,39 +1056,39 @@ onBeforeUnmount(() => {
 
             <div
               v-if="reviewData.reviews.length"
-              class="space-y-4 max-h-[420px] overflow-y-auto pr-1"
+              class="space-y-4 max-h-[420px] overflow-y-auto pr-1 scrollbar-thin"
             >
               <div
                 v-for="rev in reviewData.reviews"
                 :key="rev.reviewId"
-                class="border-b border-slate-100 pb-3.5 text-xs space-y-2 last:border-0 last:pb-0"
+                class="border-b border-[#E8D9C9] pb-3.5 text-xs space-y-2 last:border-0 last:pb-0"
               >
                 <div class="flex items-center justify-between">
                   <div class="flex items-center gap-2">
                     <span
-                      class="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100 font-bold text-emerald-800 text-xs shadow-2xs"
+                      class="flex h-7 w-7 items-center justify-center rounded-full bg-[#D96C2C] font-black text-white text-xs shadow-2xs"
                     >
                       {{ reviewerInitial(rev.userName) }}
                     </span>
-                    <span class="font-bold text-slate-800">{{ rev.userName }}</span>
+                    <span class="font-bold text-[#332820]">{{ rev.userName }}</span>
                   </div>
-                  <span class="text-[10px] text-slate-400">{{
+                  <span class="text-[10px] text-[#786B62]">{{
                     formatReviewDate(rev.createdAt)
                   }}</span>
                 </div>
 
-                <div v-if="rev.rating > 0" class="flex text-amber-400 text-xs">
+                <div v-if="rev.rating > 0" class="flex text-[#D96C2C] text-xs">
                   <i v-for="s in rev.rating" :key="s" class="mdi mdi-star"></i>
                 </div>
-                <p class="text-slate-600 leading-relaxed">{{ rev.comment }}</p>
+                <p class="text-[#786B62] leading-relaxed font-medium">{{ rev.comment }}</p>
 
                 <!-- Shop Reply Box -->
                 <div
                   v-if="rev.reply"
-                  class="rounded-xl bg-slate-50 p-3 text-[11px] text-slate-600 border border-slate-100"
+                  class="rounded-xl bg-[#F7F0E6] p-3 text-[11px] text-[#786B62] border border-[#E8D9C9]"
                 >
-                  <div class="font-bold text-slate-800 mb-1 flex items-center gap-1">
-                    <i class="mdi mdi-reply text-[#1c4d3e]"></i>
+                  <div class="font-bold text-[#D96C2C] mb-1 flex items-center gap-1">
+                    <i class="mdi mdi-reply text-[#D96C2C]"></i>
                     <span>ร้านค้าตอบกลับ</span>
                   </div>
                   <p>{{ rev.reply }}</p>
@@ -1052,7 +1096,7 @@ onBeforeUnmount(() => {
               </div>
             </div>
 
-            <p v-else class="rounded-2xl bg-slate-50 px-4 py-6 text-center text-xs text-slate-400">
+            <p v-else class="rounded-2xl bg-[#F7F0E6]/60 px-4 py-6 text-center text-xs text-[#786B62]">
               ยังไม่มีรีวิวสำหรับร้านค้านี้
             </p>
           </div>
@@ -1062,15 +1106,15 @@ onBeforeUnmount(() => {
 
     <!-- STICKY MOBILE ACTION BAR -->
     <div
-      class="sm:hidden fixed bottom-0 inset-x-0 z-30 bg-white/95 backdrop-blur-md border-t border-slate-200 px-4 py-3 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] flex items-center gap-2"
+      class="sm:hidden fixed bottom-0 inset-x-0 z-30 bg-[#FFF9F2]/95 backdrop-blur-md border-t-2 border-[#E8D9C9] px-4 py-3 shadow-2xl flex items-center gap-2"
     >
       <button
         type="button"
-        class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border transition active:scale-95"
+        class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border-2 transition active:scale-95 cursor-pointer"
         :class="
           isFollowing
             ? 'bg-slate-800 border-slate-800 text-white'
-            : 'bg-white border-slate-200 text-[#1c4d3e]'
+            : 'bg-[#FFF9F2] border-[#E8D9C9] text-[#D96C2C]'
         "
         :aria-pressed="isFollowing"
         aria-label="ติดตามร้านค้า"
@@ -1081,7 +1125,7 @@ onBeforeUnmount(() => {
 
       <button
         type="button"
-        class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-slate-200 bg-white text-[#1c4d3e]"
+        class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border-2 border-[#E8D9C9] bg-[#FFF9F2] text-[#D96C2C] cursor-pointer"
         aria-label="แชร์ร้านค้านี้"
         @click="copyShopLink"
       >
@@ -1091,20 +1135,20 @@ onBeforeUnmount(() => {
       <a
         v-if="shop.phone"
         :href="`tel:${shop.phone}`"
-        class="flex-1 flex items-center justify-center gap-2 h-11 rounded-2xl bg-white border border-[#1c4d3e]/30 text-[#1c4d3e] font-bold text-xs active:scale-95 transition"
+        class="flex-1 flex items-center justify-center gap-2 h-11 rounded-2xl bg-[#FFF9F2] border-2 border-[#D96C2C] text-[#D96C2C] font-extrabold text-xs active:scale-95 transition"
       >
-        <i class="mdi mdi-phone-outline text-base"></i>
+        <i class="mdi mdi-phone-outline text-base text-[#D96C2C]"></i>
         <span>โทรติดต่อ</span>
       </a>
 
       <button
         v-if="hasShopLocation"
         type="button"
-        class="flex-1 flex items-center justify-center gap-2 h-11 rounded-2xl bg-[#1c4d3e] text-white font-bold text-xs shadow-md shadow-emerald-950/20 active:scale-95 transition"
+        class="flex-1 flex items-center justify-center gap-2 h-11 rounded-2xl bg-[#D96C2C] text-white font-extrabold text-xs shadow-md active:scale-95 transition cursor-pointer border border-[#D96C2C]"
         @click="openDirections"
       >
-        <i class="mdi mdi-navigation-variant text-base"></i>
-        <span>นำทาง</span>
+        <i class="mdi mdi-navigation-variant text-base text-white"></i>
+        <span class="text-white">นำทาง</span>
       </button>
     </div>
   </div>

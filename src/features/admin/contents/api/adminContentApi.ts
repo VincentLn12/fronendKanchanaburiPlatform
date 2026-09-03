@@ -58,6 +58,12 @@ export async function getContentCategories() {
   const { data } = await http.get<PagedResult<ContentCategory>>('/content-categories', { params: { page: 1, pageSize: 100 } })
   return data.items
 }
-export async function getShops() { const { data } = await http.get<Shop[]>('/shops', { params: { page: 1, pageSize: 100 } }); return data }
+export async function getShops() {
+  const { data } = await http.get<PagedResult<Shop> | Shop[]>('/shops', { params: { page: 1, pageSize: 200 } })
+  if (data && typeof data === 'object' && 'items' in data) {
+    return data.items || []
+  }
+  return (data as Shop[]) || []
+}
 export async function getDistricts() { const { data } = await http.get<District[]>('/locations/districts'); return data }
 export async function getSubDistricts(districtId: string) { const { data } = await http.get<SubDistrict[]>(`/locations/districts/${districtId}/sub-districts`); return data }

@@ -2,17 +2,17 @@
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-import type { PublicContent } from '../api/contentApi'
+import type { Shop } from '../../shared/types/shop'
 
 interface Props {
-  contents: PublicContent[]
+  shops: Shop[]
   loading?: boolean
 }
 
 const props = defineProps<Props>()
 
 const mapContainer = ref<HTMLElement | null>(null)
-const selectedContentId = ref<string | null>(null)
+const selectedShopId = ref<string | null>(null)
 let map: L.Map | null = null
 let markerGroup: L.LayerGroup | null = null
 const markersMap = new Map<string, L.Marker>()
@@ -23,17 +23,27 @@ const KANCHANABURI_BOUNDS: L.LatLngBoundsExpression = [
   [15.85, 100.00], // North-East Boundary
 ]
 
-function youtubeThumbnail(url?: string) {
-  if (!url) return ''
-  try {
-    const parsed = new URL(url)
-    const id = parsed.hostname.includes('youtu.be')
-      ? parsed.pathname.slice(1)
-      : (parsed.searchParams.get('v') ?? parsed.pathname.split('/').filter(Boolean).pop())
-    return id ? `https://i.ytimg.com/vi/${id}/hqdefault.jpg` : ''
-  } catch {
-    return ''
-  }
+const rawApiUrl = (import.meta.env.VITE_API_URL as string | undefined) ?? 'https://localhost:7289'
+const apiOrigin = rawApiUrl.startsWith('http')
+  ? rawApiUrl.replace(/\/api$/, '')
+  : 'https://localhost:7289'
+
+function resolveImageUrl(url?: string) {
+  if (!url || !url.trim()) return ''
+  if (url.startsWith('http://') || url.startsWith('https://')) return url
+  return url.startsWith('/') ? `${apiOrigin}${url}` : `${apiOrigin}/${url}`
+}
+
+const defaultCovers = [
+  'https://images.unsplash.com/photo-1606744888344-493238951221?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80',
+]
+
+function getCover(shop: Shop, idx: number) {
+  const resolved = resolveImageUrl(shop.coverImageUrl)
+  if (resolved) return resolved
+  return defaultCovers[idx % defaultCovers.length]
 }
 
 function initMap() {
@@ -68,11 +78,11 @@ function createMarkerIcon(isSelected: boolean) {
     : 'bg-[#332820] hover:bg-[#D96C2C] hover:scale-110'
 
   return L.divIcon({
-    className: 'custom-content-marker',
+    className: 'custom-shop-marker',
     html: `
       <div class="relative flex items-center justify-center">
         <div class="h-10 w-10 rounded-2xl ${bgClass} border-2 border-white shadow-xl flex items-center justify-center text-white transition-all duration-300 cursor-pointer">
-          <i class="mdi mdi-play-circle text-lg text-white"></i>
+          <i class="mdi mdi-storefront text-lg text-white"></i>
         </div>
         <div class="absolute -bottom-1 h-2 w-2 bg-[#D96C2C] rotate-45 border-r border-b border-white"></div>
       </div>
@@ -88,40 +98,40 @@ function renderMarkers() {
   markerGroup.clearLayers()
   markersMap.clear()
 
-  const validContents = props.contents.filter((c) => c.latitude && c.longitude)
+  const validShops = props.shops.filter((s) => s.latitude && s.longitude)
   const bounds = L.latLngBounds([])
 
-  validContents.forEach((cnt) => {
-    const lat = cnt.latitude!
-    const lng = cnt.longitude!
+  validShops.forEach((shop, idx) => {
+    const lat = shop.latitude!
+    const lng = shop.longitude!
     bounds.extend([lat, lng])
 
-    const isSelected = selectedContentId.value === cnt.contentId
+    const isSelected = selectedShopId.value === shop.shopId
     const icon = createMarkerIcon(isSelected)
-    const coverUrl = youtubeThumbnail(cnt.youtubeUrl)
+    const coverUrl = getCover(shop, idx)
 
     const popupHtml = `
       <div class="p-1 w-[240px] text-[#332820] space-y-2.5 font-sans">
         <div class="relative h-32 w-full rounded-2xl overflow-hidden bg-[#171412] shadow-xs">
-          <img src="${coverUrl || 'https://images.unsplash.com/photo-1606744888344-493238951221?auto=format&fit=crop&w=400&q=80'}" alt="${cnt.title}" class="h-full w-full object-cover" />
+          <img src="${coverUrl}" alt="${shop.shopName}" class="h-full w-full object-cover" />
           <div class="absolute inset-0 bg-gradient-to-t from-[#171412]/80 via-transparent to-transparent"></div>
           <span class="absolute top-2 left-2 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-[#D96C2C] text-white shadow-md">
-            ${cnt.contentCategoryName || 'คอนเทนต์'}
+            ${shop.categoryName || 'ร้านค้าชุมชน'}
           </span>
         </div>
         <div class="space-y-1">
-          <h4 class="font-black text-[#332820] text-sm leading-tight line-clamp-1">${cnt.title}</h4>
+          <h4 class="font-black text-[#332820] text-sm leading-tight line-clamp-1">${shop.shopName}</h4>
           <p class="text-[11px] font-semibold text-[#786B62] flex items-center gap-1">
             <i class="mdi mdi-map-marker text-[#D96C2C]"></i>
-            อ.${cnt.districtName || 'สังขละบุรี'} ${cnt.subDistrictName ? 'ต.' + cnt.subDistrictName : ''}
+            อ.${shop.districtName || 'สังขละบุรี'} ${shop.subDistrictName ? 'ต.' + shop.subDistrictName : ''}
           </p>
         </div>
         <a
-          href="/contents/${cnt.contentId}"
+          href="/shops/${shop.shopId}"
           style="color: #ffffff !important;"
           class="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-xl bg-[#D96C2C] hover:bg-[#BF5720] !text-white text-xs font-black transition-all shadow-md active:scale-95 text-decoration-none border border-[#D96C2C]"
         >
-          <span style="color: #ffffff !important;">ดูคอนเทนต์นี้</span>
+          <span style="color: #ffffff !important;">เยี่ยมชมร้านค้า</span>
           <i class="mdi mdi-arrow-right text-xs text-white"></i>
         </a>
       </div>
@@ -134,25 +144,25 @@ function renderMarkers() {
     })
 
     marker.on('click', () => {
-      selectedContentId.value = cnt.contentId
+      selectedShopId.value = shop.shopId
     })
 
     if (markerGroup) {
       markerGroup.addLayer(marker)
-      markersMap.set(cnt.contentId, marker)
+      markersMap.set(shop.shopId, marker)
     }
   })
 
-  if (validContents.length > 0) {
+  if (validShops.length > 0) {
     map.fitBounds(bounds, { padding: [50, 50], maxZoom: 13 })
   }
 }
 
-function selectContent(cnt: PublicContent) {
-  selectedContentId.value = cnt.contentId
-  if (cnt.latitude && cnt.longitude && map) {
-    map.flyTo([cnt.latitude, cnt.longitude], 14, { duration: 1.2 })
-    const marker = markersMap.get(cnt.contentId)
+function selectShop(shop: Shop) {
+  selectedShopId.value = shop.shopId
+  if (shop.latitude && shop.longitude && map) {
+    map.flyTo([shop.latitude, shop.longitude], 14, { duration: 1.2 })
+    const marker = markersMap.get(shop.shopId)
     if (marker) {
       marker.openPopup()
     }
@@ -160,7 +170,7 @@ function selectContent(cnt: PublicContent) {
 }
 
 watch(
-  () => props.contents,
+  () => props.shops,
   () => {
     void nextTick(() => {
       renderMarkers()
@@ -192,12 +202,12 @@ onBeforeUnmount(() => {
           <i class="mdi mdi-map-marker-radius text-xl"></i>
         </div>
         <div>
-          <h3 class="font-black text-[#332820] text-base sm:text-lg">แผนที่พิกัดคอนเทนต์ (เฉพาะกาญจนบุรี)</h3>
-          <p class="text-xs text-[#786B62] font-medium">คลิกเลือกหมุดบนแผนที่ หรือเลือกรายการด้านข้างเพื่อดูเรื่องราว</p>
+          <h3 class="font-black text-[#332820] text-base sm:text-lg">แผนที่ร้านค้าชุมชนกาญจนบุรี (เฉพาะกาญจนบุรี)</h3>
+          <p class="text-xs text-[#786B62] font-medium">คลิกเลือกหมุดบนแผนที่ หรือเลือกรายการร้านค้าด้านข้างเพื่อดูรายละเอียด</p>
         </div>
       </div>
       <span class="text-xs font-black text-[#D96C2C] bg-[#D96C2C]/10 border border-[#D96C2C]/20 px-3.5 py-1.5 rounded-full shadow-2xs">
-        📍 {{ contents.filter((c) => c.latitude && c.longitude).length }} หมุดในจังหวัดกาญจนบุรี
+        📍 {{ shops.filter((s) => s.latitude && s.longitude).length }} หมุดในจังหวัดกาญจนบุรี
       </span>
     </div>
 
@@ -206,43 +216,43 @@ onBeforeUnmount(() => {
       <!-- SIDEBAR LIST (4 COLS) WITH EQUAL CARDS -->
       <div class="lg:col-span-4 border-r-2 border-[#E8D9C9] bg-[#F7F0E6] overflow-y-auto p-4 space-y-3 h-full scrollbar-thin">
         <div class="text-xs font-black text-[#D96C2C] uppercase tracking-wider px-1">
-          คอนเทนต์ทั้งหมด ({{ contents.length }})
+          ร้านค้าทั้งหมด ({{ shops.length }})
         </div>
 
-        <div v-if="!contents.length" class="text-center py-12 text-[#786B62] text-xs font-medium">
-          ไม่พบข้อมูลคอนเทนต์ในระบบ
+        <div v-if="!shops.length" class="text-center py-12 text-[#786B62] text-xs font-medium">
+          ไม่พบข้อมูลร้านค้าในระบบ
         </div>
 
         <div
-          v-for="cnt in contents"
-          :key="cnt.contentId"
+          v-for="(shop, idx) in shops"
+          :key="shop.shopId"
           class="h-[96px] w-full p-3 rounded-2xl bg-[#FFF9F2] border-2 transition-all duration-200 cursor-pointer shadow-2xs flex items-center gap-3.5 group shrink-0"
           :class="
-            selectedContentId === cnt.contentId
+            selectedShopId === shop.shopId
               ? 'border-[#D96C2C] ring-2 ring-[#D96C2C]/20 bg-[#D96C2C]/10 shadow-md'
               : 'border-[#E8D9C9] hover:border-[#D96C2C] hover:shadow-sm'
           "
-          @click="selectContent(cnt)"
+          @click="selectShop(shop)"
         >
           <!-- Thumbnail (Fixed 56x56) -->
           <div class="h-14 w-14 rounded-xl overflow-hidden bg-[#171412] shrink-0 border border-[#E8D9C9] relative">
-            <img :src="youtubeThumbnail(cnt.youtubeUrl) || 'https://images.unsplash.com/photo-1606744888344-493238951221?auto=format&fit=crop&w=400&q=80'" :alt="cnt.title" class="h-full w-full object-cover group-hover:scale-110 transition duration-300" />
+            <img :src="getCover(shop, idx)" :alt="shop.shopName" class="h-full w-full object-cover group-hover:scale-110 transition duration-300" />
           </div>
 
           <!-- Info (Flex 1) -->
           <div class="flex-1 min-w-0 flex flex-col justify-center space-y-0.5">
             <h4 class="font-black text-[#332820] text-xs sm:text-sm truncate group-hover:text-[#D96C2C] transition leading-tight">
-              {{ cnt.title }}
+              {{ shop.shopName }}
             </h4>
             <p class="text-[11px] text-[#786B62] font-semibold truncate flex items-center gap-1">
               <i class="mdi mdi-map-marker text-[#D96C2C] shrink-0"></i>
-              <span>อ.{{ cnt.districtName || 'สังขละบุรี' }}</span>
+              <span>อ.{{ shop.districtName || 'สังขละบุรี' }}</span>
             </p>
             <div class="pt-0.5">
               <span
                 class="inline-block text-[10px] font-extrabold text-[#D96C2C] bg-[#D96C2C]/10 px-2 py-0.2 rounded-md border border-[#D96C2C]/20 truncate max-w-full"
               >
-                {{ cnt.contentCategoryName || 'เรื่องราว' }}
+                {{ shop.categoryName || 'ร้านค้าชุมชน' }}
               </span>
             </div>
           </div>

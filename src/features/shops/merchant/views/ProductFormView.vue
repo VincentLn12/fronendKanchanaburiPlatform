@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// Merchant area - Emerald Nature Add/Edit Product Form View with Image Previews
 import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
@@ -110,33 +109,33 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="mx-auto w-full max-w-4xl space-y-6 py-2">
+  <div class="mx-auto w-full max-w-4xl space-y-6 py-4 text-[#332820]">
     <!-- Skeleton Loading -->
     <div v-if="loading" class="space-y-6">
-      <div class="h-20 w-full animate-pulse rounded-3xl bg-slate-200/70"></div>
-      <div class="h-96 w-full animate-pulse rounded-3xl bg-slate-200/70"></div>
+      <div class="h-28 w-full animate-pulse rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9]"></div>
+      <div class="h-96 w-full animate-pulse rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9]"></div>
     </div>
 
-    <form v-else class="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-sm" @submit.prevent="submit">
+    <form v-else class="overflow-hidden rounded-3xl border-2 border-[#E8D9C9] bg-[#FFF9F2] shadow-xs space-y-0" @submit.prevent="submit">
       <!-- Form Header -->
-      <div class="flex items-center justify-between border-b border-slate-100 bg-slate-50/50 p-6 sm:px-8">
-        <div class="flex items-center gap-3.5">
-          <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-100">
-            <i :class="['mdi text-2xl', id ? 'mdi-pencil-box-outline' : 'mdi-plus-box-outline']"></i>
+      <div class="flex items-center justify-between border-b-2 border-[#E8D9C9] bg-[#FFF9F2] p-6 sm:px-8">
+        <div class="flex items-center gap-4">
+          <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#D96C2C] text-white shadow-md shrink-0">
+            <i :class="['mdi text-2xl text-white', id ? 'mdi-pencil-box-outline' : 'mdi-plus-box-outline']"></i>
           </div>
           <div>
-            <h1 class="text-xl font-extrabold text-slate-900">
+            <h1 class="text-2xl font-black text-[#332820]">
               {{ id ? 'แก้ไขข้อมูลสินค้า' : 'เพิ่มสินค้าใหม่ลงร้านค้า' }}
             </h1>
-            <p class="text-xs text-slate-500">กรอกรายละเอียดสินค้า ราคา สต็อกสินค้า และรูปภาพ</p>
+            <p class="text-xs text-[#786B62] font-semibold mt-0.5">กรอกรายละเอียดสินค้า ราคา สต็อกสินค้า และอัปโหลดรูปภาพสินค้า</p>
           </div>
         </div>
 
         <RouterLink
           to="/my-shop/products"
-          class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200 transition"
+          class="inline-flex items-center gap-1.5 rounded-2xl border-2 border-[#E8D9C9] bg-white px-4 py-2.5 text-xs font-black text-[#332820] hover:border-[#D96C2C] hover:text-[#D96C2C] transition shadow-2xs"
         >
-          <i class="mdi mdi-arrow-left text-sm"></i>
+          <i class="mdi mdi-arrow-left text-sm text-[#D96C2C]"></i>
           <span>ย้อนกลับ</span>
         </RouterLink>
       </div>
@@ -145,9 +144,9 @@ onMounted(async () => {
       <div class="space-y-8 p-6 sm:p-8 lg:p-10">
         <!-- Section 1: General Specs -->
         <div class="space-y-6">
-          <div class="flex items-center gap-2 border-b border-slate-100 pb-3">
-            <i class="mdi mdi-package-variant-closed text-emerald-600 text-xl"></i>
-            <h2 class="text-base font-bold text-slate-900">ข้อมูลสินค้าหลัก</h2>
+          <div class="flex items-center gap-2 border-b-2 border-[#E8D9C9] pb-3">
+            <i class="mdi mdi-package-variant-closed text-[#D96C2C] text-xl"></i>
+            <h2 class="text-lg font-black text-[#332820]">ข้อมูลสินค้าหลัก</h2>
           </div>
 
           <AppTextField
@@ -186,29 +185,29 @@ onMounted(async () => {
 
         <!-- Section 2: Product Images (With Existing Images Preview) -->
         <div class="space-y-6 pt-2">
-          <div class="flex items-center gap-2 border-b border-slate-100 pb-3">
-            <i class="mdi mdi-image-multiple-outline text-emerald-600 text-xl"></i>
-            <h2 class="text-base font-bold text-slate-900">รูปภาพสินค้า</h2>
+          <div class="flex items-center gap-2 border-b-2 border-[#E8D9C9] pb-3">
+            <i class="mdi mdi-image-multiple-outline text-[#D96C2C] text-xl"></i>
+            <h2 class="text-lg font-black text-[#332820]">รูปภาพประกอบสินค้า</h2>
           </div>
 
           <!-- Cover Image Upload & Existing Preview -->
-          <div class="rounded-2xl border border-slate-200 bg-slate-50/60 p-5 space-y-4">
+          <div class="rounded-3xl border-2 border-dashed border-[#E8D9C9] bg-white p-5 space-y-4">
             <div class="flex items-center justify-between">
-              <span class="text-xs font-bold uppercase tracking-wider text-slate-500">1. รูปหน้าปกหลักของสินค้า</span>
-              <span v-if="existingCoverUrl" class="text-xs font-semibold text-emerald-700">มีรูปเดิมในระบบ</span>
+              <span class="text-xs font-black uppercase tracking-wider text-[#332820]">1. รูปหน้าปกหลักของสินค้า</span>
+              <span v-if="existingCoverUrl" class="text-xs font-black text-emerald-700 bg-emerald-100 px-2.5 py-0.5 rounded-full border border-emerald-300">มีรูปเดิมในระบบ</span>
             </div>
 
             <!-- Existing Cover Image Preview Display -->
-            <div v-if="existingCoverUrl" class="flex flex-col sm:flex-row items-start sm:items-center gap-4 rounded-xl border border-emerald-200/80 bg-emerald-50/50 p-3.5">
-              <div class="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-slate-200 border border-slate-200">
+            <div v-if="existingCoverUrl" class="flex flex-col sm:flex-row items-start sm:items-center gap-4 rounded-2xl border-2 border-[#E8D9C9] bg-[#F7F0E6] p-4">
+              <div class="relative h-24 w-24 shrink-0 overflow-hidden rounded-2xl bg-[#171412] border-2 border-[#E8D9C9] shadow-2xs">
                 <img :src="imageUrl(existingCoverUrl)" alt="รูปหน้าปกปัจจุบัน" class="h-full w-full object-cover" />
               </div>
               <div class="space-y-1 text-xs">
-                <span class="font-bold text-emerald-800 flex items-center gap-1">
-                  <i class="mdi mdi-image-check text-emerald-600 text-sm"></i>
+                <span class="font-black text-[#332820] flex items-center gap-1">
+                  <i class="mdi mdi-image-check text-[#D96C2C] text-base"></i>
                   รูปหน้าปกปัจจุบันของสินค้า
                 </span>
-                <p class="text-slate-500">หากต้องการเปลี่ยน ให้เลือกไฟล์ใหม่ด้านล่าง</p>
+                <p class="text-[#786B62] font-semibold">หากต้องการเปลี่ยน ให้เลือกไฟล์ภาพใหม่ด้านล่าง</p>
               </div>
             </div>
 
@@ -216,25 +215,25 @@ onMounted(async () => {
               :label="existingCoverUrl ? 'อัปโหลดรูปหน้าปกใหม่ (เลือกไฟล์เมื่อต้องการเปลี่ยน)' : 'อัปโหลดรูปหน้าปกหลักของสินค้า'"
               @change="coverFile = $event[0] ?? null"
             />
-            <p v-if="coverFile" class="text-xs font-semibold text-emerald-700 flex items-center gap-1">
+            <p v-if="coverFile" class="text-xs font-black text-[#D96C2C] flex items-center gap-1">
               <i class="mdi mdi-check-circle-outline"></i>
               เลือกไฟล์ใหม่แล้ว: {{ coverFile.name }}
             </p>
           </div>
 
           <!-- Detail Images Upload & Existing Preview -->
-          <div class="rounded-2xl border border-slate-200 bg-slate-50/60 p-5 space-y-4">
+          <div class="rounded-3xl border-2 border-dashed border-[#E8D9C9] bg-white p-5 space-y-4">
             <div class="flex items-center justify-between">
-              <span class="text-xs font-bold uppercase tracking-wider text-slate-500">2. รูปภาพรายละเอียดสินค้าเพิ่มเติม</span>
-              <span v-if="existingDetailImages.length > 0" class="text-xs font-semibold text-emerald-700">
+              <span class="text-xs font-black uppercase tracking-wider text-[#332820]">2. รูปภาพรายละเอียดสินค้าเพิ่มเติม</span>
+              <span v-if="existingDetailImages.length > 0" class="text-xs font-black text-emerald-700 bg-emerald-100 px-2.5 py-0.5 rounded-full border border-emerald-300">
                 มีรูปเดิม {{ existingDetailImages.length }} รูป
               </span>
             </div>
 
             <!-- Existing Detail Images Grid Preview -->
-            <div v-if="existingDetailImages.length > 0" class="space-y-2 rounded-xl border border-emerald-200/80 bg-emerald-50/50 p-4">
-              <span class="text-xs font-bold text-emerald-800 flex items-center gap-1 mb-2">
-                <i class="mdi mdi-images text-emerald-600 text-sm"></i>
+            <div v-if="existingDetailImages.length > 0" class="space-y-2 rounded-2xl border-2 border-[#E8D9C9] bg-[#F7F0E6] p-4">
+              <span class="text-xs font-black text-[#332820] flex items-center gap-1 mb-2">
+                <i class="mdi mdi-images text-[#D96C2C] text-base"></i>
                 รูปรายละเอียดปัจจุบัน ({{ existingDetailImages.length }} รูป):
               </span>
 
@@ -242,10 +241,10 @@ onMounted(async () => {
                 <div
                   v-for="(img, index) in existingDetailImages"
                   :key="index"
-                  class="relative h-20 w-20 overflow-hidden rounded-xl bg-slate-200 border border-slate-200 group"
+                  class="relative h-20 w-20 overflow-hidden rounded-2xl bg-[#171412] border-2 border-[#E8D9C9] group shadow-2xs"
                 >
-                  <img :src="imageUrl(img)" :alt="`รูปรายละเอียด ${index + 1}`" class="h-full w-full object-cover transition-transform group-hover:scale-105" />
-                  <span class="absolute bottom-1 right-1 rounded-md bg-slate-900/70 px-1 py-0.5 text-[9px] font-bold text-white backdrop-blur-xs">
+                  <img :src="imageUrl(img)" :alt="`รูปรายละเอียด ${index + 1}`" class="h-full w-full object-cover transition-transform group-hover:scale-108" />
+                  <span class="absolute bottom-1 right-1 rounded-md bg-[#171412]/80 px-1.5 py-0.5 text-[9px] font-black text-white">
                     #{{ index + 1 }}
                   </span>
                 </div>
@@ -257,7 +256,7 @@ onMounted(async () => {
               multiple
               @change="detailFiles = $event.slice(0, 8)"
             />
-            <p v-if="detailFiles.length" class="text-xs font-semibold text-emerald-700 flex items-center gap-1">
+            <p v-if="detailFiles.length" class="text-xs font-black text-[#D96C2C] flex items-center gap-1">
               <i class="mdi mdi-check-circle-outline"></i>
               เลือกไฟล์ใหม่แล้วทั้งหมด {{ detailFiles.length }} รูป
             </p>
@@ -266,9 +265,9 @@ onMounted(async () => {
 
         <!-- Section 3: Description -->
         <div class="space-y-6 pt-2">
-          <div class="flex items-center gap-2 border-b border-slate-100 pb-3">
-            <i class="mdi mdi-text-box-search-outline text-emerald-600 text-xl"></i>
-            <h2 class="text-base font-bold text-slate-900">รายละเอียดสินค้าเพิ่มเติม</h2>
+          <div class="flex items-center gap-2 border-b-2 border-[#E8D9C9] pb-3">
+            <i class="mdi mdi-text-box-search-outline text-[#D96C2C] text-xl"></i>
+            <h2 class="text-lg font-black text-[#332820]">รายละเอียดสินค้าเพิ่มเติม</h2>
           </div>
 
           <AppTextarea
@@ -279,21 +278,21 @@ onMounted(async () => {
         </div>
 
         <!-- Action Bar Footer -->
-        <div class="flex items-center justify-end gap-3 border-t border-slate-100 pt-6">
+        <div class="flex items-center justify-end gap-3 border-t-2 border-[#E8D9C9] pt-6">
           <RouterLink
             to="/my-shop/products"
-            class="rounded-2xl border border-slate-200 bg-slate-50 px-6 py-3 text-sm font-bold text-slate-600 hover:bg-slate-100 transition"
+            class="rounded-2xl border-2 border-[#E8D9C9] bg-white px-6 py-3 text-xs sm:text-sm font-black text-[#786B62] hover:text-[#332820] transition"
           >
             ยกเลิก
           </RouterLink>
 
           <button
             type="submit"
-            class="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-8 py-3.5 text-sm font-bold text-white shadow-lg shadow-emerald-600/25 transition hover:bg-emerald-700 active:scale-95 disabled:opacity-60"
+            class="inline-flex items-center gap-2 rounded-2xl bg-[#D96C2C] hover:bg-[#BF5720] px-8 py-3.5 text-xs sm:text-sm font-black text-white shadow-md transition active:scale-95 disabled:opacity-60 cursor-pointer border border-[#D96C2C]"
             :disabled="saving"
           >
-            <i class="mdi mdi-content-save-outline text-lg" :class="{ 'animate-spin mdi-loading': saving }"></i>
-            <span>{{ saving ? 'กำลังบันทึก...' : id ? 'บันทึกการแก้ไข' : 'ยืนยันเพิ่มสินค้า' }}</span>
+            <i class="mdi text-base text-white" :class="saving ? 'mdi-loading animate-spin' : 'mdi-content-save-outline'"></i>
+            <span class="!text-white font-black">{{ saving ? 'กำลังบันทึก...' : id ? 'บันทึกการแก้ไข' : 'ยืนยันเพิ่มสินค้า' }}</span>
           </button>
         </div>
       </div>

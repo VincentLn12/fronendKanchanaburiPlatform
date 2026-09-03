@@ -29,19 +29,19 @@ function getUserInitials(name?: string) {
 </script>
 
 <template>
-  <section class="rounded-2xl bg-[#FFFDF9] border border-[#EADBCE] p-6 sm:p-8 shadow-sm space-y-6">
+  <section class="rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9] p-6 sm:p-8 shadow-xs space-y-6">
     <!-- Section Header -->
-    <div class="flex items-center justify-between border-b border-[#EADBCE] pb-4">
+    <div class="flex items-center justify-between border-b-2 border-[#E8D9C9] pb-4">
       <div class="flex items-center gap-3">
-        <div class="h-10 w-10 rounded-xl bg-[#1F4D3A] text-amber-300 flex items-center justify-center font-bold">
-          <i class="mdi mdi-forum-outline text-xl"></i>
+        <div class="h-10 w-10 rounded-2xl bg-[#D96C2C] text-white flex items-center justify-center font-bold shadow-md">
+          <i class="mdi mdi-forum-outline text-xl text-white"></i>
         </div>
         <div>
-          <h2 class="text-xl sm:text-2xl font-black text-[#1F4D3A]">ความคิดเห็นและรีวิว</h2>
-          <p class="text-xs text-slate-500 font-medium">ร่วมแบ่งปันประสบการณ์จริงจากนักท่องเที่ยว</p>
+          <h2 class="text-xl sm:text-2xl font-black text-[#332820]">ความคิดเห็นและรีวิว</h2>
+          <p class="text-xs text-[#786B62] font-medium">ร่วมแบ่งปันประสบการณ์จริงจากนักท่องเที่ยว</p>
         </div>
       </div>
-      <span class="text-xs font-black text-[#1F4D3A] bg-amber-100/80 border border-amber-200 px-3.5 py-1 rounded-full">
+      <span class="text-xs font-black text-[#D96C2C] bg-[#D96C2C]/10 border border-[#D96C2C]/20 px-3.5 py-1 rounded-full">
         {{ reviewData.totalCount }} ความคิดเห็น
       </span>
     </div>
@@ -49,15 +49,15 @@ function getUserInitials(name?: string) {
     <!-- Review Submission Form -->
     <form
       v-if="isLoggedIn"
-      class="rounded-xl bg-[#F6F1E7]/70 p-4 sm:p-5 border border-[#EADBCE] shadow-2xs space-y-3"
+      class="rounded-2xl bg-[#F7F0E6] p-4 sm:p-5 border-2 border-[#E8D9C9] shadow-2xs space-y-3"
       @submit.prevent="emit('save-review')"
     >
       <div class="flex items-center justify-between">
-        <p class="font-extrabold text-[#1F4D3A] text-xs sm:text-sm flex items-center gap-1.5">
-          <i class="mdi mdi-pencil-outline text-[#D99A32]"></i>
+        <p class="font-black text-[#332820] text-xs sm:text-sm flex items-center gap-1.5">
+          <i class="mdi mdi-pencil-outline text-[#D96C2C]"></i>
           {{ myReview ? 'แก้ไขความคิดเห็นของคุณ' : 'เขียนความคิดเห็นใหม่' }}
         </p>
-        <span v-if="myReview" class="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+        <span v-if="myReview" class="text-[10px] font-black text-[#D96C2C] bg-[#D96C2C]/10 px-2 py-0.5 rounded border border-[#D96C2C]/20">
           คุณเคยแสดงความคิดเห็นแล้ว
         </span>
       </div>
@@ -67,7 +67,7 @@ function getUserInitials(name?: string) {
         @input="(e) => emit('update:comment', (e.target as HTMLTextAreaElement).value)"
         rows="3"
         maxlength="2000"
-        class="w-full resize-y rounded-xl border border-[#EADBCE] bg-[#FFFDF9] px-3.5 py-3 text-xs sm:text-sm text-slate-800 outline-none focus:border-[#1F4D3A] focus:ring-3 focus:ring-[#1F4D3A]/10 transition shadow-inner placeholder-slate-400"
+        class="w-full resize-y rounded-xl border-2 border-[#E8D9C9] bg-white px-3.5 py-3 text-xs sm:text-sm text-[#332820] outline-none focus:border-[#D96C2C] font-semibold transition placeholder:text-[#786B62]"
         placeholder="บอกเล่าความประทับใจ การเดินทาง หรือข้อแนะนำสำหรับสถานที่นี้..."
       />
 
@@ -85,11 +85,11 @@ function getUserInitials(name?: string) {
 
         <button
           type="submit"
-          class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#1F4D3A] to-[#14392E] hover:brightness-105 text-white font-extrabold text-xs shadow-md shadow-[#1F4D3A]/20 active:scale-95 transition cursor-pointer flex items-center gap-1.5"
+          class="px-5 py-2.5 rounded-xl bg-[#D96C2C] hover:bg-[#BF5720] text-white font-black text-xs shadow-md active:scale-95 transition cursor-pointer flex items-center gap-1.5 border border-[#D96C2C]"
           :disabled="reviewSaving"
         >
-          <i class="mdi mdi-send text-amber-300"></i>
-          <span>{{ reviewSaving ? 'กำลังบันทึก...' : myReview ? 'บันทึกการแก้ไข' : 'ส่งความคิดเห็น' }}</span>
+          <i class="mdi mdi-send text-white"></i>
+          <span class="text-white">{{ reviewSaving ? 'กำลังบันทึก...' : myReview ? 'บันทึกการแก้ไข' : 'ส่งความคิดเห็น' }}</span>
         </button>
       </div>
     </form>
@@ -97,27 +97,27 @@ function getUserInitials(name?: string) {
     <!-- Login CTA Card -->
     <div
       v-else
-      class="rounded-xl bg-[#F6F1E7] p-4 sm:p-5 border border-[#EADBCE] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#1F4D3A]"
+      class="rounded-2xl bg-[#F7F0E6] p-4 sm:p-5 border-2 border-[#E8D9C9] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#332820]"
     >
       <div class="flex items-center gap-3">
-        <div class="h-10 w-10 rounded-full bg-[#1F4D3A] text-amber-300 flex items-center justify-center font-bold text-base shrink-0">
-          <i class="mdi mdi-account-lock-outline"></i>
+        <div class="h-10 w-10 rounded-full bg-[#D96C2C] text-white flex items-center justify-center font-bold text-base shrink-0">
+          <i class="mdi mdi-account-lock-outline text-white"></i>
         </div>
         <div>
-          <h4 class="font-extrabold text-sm text-[#1F4D3A]">ร่วมแสดงความคิดเห็น</h4>
-          <p class="text-xs text-slate-600">เข้าสู่ระบบเพื่อเขียนรีวิวและแบ่งปันประสบการณ์กับนักท่องเที่ยวคนอื่น</p>
+          <h4 class="font-black text-sm text-[#332820]">ร่วมแสดงความคิดเห็น</h4>
+          <p class="text-xs text-[#786B62]">เข้าสู่ระบบเพื่อเขียนรีวิวและแบ่งปันประสบการณ์กับนักท่องเที่ยวคนอื่น</p>
         </div>
       </div>
       <RouterLink
         to="/login"
-        class="px-5 py-2.5 rounded-xl bg-[#1F4D3A] hover:bg-[#14392E] text-white font-extrabold text-xs shadow-md transition shrink-0"
+        class="px-5 py-2.5 rounded-xl bg-[#D96C2C] hover:bg-[#BF5720] text-white font-black text-xs shadow-md transition shrink-0 border border-[#D96C2C]"
       >
         เข้าสู่ระบบเลย
       </RouterLink>
     </div>
 
     <!-- Reviews List -->
-    <div v-if="reviewData.reviews.length" class="space-y-4 pt-2 divide-y divide-[#EADBCE]">
+    <div v-if="reviewData.reviews.length" class="space-y-4 pt-2 divide-y-2 divide-[#E8D9C9]">
       <article
         v-for="rev in reviewData.reviews"
         :key="rev.reviewId"
@@ -125,22 +125,22 @@ function getUserInitials(name?: string) {
       >
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2.5">
-            <div class="h-9 w-9 rounded-full bg-[#1F4D3A] text-amber-300 font-black text-xs flex items-center justify-center shadow-xs border border-white">
+            <div class="h-9 w-9 rounded-full bg-[#D96C2C] text-white font-black text-xs flex items-center justify-center shadow-xs border border-white">
               {{ getUserInitials(rev.userName) }}
             </div>
             <div>
-              <h4 class="font-extrabold text-slate-900 text-xs sm:text-sm leading-tight">{{ rev.userName }}</h4>
-              <p class="text-[10px] text-slate-400 font-medium">{{ formatDate(rev.createdAt) }}</p>
+              <h4 class="font-black text-[#332820] text-xs sm:text-sm leading-tight">{{ rev.userName }}</h4>
+              <p class="text-[10px] text-[#786B62] font-semibold">{{ formatDate(rev.createdAt) }}</p>
             </div>
           </div>
 
-          <span class="text-[10px] font-extrabold text-[#1F4D3A] bg-amber-100/80 px-2.5 py-0.5 rounded border border-amber-200">
+          <span class="text-[10px] font-black text-[#D96C2C] bg-[#D96C2C]/10 px-2.5 py-0.5 rounded border border-[#D96C2C]/20">
             นักท่องเที่ยว
           </span>
         </div>
 
         <div class="pl-11">
-          <p class="text-xs sm:text-sm text-slate-700 leading-relaxed font-medium bg-[#F6F1E7]/70 p-3 rounded-xl border border-[#EADBCE]">
+          <p class="text-xs sm:text-sm text-[#332820] leading-relaxed font-semibold bg-[#F7F0E6] p-3 rounded-xl border border-[#E8D9C9]">
             {{ rev.comment }}
           </p>
         </div>
@@ -148,9 +148,9 @@ function getUserInitials(name?: string) {
     </div>
 
     <!-- Empty State -->
-    <div v-else class="py-8 text-center text-xs text-slate-500 space-y-2">
-      <i class="mdi mdi-message-text-outline text-3xl text-slate-300"></i>
-      <p class="font-medium">ยังไม่มีความคิดเห็นสำหรับสถานที่นี้ เป็นคนแรกที่เริ่มรีวิวได้เลย!</p>
+    <div v-else class="py-8 text-center text-xs text-[#786B62] space-y-2">
+      <i class="mdi mdi-message-text-outline text-3xl text-[#D96C2C]"></i>
+      <p class="font-extrabold">ยังไม่มีความคิดเห็นสำหรับสถานที่นี้ เป็นคนแรกที่เริ่มรีวิวได้เลย!</p>
     </div>
   </section>
 </template>

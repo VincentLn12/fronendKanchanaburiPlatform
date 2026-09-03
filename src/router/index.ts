@@ -52,6 +52,16 @@ const router = createRouter({
       component: () => import('@/features/shops/public/views/ShopDetailView.vue'),
     },
     {
+      path: '/shops/:id/products',
+      name: 'shop-products-all',
+      component: () => import('@/features/shops/public/views/ShopProductsView.vue'),
+    },
+    {
+      path: '/shops/:id/contents',
+      name: 'shop-contents-all',
+      component: () => import('@/features/shops/public/views/ShopContentsView.vue'),
+    },
+    {
       path: '/contents',
       name: 'contents',
       component: () => import('@/features/contents/public/list/views/ContentListView.vue'),
@@ -146,6 +156,21 @@ const router = createRouter({
           path: 'orders',
           name: 'my-shop-orders',
           component: () => import('@/features/shops/merchant/views/MerchantOrdersView.vue'),
+        },
+        {
+          path: 'contents',
+          name: 'my-shop-contents',
+          component: () => import('@/features/shops/merchant/views/MerchantContentsView.vue'),
+        },
+        {
+          path: 'contents/new',
+          name: 'my-shop-content-new',
+          component: () => import('@/features/shops/merchant/views/MerchantContentFormView.vue'),
+        },
+        {
+          path: 'contents/:id/edit',
+          name: 'my-shop-content-edit',
+          component: () => import('@/features/shops/merchant/views/MerchantContentFormView.vue'),
         },
       ],
     },

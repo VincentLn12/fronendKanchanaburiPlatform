@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-[#F9F7F2] text-slate-800 pb-16">
+  <div class="min-h-screen bg-[#F7F0E6] text-[#332820] pb-16">
     <!-- HERO BANNER SECTION -->
     <ContentHeroBanner v-model:search="search" v-model:viewMode="viewMode" @search="load" />
 
@@ -39,19 +39,19 @@
       <!-- MODE 1: CONTENT CARDS GRID / LIST VIEW -->
       <div v-if="viewMode === 'contents'" class="space-y-6">
         <!-- RESULTS TOOLBAR -->
-        <div class="flex flex-wrap items-center justify-between gap-4 bg-white px-6 py-4 rounded-2xl border border-[#E8E2D5] shadow-xs">
-          <div class="text-sm font-bold text-slate-800">
-            พบ <span class="text-[#1C4D3E] font-black text-base">{{ totalCount }}</span> คอนเทนต์ท่องเที่ยวและวัฒนธรรม
+        <div class="flex flex-wrap items-center justify-between gap-4 bg-[#FFF9F2] px-6 py-4 rounded-2xl border-2 border-[#E8D9C9] shadow-xs">
+          <div class="text-sm font-extrabold text-[#332820]">
+            พบ <span class="text-[#D96C2C] font-black text-base">{{ totalCount }}</span> คอนเทนต์ท่องเที่ยวและวัฒนธรรม
           </div>
 
-          <div class="flex items-center gap-1 border border-[#E8E2D5] bg-[#F9F7F2] p-1 rounded-xl shadow-2xs">
+          <div class="flex items-center gap-1 border-2 border-[#E8D9C9] bg-[#F7F0E6] p-1 rounded-xl shadow-2xs">
             <button
               type="button"
               class="flex h-8 w-8 items-center justify-center text-xs font-bold rounded-lg transition cursor-pointer"
               :class="
                 contentDisplayMode === 'grid'
-                  ? 'bg-[#1C4D3E] text-white shadow-xs'
-                  : 'text-slate-600 hover:bg-slate-200/60'
+                  ? 'bg-[#D96C2C] text-white shadow-xs'
+                  : 'text-[#786B62] hover:bg-[#E8D9C9]/60'
               "
               @click="contentDisplayMode = 'grid'"
               title="แสดงแบบตาราง"
@@ -63,8 +63,8 @@
               class="flex h-8 w-8 items-center justify-center text-xs font-bold rounded-lg transition cursor-pointer"
               :class="
                 contentDisplayMode === 'list'
-                  ? 'bg-[#1C4D3E] text-white shadow-xs'
-                  : 'text-slate-600 hover:bg-slate-200/60'
+                  ? 'bg-[#D96C2C] text-white shadow-xs'
+                  : 'text-[#786B62] hover:bg-[#E8D9C9]/60'
               "
               @click="contentDisplayMode = 'list'"
               title="แสดงแบบรายการ"
@@ -87,11 +87,11 @@
           <div
             v-for="i in 6"
             :key="i"
-            class="animate-pulse rounded-3xl bg-white border border-[#E8E2D5] h-72 p-4 space-y-3"
+            class="animate-pulse rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9] h-72 p-4 space-y-3"
           >
-            <div class="h-40 bg-slate-200 rounded-2xl"></div>
-            <div class="h-4 bg-slate-200 rounded w-3/4"></div>
-            <div class="h-3 bg-slate-100 rounded w-1/2"></div>
+            <div class="h-40 bg-[#E8D9C9]/50 rounded-2xl"></div>
+            <div class="h-4 bg-[#E8D9C9]/60 rounded w-3/4"></div>
+            <div class="h-3 bg-[#E8D9C9]/40 rounded w-1/2"></div>
           </div>
         </div>
 
@@ -124,18 +124,18 @@
         <!-- EMPTY STATE -->
         <div
           v-else
-          class="rounded-3xl border border-[#E8E2D5] bg-white p-12 text-center shadow-xs space-y-4"
+          class="rounded-3xl border-2 border-[#E8D9C9] bg-[#FFF9F2] p-12 text-center shadow-xs space-y-4"
         >
-          <div class="h-16 w-16 rounded-full bg-amber-50 text-[#D99A32] flex items-center justify-center mx-auto text-3xl font-bold">
-            <i class="mdi mdi-[#1C4D3E]"></i>
+          <div class="h-16 w-16 rounded-full bg-[#D96C2C]/15 text-[#D96C2C] flex items-center justify-center mx-auto text-3xl font-bold border border-[#D96C2C]/30">
+            <i class="mdi mdi-play-box-remove-outline"></i>
           </div>
-          <h3 class="text-lg font-black text-slate-900">ไม่พบข้อมูลคอนเทนต์</h3>
-          <p class="text-xs text-slate-500 max-w-sm mx-auto font-medium">
+          <h3 class="text-lg font-black text-[#332820]">ไม่พบข้อมูลคอนเทนต์</h3>
+          <p class="text-xs text-[#786B62] max-w-sm mx-auto font-medium">
             ลองปรับเปลี่ยนคำค้นหาหรือตัวกรองหมวดหมู่ อำเภอ เพื่อค้นหาเรื่องราวที่คุณสนใจ
           </p>
           <button
             type="button"
-            class="px-6 py-2.5 rounded-xl bg-[#1C4D3E] hover:bg-[#14392E] text-white text-xs font-extrabold transition shadow-md cursor-pointer"
+            class="px-6 py-2.5 rounded-xl bg-[#D96C2C] hover:bg-[#BF5720] text-white text-xs font-black transition shadow-md cursor-pointer border border-[#D96C2C]"
             @click="clearFilters"
           >
             ล้างตัวกรองทั้งหมด
@@ -149,20 +149,20 @@
         >
           <button
             type="button"
-            class="flex h-9 w-9 items-center justify-center rounded-xl border border-[#E8E2D5] bg-white text-xs font-bold transition hover:border-[#1C4D3E] disabled:opacity-40 cursor-pointer shadow-2xs"
+            class="flex h-9 w-9 items-center justify-center rounded-xl border-2 border-[#E8D9C9] bg-[#FFF9F2] text-xs font-bold transition hover:border-[#D96C2C] disabled:opacity-40 cursor-pointer shadow-2xs text-[#332820]"
             :disabled="page <= 1"
             @click="prevPage"
           >
             <i class="mdi mdi-chevron-left text-base"></i>
           </button>
 
-          <span class="px-4 py-2 rounded-xl bg-white border border-[#E8E2D5] text-xs font-extrabold text-[#1C4D3E] shadow-2xs">
+          <span class="px-4 py-2 rounded-xl bg-[#FFF9F2] border-2 border-[#E8D9C9] text-xs font-black text-[#D96C2C] shadow-2xs">
             หน้า {{ page }} จาก {{ totalPages }}
           </span>
 
           <button
             type="button"
-            class="flex h-9 w-9 items-center justify-center rounded-xl border border-[#E8E2D5] bg-white text-xs font-bold transition hover:border-[#1C4D3E] disabled:opacity-40 cursor-pointer shadow-2xs"
+            class="flex h-9 w-9 items-center justify-center rounded-xl border-2 border-[#E8D9C9] bg-[#FFF9F2] text-xs font-bold transition hover:border-[#D96C2C] disabled:opacity-40 cursor-pointer shadow-2xs text-[#332820]"
             :disabled="page >= totalPages"
             @click="nextPage"
           >

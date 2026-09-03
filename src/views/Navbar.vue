@@ -1,6 +1,6 @@
 <template>
   <header
-    class="sticky top-0 z-50 w-full border-b border-emerald-900/10 bg-white/95 backdrop-blur-xl shadow-xs"
+    class="sticky top-0 z-50 w-full border-b-2 border-[#E8D9C9] bg-[#FFF9F2]/95 backdrop-blur-xl shadow-xs"
   >
     <nav
       aria-label="เมนูหลัก"
@@ -9,12 +9,12 @@
       <!-- Logo Brand -->
       <RouterLink to="/" class="group flex shrink-0 items-center gap-3" @click="closeMenu">
         <div
-          class="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 via-amber-500 to-yellow-600 text-white shadow-md shadow-amber-500/25 transition-all duration-300 group-hover:scale-105 group-hover:shadow-amber-500/35"
+          class="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-[#D96C2C] via-[#BF5720] to-[#171412] text-white shadow-md shadow-[#D96C2C]/25 transition-all duration-300 group-hover:scale-105"
         >
           <!-- Pagoda / Sacred Thai Emblem Icon -->
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            class="h-6 w-6 fill-current text-white"
+            class="h-6 w-6 fill-current text-[#F2A65A]"
             viewBox="0 0 24 24"
           >
             <path
@@ -24,10 +24,10 @@
         </div>
 
         <div class="flex flex-col">
-          <span class="text-xl font-black leading-tight tracking-tight text-slate-900 sm:text-2xl">
+          <span class="text-xl font-black leading-tight tracking-tight text-[#332820] sm:text-2xl">
             กาญจนบุรี
           </span>
-          <span class="text-[11px] font-semibold text-emerald-800/80 tracking-wide">
+          <span class="text-[11px] font-bold text-[#D96C2C] tracking-wide">
             แพลตฟอร์มท่องเที่ยวเชิงวัฒนธรรม
           </span>
         </div>
@@ -52,22 +52,22 @@
         <!-- Search Quick Icon -->
         <button
           type="button"
-          class="flex h-10 w-10 items-center justify-center rounded-full text-slate-700 hover:bg-slate-100 transition"
+          class="flex h-10 w-10 items-center justify-center rounded-full text-[#332820] hover:bg-[#F7F0E6] transition cursor-pointer"
           title="ค้นหา"
           @click="toggleSearch"
         >
-          <i class="mdi mdi-magnify text-2xl"></i>
+          <i class="mdi mdi-magnify text-2xl text-[#D96C2C]"></i>
         </button>
 
         <!-- Cart Button with Count Badge -->
         <RouterLink
           to="/cart"
-          class="relative flex h-10 w-10 items-center justify-center rounded-full text-slate-700 hover:bg-slate-100 transition"
+          class="relative flex h-10 w-10 items-center justify-center rounded-full text-[#332820] hover:bg-[#F7F0E6] transition"
           title="ตะกร้าสินค้า"
         >
-          <i class="mdi mdi-shopping-outline text-2xl"></i>
+          <i class="mdi mdi-shopping-outline text-2xl text-[#D96C2C]"></i>
           <span
-            class="absolute -top-0.5 -right-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-amber-500 px-1 text-[10px] font-bold text-white shadow-xs"
+            class="absolute -top-0.5 -right-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[#D96C2C] px-1 text-[10px] font-black text-white shadow-xs"
           >
             {{ auth.isLoggedIn ? cart.itemCount : 0 }}
           </span>
@@ -75,17 +75,17 @@
 
         <!-- Profile / Login Button -->
         <RouterLink v-if="!auth.isLoggedIn" to="/login" class="login-button gap-2">
-          <i class="mdi mdi-account-circle-outline text-xl text-slate-600"></i>
+          <i class="mdi mdi-account-circle-outline text-xl text-[#D96C2C]"></i>
           <span>เข้าสู่ระบบ</span>
         </RouterLink>
 
         <div v-else class="flex items-center gap-2">
           <RouterLink to="/profile" class="login-button gap-2">
-            <i class="mdi mdi-account-circle-outline text-xl text-emerald-700"></i>
+            <i class="mdi mdi-account-circle-outline text-xl text-[#D96C2C]"></i>
             <span>{{ auth.user?.name || 'โปรไฟล์' }}</span>
           </RouterLink>
           <button
-            class="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition"
+            class="flex h-10 w-10 items-center justify-center rounded-xl border-2 border-[#E8D9C9] bg-white text-[#786B62] hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition cursor-pointer"
             title="ออกจากระบบ"
             @click="logout"
           >
@@ -96,14 +96,14 @@
 
       <!-- Mobile Hamburger Button -->
       <button
-        class="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-700 transition hover:bg-slate-100 lg:hidden"
+        class="flex h-10 w-10 items-center justify-center rounded-xl border-2 border-[#E8D9C9] bg-[#F7F0E6] text-[#332820] transition hover:bg-[#E8D9C9]/50 lg:hidden cursor-pointer"
         :aria-expanded="isMobileMenuOpen"
         aria-label="เปิดเมนู"
         @click="isMobileMenuOpen = !isMobileMenuOpen"
       >
         <svg
           v-if="!isMobileMenuOpen"
-          class="h-6 w-6"
+          class="h-6 w-6 text-[#D96C2C]"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -114,7 +114,7 @@
 
         <svg
           v-else
-          class="h-6 w-6"
+          class="h-6 w-6 text-[#D96C2C]"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -134,7 +134,7 @@
     >
       <div
         v-if="isMobileMenuOpen"
-        class="border-t border-slate-200 bg-white px-5 py-5 shadow-xl lg:hidden"
+        class="border-t-2 border-[#E8D9C9] bg-[#FFF9F2] px-5 py-5 shadow-xl lg:hidden"
       >
         <div class="flex flex-col gap-1">
           <RouterLink
@@ -148,13 +148,13 @@
           </RouterLink>
         </div>
 
-        <div class="mt-5 flex flex-col gap-3 border-t border-slate-100 pt-5">
+        <div class="mt-5 flex flex-col gap-3 border-t-2 border-[#E8D9C9] pt-5">
           <RouterLink
             to="/cart"
             class="login-button w-full justify-center gap-2"
             @click="closeMenu"
           >
-            <i class="mdi mdi-shopping-outline text-lg text-emerald-700"></i>
+            <i class="mdi mdi-shopping-outline text-lg text-[#D96C2C]"></i>
             <span>ตะกร้าสินค้า ({{ auth.isLoggedIn ? cart.itemCount : 0 }})</span>
           </RouterLink>
 
@@ -164,7 +164,7 @@
             class="login-button w-full justify-center gap-2"
             @click="closeMenu"
           >
-            <i class="mdi mdi-account-circle-outline text-lg text-slate-500"></i>
+            <i class="mdi mdi-account-circle-outline text-lg text-[#D96C2C]"></i>
             <span>เข้าสู่ระบบ</span>
           </RouterLink>
           <template v-else>
@@ -173,11 +173,11 @@
               class="login-button w-full justify-center gap-2"
               @click="closeMenu"
             >
-              <i class="mdi mdi-account-circle-outline text-lg text-emerald-700"></i>
+              <i class="mdi mdi-account-circle-outline text-lg text-[#D96C2C]"></i>
               <span>โปรไฟล์ของฉัน</span>
             </RouterLink>
             <button
-              class="login-button w-full justify-center gap-2 hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
+              class="login-button w-full justify-center gap-2 hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600 cursor-pointer"
               @click="logout"
             >
               <i class="mdi mdi-logout text-lg"></i>
@@ -246,16 +246,16 @@ function logout() {
   display: inline-flex;
   align-items: center;
   padding: 0.5rem 0;
-  color: #334155;
+  color: #332820;
   font-size: 0.95rem;
-  font-weight: 600;
+  font-weight: 700;
   transition: color 200ms ease;
 }
 
 .nav-link:hover,
 .nav-link.is-active {
-  color: #0f3831;
-  font-weight: 700;
+  color: #D96C2C;
+  font-weight: 800;
 }
 
 .nav-link::after {
@@ -265,7 +265,7 @@ function logout() {
   left: 50%;
   width: 0;
   height: 2.5px;
-  background: #0f3831;
+  background: #D96C2C;
   border-radius: 9999px;
   transform: translateX(-50%);
   transition: width 200ms ease;
@@ -279,20 +279,20 @@ function logout() {
 .login-button {
   display: inline-flex;
   align-items: center;
-  border: 1px solid #e2e8f0;
+  border: 2px solid #E8D9C9;
   border-radius: 0.75rem;
   padding: 0.5rem 1rem;
   background: white;
-  color: #334155;
+  color: #332820;
   font-size: 0.9rem;
-  font-weight: 600;
+  font-weight: 700;
   transition: all 200ms ease;
 }
 
 .login-button:hover {
-  border-color: #0f3831;
-  color: #0f3831;
-  background: #f8fafc;
+  border-color: #D96C2C;
+  color: #D96C2C;
+  background: #F7F0E6;
 }
 
 .mobile-nav-link {
@@ -300,15 +300,15 @@ function logout() {
   align-items: center;
   border-radius: 0.8rem;
   padding: 0.8rem 1rem;
-  color: #334155;
+  color: #332820;
   font-size: 0.95rem;
-  font-weight: 600;
+  font-weight: 700;
   transition: all 150ms ease;
 }
 
 .mobile-nav-link:hover,
 .mobile-nav-link.router-link-active {
-  background: #ecfdf5;
-  color: #0f3831;
+  background: #F7F0E6;
+  color: #D96C2C;
 }
 </style>
