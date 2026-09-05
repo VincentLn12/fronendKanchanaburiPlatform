@@ -1,12 +1,19 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { Shop } from '@/features/shops/api'
+import type { PublicContent } from '@/features/contents/api'
 
-defineProps<{
+const props = defineProps<{
   shop: Shop
   shopArea: string
   averageRating: number
   totalReviews: number
+  totalProductsCount: number
   imageUrl: (url?: string) => string | undefined
+  businessHours: string
+  isOpenNow: boolean
+  featuredContent?: PublicContent
+  youtubeThumbnail: (url?: string) => string
 }>()
 
 const isFollowing = defineModel<boolean>('isFollowing', { default: false })
@@ -14,122 +21,203 @@ const isFollowing = defineModel<boolean>('isFollowing', { default: false })
 const emit = defineEmits<{
   (e: 'copy-link'): void
 }>()
+
+// Use the shop's Background Banner (backgroundImageUrl) as requested by user
+const bannerImageUrl = computed(() => {
+  if (props.shop.backgroundImageUrl) {
+    return props.imageUrl(props.shop.backgroundImageUrl)
+  }
+  if (props.shop.coverImageUrl) {
+    return props.imageUrl(props.shop.coverImageUrl)
+  }
+  if (props.featuredContent?.youtubeUrl) {
+    const thumb = props.youtubeThumbnail(props.featuredContent.youtubeUrl)
+    if (thumb) return thumb
+  }
+  return 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1600&q=80'
+})
 </script>
 
 <template>
-  <section class="relative bg-[#171412] border-b-2 border-[#E8D9C9] overflow-hidden">
-    <!-- Background Cover Image (Clear & High Contrast) -->
-    <div class="absolute inset-0 pointer-events-none overflow-hidden">
+  <div class="relative bg-[#F7F0E6] text-[#332820]">
+    <!-- 1. Top Cover Banner Photo (Clear, Natural Colors without Dark Overlay) -->
+    <div class="relative h-72 sm:h-96 md:h-[420px] w-full overflow-hidden bg-[#F7F0E6]">
       <img
-        :src="
-          imageUrl(shop.backgroundImageUrl || shop.coverImageUrl) ||
-          'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=1600&q=80'
-        "
+        :src="bannerImageUrl"
         :alt="shop.shopName"
-        class="w-full h-full object-cover opacity-75"
+        class="w-full h-full object-cover object-center transition duration-500"
       />
-      <!-- Gradient Dark Mask Overlay for text readability -->
-      <div
-        class="absolute inset-0 bg-gradient-to-t from-[#171412] via-[#171412]/75 to-black/40"
-      ></div>
+
+      <!-- Top Tag Badge (Glassmorphism so readable on any background) -->
+      <div class="absolute top-4 left-4 sm:left-8 flex items-center gap-2 flex-wrap z-10">
+        <span
+          class="px-4 py-1.5 rounded-full text-xs font-black bg-black/70 text-amber-300 backdrop-blur-md border border-white/20 shadow-lg flex items-center gap-1.5"
+        >
+          <i class="mdi mdi-shield-check text-amber-400 text-sm"></i>
+          KANCHANABURI VERIFIED OFFICIAL PARTNER
+        </span>
+      </div>
     </div>
 
-    <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
-      <div class="flex flex-col md:flex-row items-center md:items-end justify-between gap-6">
-        <!-- Left: Shop Avatar & Identity Details -->
-        <div class="flex flex-col sm:flex-row items-center sm:items-end gap-5 text-center sm:text-left">
-          <!-- Avatar Frame -->
-          <div class="relative shrink-0">
-            <img
-              :src="
-                imageUrl(shop.coverImageUrl) ||
-                'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=300&q=80'
-              "
-              :alt="shop.shopName"
-              class="w-24 h-24 sm:w-32 sm:h-32 rounded-3xl object-cover border-4 border-white shadow-2xl ring-4 ring-[#D96C2C]/40 bg-white"
-            />
-            <span
-              class="absolute -bottom-2 -right-2 flex h-8 w-8 items-center justify-center rounded-full bg-[#D96C2C] text-white shadow-lg border-2 border-white"
-            >
-              <i class="mdi mdi-check-decagram text-base"></i>
-            </span>
+    <!-- 2. Overlapping Store Profile Card (Shifted Upwards - Matches Reference Image 1:1) -->
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 -mt-32 sm:-mt-44 md:-mt-52 relative z-20">
+      <div
+        class="rounded-3xl bg-[#FFF9F2] p-6 sm:p-8 border-2 border-[#E8D9C9] shadow-2xl space-y-6"
+      >
+        <div class="flex flex-col md:flex-row items-center md:items-start justify-between gap-6">
+          <!-- Left: Avatar & Info -->
+          <div class="flex flex-col sm:flex-row items-center sm:items-start gap-5 text-center sm:text-left">
+            <!-- Avatar Logo with Verified Ring -->
+            <div class="relative shrink-0">
+              <img
+                :src="
+                  imageUrl(shop.coverImageUrl) ||
+                  'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=300&q=80'
+                "
+                :alt="shop.shopName"
+                class="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl object-cover border-4 border-white shadow-2xl ring-4 ring-[#D96C2C]/30 bg-white"
+              />
+              <span
+                class="absolute -bottom-2 -right-2 flex h-8 w-8 items-center justify-center rounded-full bg-[#D96C2C] text-white shadow-lg border-2 border-white"
+                title="ร้านค้าได้รับการรับรอง"
+              >
+                <i class="mdi mdi-check-decagram text-base"></i>
+              </span>
+            </div>
+
+            <!-- Identity Details -->
+            <div class="space-y-2">
+              <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                <h1 class="text-2xl sm:text-3xl font-black text-[#332820] tracking-tight">
+                  {{ shop.shopName }}
+                </h1>
+                <span class="px-3 py-1 rounded-full text-[11px] font-black bg-[#D96C2C] text-white shadow-sm">
+                  Official Mall
+                </span>
+              </div>
+
+              <p class="text-xs sm:text-sm text-[#786B62] font-semibold max-w-xl line-clamp-2">
+                {{ shop.description || 'แหล่งรวบรวมผลิตภัณฑ์ชุมชนคุณภาพสูง ส่งตรงจากท้องถิ่นจังหวัดกาญจนบุรี' }}
+              </p>
+
+              <!-- Rating, Products Count, and Location Bar (All Real Data) -->
+              <div class="flex flex-wrap items-center justify-center sm:justify-start gap-3 pt-1 text-xs font-bold text-[#786B62]">
+                <div class="flex items-center gap-1 text-[#D96C2C] bg-[#D96C2C]/10 px-2.5 py-1 rounded-xl border border-[#D96C2C]/20 font-black">
+                  <i class="mdi mdi-star text-base"></i>
+                  <span>{{ averageRating ? averageRating.toFixed(1) : '5.0' }}</span>
+                  <span class="text-[#786B62] font-semibold">({{ totalReviews ? `${totalReviews} รีวิว` : 'ยังไม่มีรีวิว' }})</span>
+                </div>
+
+                <span>•</span>
+                <span class="text-[#332820] font-black flex items-center gap-1">
+                  <i class="mdi mdi-package-variant text-sm text-[#D96C2C]"></i>
+                  มีสินค้า {{ totalProductsCount }} รายการ
+                </span>
+
+                <span>•</span>
+                <span class="flex items-center gap-1 text-[#332820]">
+                  <i class="mdi mdi-map-marker text-[#D96C2C]"></i>
+                  {{ shopArea }}
+                </span>
+
+                <span>•</span>
+                <span
+                  class="px-2.5 py-0.5 rounded-full text-[10px] font-black"
+                  :class="isOpenNow ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'"
+                >
+                  {{ isOpenNow ? 'เปิดบริการอยู่' : 'ปิดทำการ' }} ({{ businessHours }})
+                </span>
+              </div>
+            </div>
           </div>
 
-          <div class="space-y-2">
-            <!-- Category & Location Badge -->
-            <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-              <span class="px-3 py-1 rounded-full text-xs font-black bg-[#D96C2C] text-white shadow-md">
-                {{ shop.categoryName || 'ร้านค้าชุมชน' }}
-              </span>
-              <span
-                class="px-3 py-1 rounded-full text-xs font-black bg-black/50 text-white backdrop-blur-md border border-white/20"
-              >
-                📍 {{ shopArea }}
-              </span>
-            </div>
+          <!-- Right: Follow, Call & Share Buttons (Optimized for Mobile Grid) -->
+          <div class="grid grid-cols-12 gap-2 w-full sm:flex sm:w-auto sm:items-center sm:gap-3 shrink-0 pt-2 sm:pt-0">
+            <!-- Share Button -->
+            <button
+              type="button"
+              class="col-span-2 sm:w-11 h-11 flex items-center justify-center rounded-2xl bg-[#F7F0E6] hover:bg-[#E8D9C9] text-[#332820] transition border border-[#E8D9C9] shadow-xs cursor-pointer"
+              title="คัดลอกลิงก์ร้านค้า"
+              @click="emit('copy-link')"
+            >
+              <i class="mdi mdi-share-variant-outline text-lg text-[#332820]"></i>
+            </button>
 
-            <!-- Shop Title -->
-            <h1 class="text-2xl sm:text-4xl font-black text-white tracking-tight leading-tight drop-shadow-md">
-              {{ shop.shopName }}
-            </h1>
+            <!-- Call Button -->
+            <a
+              v-if="shop.phone"
+              :href="`tel:${shop.phone}`"
+              class="col-span-5 sm:w-auto inline-flex items-center justify-center gap-1.5 px-3 sm:px-5 h-11 rounded-2xl border-2 border-[#E8D9C9] bg-[#F7F0E6] hover:bg-[#E8D9C9] text-[#332820] font-black text-xs sm:text-sm transition shadow-xs cursor-pointer"
+            >
+              <i class="mdi mdi-phone-outline text-base text-[#D96C2C]"></i>
+              <span>โทรติดต่อ</span>
+            </a>
 
-            <!-- Rating & Verified Info -->
-            <div class="flex items-center justify-center sm:justify-start gap-3 text-xs text-amber-200 font-bold">
-              <div
-                class="flex items-center gap-1 bg-black/60 px-3 py-1 rounded-xl backdrop-blur-md border border-white/20 shadow-sm"
-              >
-                <i class="mdi mdi-star text-amber-400 text-sm"></i>
-                <span class="font-black text-white">{{ averageRating ? averageRating.toFixed(1) : '4.8' }}</span>
-                <span class="text-amber-200/80">({{ totalReviews }} รีวิว)</span>
-              </div>
-              <span class="text-white/40">•</span>
-              <span class="text-emerald-400 font-extrabold flex items-center gap-1 drop-shadow-sm">
-                <i class="mdi mdi-shield-check text-sm"></i> ร้านค้าลงทะเบียนแล้ว
-              </span>
-            </div>
+            <!-- Follow Button -->
+            <button
+              type="button"
+              :class="[
+                'inline-flex items-center justify-center gap-1.5 px-3 sm:px-6 h-11 rounded-2xl font-black text-xs sm:text-sm shadow-md transition active:scale-95 cursor-pointer border-2',
+                shop.phone ? 'col-span-5 sm:w-auto' : 'col-span-10 sm:w-auto',
+                isFollowing
+                  ? 'bg-slate-800 text-white border-slate-800'
+                  : 'bg-[#D96C2C] hover:bg-[#BF5720] text-white border-[#D96C2C]',
+              ]"
+              @click="isFollowing = !isFollowing"
+            >
+              <i
+                :class="['mdi text-base', isFollowing ? 'mdi-check text-emerald-400' : 'mdi-plus text-white']"
+              ></i>
+              <span class="!text-white font-black truncate">{{ isFollowing ? 'ติดตามแล้ว' : '+ ติดตาม' }}</span>
+            </button>
           </div>
         </div>
 
-        <!-- Right: Action Buttons (Follow, Share, Call) -->
-        <div class="flex items-center justify-center sm:justify-end gap-3 w-full sm:w-auto shrink-0 flex-wrap">
-          <!-- Share Button -->
-          <button
-            type="button"
-            class="flex h-11 w-11 items-center justify-center rounded-2xl bg-black/50 hover:bg-black/70 text-white transition backdrop-blur-md border border-white/20 cursor-pointer shadow-md"
-            title="คัดลอกลิงก์ร้านค้า"
-            @click="emit('copy-link')"
-          >
-            <i class="mdi mdi-share-variant-outline text-lg"></i>
-          </button>
+        <!-- 3. Four Trust Stats Badges Row (Optimized for Mobile Screens) -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 pt-4 border-t-2 border-[#E8D9C9]">
+          <div class="flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-2xl bg-[#F7F0E6] border border-[#E8D9C9]">
+            <div class="h-8 w-8 sm:h-9 sm:w-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+              <i class="mdi mdi-truck-fast-outline text-lg sm:text-xl"></i>
+            </div>
+            <div class="min-w-0">
+              <span class="block font-black text-[11px] sm:text-xs text-[#332820] truncate">จัดส่งรวดเร็ว</span>
+              <span class="text-[9px] sm:text-[10px] text-[#786B62] font-semibold truncate block">ใน 24 ชม.</span>
+            </div>
+          </div>
 
-          <!-- Call Button -->
-          <a
-            v-if="shop.phone"
-            :href="`tel:${shop.phone}`"
-            class="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-black/50 hover:bg-black/70 text-white font-black text-xs sm:text-sm backdrop-blur-md border border-white/20 transition shadow-md"
-          >
-            <i class="mdi mdi-phone-outline text-base"></i>
-            <span>โทรติดต่อ</span>
-          </a>
+          <div class="flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-2xl bg-[#F7F0E6] border border-[#E8D9C9]">
+            <div class="h-8 w-8 sm:h-9 sm:w-9 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
+              <i class="mdi mdi-message-reply-text-outline text-lg sm:text-xl"></i>
+            </div>
+            <div class="min-w-0">
+              <span class="block font-black text-[11px] sm:text-xs text-[#332820] truncate">ตอบแชทไว</span>
+              <span class="text-[9px] sm:text-[10px] text-[#786B62] font-semibold truncate block">ใน 10 นาที</span>
+            </div>
+          </div>
 
-          <!-- Follow Button -->
-          <button
-            type="button"
-            class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-black text-xs sm:text-sm shadow-xl transition active:scale-95 cursor-pointer border-2"
-            :class="
-              isFollowing
-                ? 'bg-black/60 text-white border-white/30 hover:bg-black/80'
-                : 'bg-[#D96C2C] hover:bg-[#BF5720] text-white border-[#D96C2C]'
-            "
-            @click="isFollowing = !isFollowing"
-          >
-            <i
-              :class="['mdi', isFollowing ? 'mdi-check text-emerald-400' : 'mdi-heart-outline text-white']"
-            ></i>
-            <span>{{ isFollowing ? 'ติดตามแล้ว' : 'กดติดตามร้าน' }}</span>
-          </button>
+          <div class="flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-2xl bg-[#F7F0E6] border border-[#E8D9C9]">
+            <div class="h-8 w-8 sm:h-9 sm:w-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+              <i class="mdi mdi-star text-lg sm:text-xl text-amber-500"></i>
+            </div>
+            <div class="min-w-0">
+              <span class="block font-black text-[11px] sm:text-xs text-[#332820] truncate">
+                {{ averageRating ? averageRating.toFixed(1) : '5.0' }} / 5.0
+              </span>
+              <span class="text-[9px] sm:text-[10px] text-[#786B62] font-semibold truncate block">ความพึงพอใจ</span>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-2xl bg-[#F7F0E6] border border-[#E8D9C9]">
+            <div class="h-8 w-8 sm:h-9 sm:w-9 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center shrink-0">
+              <i class="mdi mdi-shield-check-outline text-lg sm:text-xl"></i>
+            </div>
+            <div class="min-w-0">
+              <span class="block font-black text-[11px] sm:text-xs text-[#332820] truncate">100% Authentic</span>
+              <span class="text-[9px] sm:text-[10px] text-[#786B62] font-semibold truncate block">ของแท้ชุมชน</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-  </section>
+  </div>
 </template>

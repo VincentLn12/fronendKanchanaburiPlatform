@@ -1,3 +1,66 @@
+<template>
+  <main class="mx-auto w-full max-w-[1600px] px-6 py-10 lg:px-10">
+    <div class="mb-8 flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <p class="font-semibold text-indigo-600">Content management</p>
+        <h1 class="mt-1 text-3xl font-bold text-slate-900">หมวดหมู่คอนเทนต์</h1>
+        <p class="mt-2 text-slate-500">จัดการหมวดหมู่สำหรับข่าว สถานที่ และคอนเทนต์ในระบบ</p>
+      </div>
+      <RouterLink
+        to="/admin/content-categories/new"
+        class="rounded-xl bg-indigo-600 px-5 py-3 font-semibold text-white hover:bg-indigo-700"
+        >+ เพิ่มหมวดหมู่</RouterLink
+      >
+    </div>
+    <section class="mb-6 max-w-xs rounded-2xl border border-slate-200 bg-white p-4">
+      <AppSelect
+        v-model="status"
+        :items="statusOptions"
+        item-title="label"
+        item-value="value"
+        placeholder="ทุกสถานะ"
+        clearable
+      />
+    </section>
+    <AppDataTable
+      :columns="columns"
+      :items="categories"
+      row-key="contentCategoryId"
+      :loading="loading"
+      :pagination="pagination"
+      empty-message="ยังไม่มีหมวดหมู่คอนเทนต์"
+      @page-change="changePage"
+    >
+      <template #cell-status="{ item }">
+        <span
+          class="rounded-full px-2.5 py-1 text-xs font-bold"
+          :class="
+            asCategory(item).status === 'Active'
+              ? 'bg-emerald-100 text-emerald-700'
+              : 'bg-slate-100 text-slate-700'
+          "
+        >
+          {{ asCategory(item).status === 'Active' ? 'เปิดใช้งาน' : 'ปิดใช้งาน' }}
+        </span>
+      </template>
+      <template #cell-actions="{ item }">
+        <RouterLink
+          :to="`/admin/content-categories/${asCategory(item).contentCategoryId}/edit`"
+          class="mr-3 font-semibold text-indigo-600"
+          >แก้ไข</RouterLink
+        >
+        <button
+          v-if="asCategory(item).status === 'Active'"
+          class="font-semibold text-rose-600"
+          @click="remove(asCategory(item))"
+        >
+          ปิดใช้งาน
+        </button>
+      </template>
+    </AppDataTable>
+  </main>
+</template>
+
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
 import {
@@ -74,66 +137,3 @@ watch(status, () => {
 })
 onMounted(load)
 </script>
-
-<template>
-  <main class="mx-auto w-full max-w-[1600px] px-6 py-10 lg:px-10">
-    <div class="mb-8 flex flex-wrap items-end justify-between gap-4">
-      <div>
-        <p class="font-semibold text-indigo-600">Content management</p>
-        <h1 class="mt-1 text-3xl font-bold text-slate-900">หมวดหมู่คอนเทนต์</h1>
-        <p class="mt-2 text-slate-500">จัดการหมวดหมู่สำหรับข่าว สถานที่ และคอนเทนต์ในระบบ</p>
-      </div>
-      <RouterLink
-        to="/admin/content-categories/new"
-        class="rounded-xl bg-indigo-600 px-5 py-3 font-semibold text-white hover:bg-indigo-700"
-        >+ เพิ่มหมวดหมู่</RouterLink
-      >
-    </div>
-    <section class="mb-6 max-w-xs rounded-2xl border border-slate-200 bg-white p-4">
-      <AppSelect
-        v-model="status"
-        :items="statusOptions"
-        item-title="label"
-        item-value="value"
-        placeholder="ทุกสถานะ"
-        clearable
-      />
-    </section>
-    <AppDataTable
-      :columns="columns"
-      :items="categories"
-      row-key="contentCategoryId"
-      :loading="loading"
-      :pagination="pagination"
-      empty-message="ยังไม่มีหมวดหมู่คอนเทนต์"
-      @page-change="changePage"
-    >
-      <template #cell-status="{ item }">
-        <span
-          class="rounded-full px-2.5 py-1 text-xs font-bold"
-          :class="
-            asCategory(item).status === 'Active'
-              ? 'bg-emerald-100 text-emerald-700'
-              : 'bg-slate-100 text-slate-700'
-          "
-        >
-          {{ asCategory(item).status === 'Active' ? 'เปิดใช้งาน' : 'ปิดใช้งาน' }}
-        </span>
-      </template>
-      <template #cell-actions="{ item }">
-        <RouterLink
-          :to="`/admin/content-categories/${asCategory(item).contentCategoryId}/edit`"
-          class="mr-3 font-semibold text-indigo-600"
-          >แก้ไข</RouterLink
-        >
-        <button
-          v-if="asCategory(item).status === 'Active'"
-          class="font-semibold text-rose-600"
-          @click="remove(asCategory(item))"
-        >
-          ปิดใช้งาน
-        </button>
-      </template>
-    </AppDataTable>
-  </main>
-</template>

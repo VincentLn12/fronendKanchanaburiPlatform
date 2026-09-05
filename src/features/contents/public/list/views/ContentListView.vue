@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-[#F7F0E6] text-[#332820] pb-16">
     <!-- HERO BANNER SECTION -->
-    <ContentHeroBanner v-model:search="search" v-model:viewMode="viewMode" @search="load" />
+    <ContentHeroBanner v-model:search="search" v-model:viewMode="viewMode" @search="onSearch" />
 
     <!-- CATEGORY BAR NAV -->
     <ContentCategoryBar
@@ -28,12 +28,7 @@
         @change-district="changeDistrict"
         @select-tag="selectTag"
         @clear-filters="clearFilters"
-        @filter-change="
-          () => {
-            resetPage()
-            load()
-          }
-        "
+        @filter-change="onFilterChange"
       />
 
       <!-- MODE 1: CONTENT CARDS GRID / LIST VIEW -->
@@ -46,30 +41,18 @@
         />
 
         <!-- SKELETON LOADING -->
-        <div
-          v-if="loading"
-          class="grid gap-6"
-          :class="
-            contentDisplayMode === 'grid'
-              ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
-              : 'grid-cols-1'
-          "
-        >
+        <div v-if="loading" class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
           <div
             v-for="i in 6"
             :key="i"
-            class="animate-pulse rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9] h-72 p-4 space-y-3"
-          >
-            <div class="h-40 bg-[#E8D9C9]/50 rounded-2xl"></div>
-            <div class="h-4 bg-[#E8D9C9]/60 rounded w-3/4"></div>
-            <div class="h-3 bg-[#E8D9C9]/40 rounded w-1/2"></div>
-          </div>
+            class="h-72 animate-pulse rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9]"
+          />
         </div>
 
         <!-- GRID MODE -->
         <div
           v-else-if="contents.length && contentDisplayMode === 'grid'"
-          class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
+          class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3"
         >
           <ContentCard
             v-for="item in contents"
@@ -103,9 +86,9 @@
         <AppPagination v-model:page="page" :total-pages="totalPages" @change="load" />
       </div>
 
-      <!-- MODE 2: MAP VIEW -->
+      <!-- MODE 2: FULL-DATA MAP VIEW (ALL PINS WITHOUT PAGINATION CUTOFF) -->
       <div v-else-if="viewMode === 'map'">
-        <ContentMapView :contents="contents" :loading="loading" />
+        <ContentMapView :contents="mapContents" :loading="mapLoading" />
       </div>
     </main>
   </div>
@@ -138,6 +121,7 @@ import { useLocations } from '@/shared/composables/useLocations'
 const route = useRoute()
 
 const contents = ref<PublicContent[]>([])
+const mapContents = ref<PublicContent[]>([])
 const categories = ref<ContentCategory[]>([])
 const tags = ref<Tag[]>([])
 
@@ -155,6 +139,7 @@ const viewMode = ref<'contents' | 'map'>('contents')
 const contentDisplayMode = ref<'grid' | 'list'>('grid')
 const filtersOpen = ref(true)
 const loading = ref(true)
+const mapLoading = ref(false)
 
 const sortOptions = [
   { id: 'latest', title: 'ล่าสุด' },
@@ -207,27 +192,80 @@ async function loadData() {
   }
 }
 
+// Load all contents across Kanchanaburi for map display without pagination cutoff
+async function loadMapContents() {
+  mapLoading.value = true
+  try {
+    const res = await getPublicContents({
+      search: search.value.trim() || undefined,
+      categoryId: categoryId.value || undefined,
+      districtId: districtId.value || undefined,
+      subDistrictId: subDistrictId.value || undefined,
+      tagId: tagId.value || undefined,
+      sortBy: sortBy.value,
+      page: 1,
+      pageSize: 500, // Fetch all available contents
+    })
+    mapContents.value = res.items || []
+  } catch (err) {
+    console.error('Failed loading map contents', err)
+    mapContents.value = []
+  } finally {
+    mapLoading.value = false
+  }
+}
+
 function load() {
   void loadData()
+}
+
+function onSearch() {
+  if (viewMode.value === 'map') {
+    void loadMapContents()
+  } else {
+    resetPage()
+    load()
+  }
+}
+
+function onFilterChange() {
+  if (viewMode.value === 'map') {
+    void loadMapContents()
+  } else {
+    resetPage()
+    load()
+  }
 }
 
 async function changeDistrict() {
   subDistrictId.value = null
   await fetchSubDistricts(districtId.value)
-  resetPage()
-  load()
+  if (viewMode.value === 'map') {
+    void loadMapContents()
+  } else {
+    resetPage()
+    load()
+  }
 }
 
 function selectCategoryPill(id: string | null) {
   categoryId.value = id
-  resetPage()
-  load()
+  if (viewMode.value === 'map') {
+    void loadMapContents()
+  } else {
+    resetPage()
+    load()
+  }
 }
 
 function selectTag(id: string) {
   tagId.value = tagId.value === id ? null : id
-  resetPage()
-  load()
+  if (viewMode.value === 'map') {
+    void loadMapContents()
+  } else {
+    resetPage()
+    load()
+  }
 }
 
 function clearFilters() {
@@ -237,8 +275,12 @@ function clearFilters() {
   tagId.value = null
   search.value = ''
   sortBy.value = 'latest'
-  resetPage()
-  load()
+  if (viewMode.value === 'map') {
+    void loadMapContents()
+  } else {
+    resetPage()
+    load()
+  }
 }
 
 function applyQueryParams() {
@@ -248,12 +290,25 @@ function applyQueryParams() {
   if (typeof route.query.search === 'string') search.value = route.query.search
 }
 
+watch(viewMode, (mode) => {
+  if (mode === 'map') {
+    void loadMapContents()
+  } else {
+    resetPage()
+    load()
+  }
+})
+
 watch(
   () => route.query,
   () => {
     applyQueryParams()
-    resetPage()
-    load()
+    if (viewMode.value === 'map') {
+      void loadMapContents()
+    } else {
+      resetPage()
+      load()
+    }
   },
 )
 
@@ -263,6 +318,10 @@ onMounted(async () => {
   if (districtId.value) {
     await fetchSubDistricts(districtId.value)
   }
-  load()
+  if (viewMode.value === 'map') {
+    void loadMapContents()
+  } else {
+    load()
+  }
 })
 </script>

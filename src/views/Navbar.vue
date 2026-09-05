@@ -73,6 +73,16 @@
           </span>
         </RouterLink>
 
+        <!-- Create Content CTA Button -->
+        <RouterLink
+          to="/create"
+          class="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-[#D96C2C] to-[#BF5720] hover:from-[#BF5720] hover:to-[#a84614] px-3.5 py-2 text-xs sm:text-sm font-black text-white shadow-sm shadow-[#D96C2C]/25 transition-all duration-200 active:scale-95 border border-[#D96C2C]/40 cursor-pointer"
+          title="ลงคอนเทนต์ท่องเที่ยวและวัฒนธรรมกาญจนบุรี"
+        >
+          <i class="mdi mdi-plus-circle text-base text-white"></i>
+          <span class="font-black text-white">ลงคอนเทนต์</span>
+        </RouterLink>
+
         <!-- Profile / Login Button -->
         <RouterLink v-if="!auth.isLoggedIn" to="/login" class="login-button gap-2">
           <i class="mdi mdi-account-circle-outline text-xl text-[#D96C2C]"></i>
@@ -149,6 +159,16 @@
         </div>
 
         <div class="mt-5 flex flex-col gap-3 border-t-2 border-[#E8D9C9] pt-5">
+          <!-- Mobile Create Content CTA Button -->
+          <RouterLink
+            to="/create"
+            class="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#D96C2C] to-[#BF5720] py-3 text-sm font-black text-white shadow-md transition active:scale-95 border border-[#D96C2C]/40"
+            @click="closeMenu"
+          >
+            <i class="mdi mdi-plus-circle text-lg text-white"></i>
+            <span class="text-white font-black">+ ลงคอนเทนต์ท่องเที่ยว</span>
+          </RouterLink>
+
           <RouterLink
             to="/cart"
             class="login-button w-full justify-center gap-2"

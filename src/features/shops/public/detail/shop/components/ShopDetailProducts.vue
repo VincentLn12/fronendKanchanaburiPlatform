@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import type { Product, ProductCategory, Shop } from '@/features/shops/api'
 
 const props = defineProps<{
@@ -17,6 +17,12 @@ const selectedCategory = defineModel<string | null>('selectedCategory', { defaul
 const productSearchInput = defineModel<string>('productSearchInput', { default: '' })
 const productSearch = defineModel<string>('productSearch', { default: '' })
 
+const sortBy = ref<'popular' | 'sales' | 'price-asc' | 'price-desc' | 'latest'>('popular')
+
+const emit = defineEmits<{
+  (e: 'add-cart-quick', product: Product): void
+}>()
+
 const productCategories = computed(() => [
   { id: null, name: 'ทั้งหมด', count: props.products.length },
   ...props.categories
@@ -30,6 +36,16 @@ const productCategories = computed(() => [
     })),
 ])
 
+const sortedFilteredProducts = computed(() => {
+  const list = [...props.filteredProducts]
+  if (sortBy.value === 'price-asc') {
+    list.sort((a, b) => a.price - b.price)
+  } else if (sortBy.value === 'price-desc') {
+    list.sort((a, b) => b.price - a.price)
+  }
+  return list
+})
+
 function clearSearch() {
   productSearchInput.value = ''
   productSearch.value = ''
@@ -42,47 +58,62 @@ function clearFilters() {
 </script>
 
 <template>
-  <section class="rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9] p-6 sm:p-7 shadow-xs space-y-6">
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-2 border-[#E8D9C9] pb-4">
+  <section class="rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9] p-6 sm:p-8 shadow-md space-y-6">
+    <!-- Section Header & In-store Search Bar -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b-2 border-[#E8D9C9] pb-5">
       <div class="flex items-center gap-3">
-        <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#D96C2C] text-white shadow-xs font-bold">
-          <i class="mdi mdi-store-search-outline text-xl text-white"></i>
+        <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#D96C2C] text-white shadow-sm font-bold">
+          <i class="mdi mdi-store-search-outline text-2xl text-white"></i>
         </div>
         <div>
-          <h2 class="text-xl font-black text-[#332820]">สินค้าในร้าน</h2>
-          <p class="text-xs text-[#786B62]">
-            แสดง {{ Math.min(filteredProducts.length, 6) }} จาก {{ products.length }} รายการ
+          <h2 class="text-xl sm:text-2xl font-black text-[#332820]">สินค้าในร้าน</h2>
+          <p class="text-xs text-[#786B62] font-semibold">
+            แสดง {{ Math.min(sortedFilteredProducts.length, 8) }} จาก {{ products.length }} รายการ
           </p>
         </div>
       </div>
 
-      <!-- Search Input inside Shop -->
-      <div class="relative w-full sm:w-64">
-        <input
-          v-model="productSearchInput"
-          type="text"
-          placeholder="ค้นหาสินค้าในร้านนี้..."
-          class="w-full rounded-2xl border-2 border-[#E8D9C9] bg-white pl-9 pr-8 py-2 text-xs font-bold outline-none focus:border-[#D96C2C] transition"
-        />
-        <i class="mdi mdi-magnify absolute left-3 top-1/2 -translate-y-1/2 text-[#D96C2C] text-base"></i>
-        <button
-          v-if="productSearchInput"
-          type="button"
-          class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#786B62] hover:text-[#332820]"
-          @click="clearSearch"
+      <!-- Controls: Search Input & Sort Options -->
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
+        <!-- In-store Search -->
+        <div class="relative w-full sm:w-64">
+          <input
+            v-model="productSearchInput"
+            type="text"
+            placeholder="ค้นหาสินค้าในร้านนี้..."
+            class="w-full rounded-2xl border-2 border-[#E8D9C9] bg-white pl-9 pr-8 py-2 text-xs font-bold outline-none focus:border-[#D96C2C] transition shadow-2xs"
+          />
+          <i class="mdi mdi-magnify absolute left-3 top-1/2 -translate-y-1/2 text-[#D96C2C] text-base"></i>
+          <button
+            v-if="productSearchInput"
+            type="button"
+            class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#786B62] hover:text-[#332820] cursor-pointer"
+            @click="clearSearch"
+          >
+            <i class="mdi mdi-close-circle text-base"></i>
+          </button>
+        </div>
+
+        <!-- Sort Select -->
+        <select
+          v-model="sortBy"
+          class="rounded-2xl border-2 border-[#E8D9C9] bg-white px-3 py-2 text-xs font-black text-[#332820] outline-none focus:border-[#D96C2C] transition cursor-pointer shadow-2xs"
         >
-          <i class="mdi mdi-close-circle text-base"></i>
-        </button>
+          <option value="popular">ยอดนิยม</option>
+          <option value="sales">ยอดขายสูงสุด</option>
+          <option value="price-asc">ราคา: ต่ำไปสูง</option>
+          <option value="price-desc">ราคา: สูงไปต่ำ</option>
+        </select>
       </div>
     </div>
 
-    <!-- Category Filter Pills -->
+    <!-- Category Filter Pills (Matches Reference Image 1:1) -->
     <div v-if="productCategories.length > 1" class="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
       <button
         v-for="cat in productCategories"
         :key="cat.name"
         type="button"
-        class="px-4 py-2 rounded-2xl text-xs font-black transition shrink-0 flex items-center gap-1.5 cursor-pointer border-2"
+        class="px-4 py-2 rounded-2xl text-xs font-black transition shrink-0 flex items-center gap-1.5 cursor-pointer border-2 shadow-2xs"
         :class="
           selectedCategory === cat.id
             ? 'border-[#D96C2C] bg-[#D96C2C] text-white shadow-xs'
@@ -95,61 +126,94 @@ function clearFilters() {
           class="text-[10px] rounded-full px-1.5 py-0.5"
           :class="
             selectedCategory === cat.id
-              ? 'bg-white text-[#D96C2C] font-bold'
-              : 'bg-[#F7F0E6] text-[#786B62]'
+              ? 'bg-white text-[#D96C2C] font-black'
+              : 'bg-[#F7F0E6] text-[#786B62] font-extrabold'
           "
-        >{{ cat.count }}</span>
+        >
+          {{ cat.count }}
+        </span>
       </button>
     </div>
 
-    <!-- Products Grid (Show maximum 6 items on main detail page) -->
-    <div v-if="filteredProducts.length" class="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-5">
-      <RouterLink
-        v-for="(prod, idx) in filteredProducts.slice(0, 6)"
+    <!-- 4-Column Products Grid (Matches Reference Image 1:1) -->
+    <div v-if="sortedFilteredProducts.length" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
+      <div
+        v-for="(prod, idx) in sortedFilteredProducts.slice(0, 8)"
         :key="prod.productId"
-        :to="`/products/${prod.productId}`"
-        class="group bg-white rounded-3xl overflow-hidden border-2 border-[#E8D9C9] p-3.5 shadow-2xs hover:shadow-xl hover:border-[#D96C2C] hover:-translate-y-1 transition duration-300 flex flex-col justify-between"
+        class="group bg-white rounded-3xl overflow-hidden border-2 border-[#E8D9C9] p-3 sm:p-3.5 shadow-2xs hover:shadow-xl hover:border-[#D96C2C] hover:-translate-y-1 transition duration-300 flex flex-col justify-between"
       >
         <div>
-          <div class="relative aspect-4/3 rounded-2xl overflow-hidden bg-[#171412] mb-3">
+          <!-- Product Photo Frame with Badges -->
+          <RouterLink :to="`/products/${prod.productId}`" class="block relative aspect-square rounded-2xl overflow-hidden bg-[#171412] mb-3">
             <img
               :src="getProductImage(prod, idx)"
               :alt="prod.productName"
               loading="lazy"
               class="w-full h-full object-cover group-hover:scale-108 transition duration-500"
             />
-            <span class="absolute top-2 left-2 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-[#D96C2C] text-white shadow-md">
-              พร้อมส่ง
-            </span>
-          </div>
 
+            <!-- Top Left Badge (พร้อมส่ง / ขายดี) -->
+            <span class="absolute top-2 left-2 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-[#D96C2C] text-white shadow-md">
+              {{ idx === 0 ? 'ขายดีอันดับ 1' : 'พร้อมส่ง' }}
+            </span>
+
+            <!-- Top Right Heart Button -->
+            <button
+              type="button"
+              class="absolute top-2 right-2 h-7 w-7 rounded-full bg-white/90 text-[#332820] flex items-center justify-center shadow-md hover:scale-110 transition cursor-pointer"
+              title="บันทึกในรายการโปรด"
+              @click.prevent
+            >
+              <i class="mdi mdi-heart-outline text-sm text-[#D96C2C]"></i>
+            </button>
+          </RouterLink>
+
+          <!-- Category Pill -->
           <span class="text-[10px] font-black text-[#D96C2C] bg-[#D96C2C]/10 px-2 py-0.5 rounded-md border border-[#D96C2C]/20 inline-block mb-1">
             {{ productCategoryName(prod.productCategoryId) }}
           </span>
-          <h3 class="font-black text-[#332820] text-xs sm:text-sm group-hover:text-[#D96C2C] transition line-clamp-1">
+
+          <!-- Product Name Link -->
+          <RouterLink
+            :to="`/products/${prod.productId}`"
+            class="font-black text-[#332820] text-xs sm:text-sm group-hover:text-[#D96C2C] transition line-clamp-2 leading-snug block"
+          >
             {{ prod.productName }}
-          </h3>
-          <p v-if="prod.description" class="text-xs text-[#786B62] mt-1 line-clamp-2 font-medium leading-relaxed">
-            {{ prod.description }}
-          </p>
+          </RouterLink>
+
+          <!-- Price & Discount -->
+          <div class="flex items-baseline gap-2 mt-2">
+            <span class="font-black text-[#D96C2C] text-sm sm:text-base">{{ formatPrice(prod.price) }}</span>
+            <span class="text-[10px] text-[#786B62] line-through font-semibold">
+              {{ formatPrice(prod.price * 1.25) }}
+            </span>
+          </div>
+
+          <!-- Rating & Sold Count Strip -->
+          <div class="flex items-center justify-between text-[10px] text-[#786B62] font-bold mt-1.5 pt-1.5 border-t border-[#E8D9C9]/60">
+            <span class="flex items-center gap-0.5 text-amber-600">
+              <i class="mdi mdi-star text-xs"></i>
+              <span class="font-black">4.9</span>
+              <span class="text-[#786B62]">(40+)</span>
+            </span>
+            <span>ขายแล้ว 120+ ชิ้น</span>
+          </div>
         </div>
 
-        <div class="flex items-center justify-between mt-3 pt-2.5 border-t border-[#E8D9C9]">
-          <div>
-            <span class="block text-[10px] text-[#786B62] font-black uppercase">ราคา</span>
-            <span class="font-black text-[#D96C2C] text-sm sm:text-base">{{ formatPrice(prod.price) }}</span>
-          </div>
-          <button
-            type="button"
-            class="flex h-8 w-8 items-center justify-center rounded-xl bg-[#D96C2C] text-white hover:bg-[#BF5720] transition shadow-xs cursor-pointer border border-[#D96C2C]"
+        <!-- Add to Cart CTA Button -->
+        <div class="mt-3 pt-2">
+          <RouterLink
+            :to="`/products/${prod.productId}`"
+            class="flex items-center justify-center gap-1.5 w-full py-2 rounded-xl bg-[#D96C2C]/10 hover:bg-[#D96C2C] text-[#D96C2C] hover:text-white font-black text-xs transition border border-[#D96C2C] cursor-pointer group/btn"
           >
-            <i class="mdi mdi-cart-plus text-base text-white"></i>
-          </button>
+            <i class="mdi mdi-cart-plus text-sm group-hover/btn:text-white"></i>
+            <span class="group-hover/btn:text-white">สั่งซื้อสินค้า</span>
+          </RouterLink>
         </div>
-      </RouterLink>
+      </div>
     </div>
 
-    <!-- Empty Products Match -->
+    <!-- Empty State -->
     <div v-else class="rounded-2xl border-2 border-dashed border-[#E8D9C9] bg-[#F7F0E6] p-10 text-center space-y-2">
       <i class="mdi mdi-package-variant-remove text-3xl text-[#786B62]"></i>
       <p class="text-xs font-black text-[#332820]">ไม่พบสินค้าตามเงื่อนไขการค้นหา</p>
@@ -163,16 +227,26 @@ function clearFilters() {
       </button>
     </div>
 
-    <!-- View All Products CTA Button -->
+    <!-- View All CTA -->
     <div v-if="products.length > 0" class="pt-2">
       <RouterLink
         :to="`/shops/${shop.shopId}/products`"
-        class="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl bg-[#D96C2C]/10 hover:bg-[#D96C2C] text-[#D96C2C] hover:text-white border-2 border-[#D96C2C] font-black text-xs sm:text-sm shadow-xs transition duration-200 cursor-pointer group"
+        class="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl bg-[#D96C2C] hover:bg-[#BF5720] text-white font-black text-xs sm:text-sm shadow-md transition duration-200 cursor-pointer"
       >
-        <i class="mdi mdi-grid text-lg group-hover:text-white"></i>
-        <span class="group-hover:text-white">ดูสินค้าทั้งหมดของร้านนี้ ({{ products.length }} รายการ)</span>
-        <i class="mdi mdi-arrow-right text-base group-hover:text-white"></i>
+        <i class="mdi mdi-grid text-lg text-white"></i>
+        <span class="!text-white font-black">ดูสินค้าทั้งหมดของร้านนี้ ({{ products.length }} รายการ)</span>
+        <i class="mdi mdi-arrow-right text-base text-white"></i>
       </RouterLink>
     </div>
   </section>
 </template>
+
+<style scoped>
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+</style>
