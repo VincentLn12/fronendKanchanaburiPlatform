@@ -32,138 +32,121 @@ function getShopProducts(shopId: string): Product[] {
 </script>
 
 <template>
-  <section v-if="shops.length" class="space-y-3 sm:space-y-4">
+  <section v-if="shops.length" class="space-y-3">
     <!-- Header Title Bar -->
-    <div class="flex items-center justify-between border-b-2 border-[#E8D9C9] pb-3">
+    <div class="flex items-center justify-between border-b border-slate-200 pb-2.5">
       <div class="flex items-center gap-2.5">
-        <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-[#D96C2C] text-white font-bold shadow-md shrink-0">
-          <i class="mdi mdi-star text-lg text-white"></i>
+        <div
+          class="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-500 text-white font-bold shadow-sm shrink-0"
+        >
+          <i class="mdi mdi-trophy-variant text-base text-amber-100"></i>
         </div>
-        <div>
-          <h2 class="text-lg sm:text-xl font-black text-[#332820] tracking-tight">ร้านค้าแนะนำประจำสัปดาห์</h2>
-          <span class="text-[10px] sm:text-[11px] font-extrabold text-[#D96C2C] bg-[#D96C2C]/10 px-2 py-0.5 rounded border border-[#D96C2C]/20">
-            Curated Selection
+        <div class="flex items-center gap-2">
+          <h2 class="text-base sm:text-lg font-bold text-[#332820] tracking-tight">
+            ร้านค้าแนะนำประจำสัปดาห์
+          </h2>
+          <span
+            class="text-xs font-bold text-amber-900 bg-amber-100 px-2.5 py-0.5 rounded-full border border-amber-300"
+          >
+            ⭐ 3 อันดับแรก
           </span>
         </div>
       </div>
 
-      <span class="text-xs font-bold text-[#786B62] hidden md:block">
-        คัดสรรร้านค้าคุณภาพที่มีคะแนนรีวิวสูงสุด 3 อันดับแรก
+      <span class="text-xs font-medium text-[#786B62] hidden md:block">
+        คัดสรรร้านค้าคุณภาพยอดนิยมที่มีเรตติ้งสูงสุด
       </span>
     </div>
 
-    <!-- 3 Featured Store Cards (Mobile swipe horizontal carousel + Desktop 3 cols) -->
-    <div class="flex overflow-x-auto pb-4 gap-4 snap-x snap-mandatory scrollbar-none sm:grid sm:grid-cols-2 md:grid-cols-3 sm:overflow-visible sm:pb-0">
-      <div
+    <!-- 3 Compact Featured Store Cards Grid (Sleek height, bright & tempting to click) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+      <RouterLink
         v-for="(shop, idx) in shops.slice(0, 3)"
         :key="shop.shopId"
-        class="min-w-[85%] sm:min-w-0 snap-center group bg-[#FFF9F2] rounded-3xl overflow-hidden border-2 border-[#E8D9C9] shadow-md hover:shadow-2xl hover:border-[#D96C2C] transition duration-300 flex flex-col justify-between"
+        :to="`/shops/${shop.shopId}`"
+        class="group relative bg-[#FFF9F2] rounded-2xl overflow-hidden border-2 border-amber-400 shadow-md hover:shadow-2xl hover:border-amber-500 transition-all duration-300 transform hover:-translate-y-0.5 flex flex-col justify-between"
       >
-        <div>
-          <!-- Banner Cover Header -->
-          <div class="relative aspect-16/9 w-full overflow-hidden bg-[#171412]">
+        <!-- Compact Cover Banner Header (Height h-24 sm:h-28) -->
+        <div class="relative h-24 sm:h-28 w-full overflow-hidden bg-slate-900 shrink-0">
+          <img
+            :src="
+              imageUrl(shop.backgroundImageUrl || shop.coverImageUrl) ||
+              'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=800&q=80'
+            "
+            :alt="shop.shopName"
+            class="w-full h-full object-cover group-hover:scale-108 transition duration-500"
+          />
+          <div
+            class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent"
+          ></div>
+
+          <!-- Ranking Top Left Badge (Warm Gold Contrast Accent) -->
+          <span
+            class="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-500 text-slate-950 shadow-md border border-amber-200 flex items-center gap-1"
+          >
+            <i class="mdi mdi-star text-slate-950"></i>
+            อันดับ #{{ idx + 1 }}
+          </span>
+
+          <!-- Location Badge Top Right -->
+          <span
+            class="absolute top-2.5 right-2.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-black/65 text-amber-200 backdrop-blur-sm border border-white/20"
+          >
+            📍 อ.{{ shop.districtName || 'กาญจนบุรี' }}
+          </span>
+        </div>
+
+        <!-- Compact Card Body -->
+        <div class="p-3.5 space-y-3 flex-1 flex flex-col justify-between">
+          <div class="flex items-center gap-2.5">
             <img
               :src="
-                imageUrl(shop.backgroundImageUrl || shop.coverImageUrl) ||
-                'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=800&q=80'
+                imageUrl(shop.coverImageUrl) ||
+                'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80'
               "
               :alt="shop.shopName"
-              class="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+              class="w-11 h-11 rounded-xl object-cover border border-slate-100 shadow-sm ring-1 ring-amber-500/30 shrink-0"
             />
-            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-1">
+                <h3
+                  class="font-bold text-[#2C221E] text-sm sm:text-base group-hover:text-amber-700 transition truncate"
+                >
+                  {{ shop.shopName }}
+                </h3>
+                <i class="mdi mdi-check-decagram text-emerald-600 text-sm shrink-0"></i>
+              </div>
+              <p class="text-xs text-[#645248] font-medium truncate">
+                {{ shop.categoryName || 'ร้านค้าชุมชน' }}
+              </p>
+            </div>
+          </div>
 
-            <!-- Mall / Official Badge (Top Right) -->
-            <span
-              class="absolute top-3 right-3 px-3 py-1 rounded-full text-[10px] font-black bg-[#D96C2C] text-white shadow-lg border border-white/20"
-            >
-              Official Mall
+          <!-- Rating & Products Quick Strip -->
+          <div
+            class="flex items-center justify-between text-xs bg-slate-50 px-3 py-2 rounded-xl border border-slate-100 font-medium text-[#645248]"
+          >
+            <span class="flex items-center gap-1 text-amber-600">
+              <i class="mdi mdi-star text-amber-500"></i>
+              <span class="font-bold text-[#2C221E]">4.9</span>
+              <span class="text-[10px] text-slate-400 font-normal">(ยอดนิยม)</span>
+            </span>
+            <span class="text-emerald-700 font-semibold text-xs">
+              {{ productsByShopId?.get(shop.shopId)?.length || 0 }} สินค้า
             </span>
           </div>
 
-          <!-- Logo & Shop Header Details -->
-          <div class="p-4 sm:p-5 space-y-3.5">
-            <div class="flex items-center gap-3">
-              <img
-                :src="
-                  imageUrl(shop.coverImageUrl) ||
-                  'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80'
-                "
-                :alt="shop.shopName"
-                class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl object-cover border-2 border-white shadow-md ring-2 ring-[#D96C2C]/30 shrink-0"
-              />
-              <div class="min-w-0 flex-1">
-                <div class="flex items-center gap-1">
-                  <h3 class="font-black text-[#332820] text-sm sm:text-base group-hover:text-[#D96C2C] transition truncate">
-                    {{ shop.shopName }}
-                  </h3>
-                  <i class="mdi mdi-check-decagram text-[#D96C2C] text-sm shrink-0"></i>
-                </div>
-                <p class="text-xs text-[#786B62] font-semibold truncate">
-                  📍 อ.{{ shop.districtName || 'กาญจนบุรี' }} • {{ shop.categoryName || 'ร้านค้าชุมชน' }}
-                </p>
-              </div>
-            </div>
-
-            <!-- Rating & Stats Strip -->
-            <div class="flex items-center justify-between text-xs bg-[#F7F0E6] p-2.5 rounded-2xl border border-[#E8D9C9] font-bold">
-              <span class="flex items-center gap-1 text-[#D96C2C]">
-                <i class="mdi mdi-star"></i>
-                <span class="font-black text-[#332820]">4.9</span>
-                <span class="text-[10px] text-[#786B62]">(120+ รีวิว)</span>
-              </span>
-              <span class="text-[#786B62] font-semibold text-[11px]">
-                มีสินค้า {{ productsByShopId?.get(shop.shopId)?.length || 0 }} รายการ
-              </span>
-            </div>
-
-            <!-- Product Thumbnails Row Inside Card (Displays Real Products from Database!) -->
-            <div class="space-y-1.5 pt-1">
-              <span class="text-[10px] sm:text-[11px] font-black text-[#786B62] uppercase tracking-wider block">
-                สินค้าแนะนำประจำร้าน
-              </span>
-
-              <!-- If shop has real products -->
-              <div v-if="getShopProducts(shop.shopId).length" class="grid grid-cols-3 gap-2">
-                <RouterLink
-                  v-for="(prod, pIdx) in getShopProducts(shop.shopId)"
-                  :key="prod.productId"
-                  :to="`/products/${prod.productId}`"
-                  class="rounded-xl overflow-hidden border border-[#E8D9C9] bg-white p-1 text-center space-y-1 hover:border-[#D96C2C] transition group/p"
-                  :title="prod.productName"
-                >
-                  <img
-                    :src="imageUrl(prod.imageUrl) || defaultImages[pIdx % defaultImages.length]"
-                    :alt="prod.productName"
-                    class="w-full aspect-square object-cover rounded-lg group-hover/p:scale-105 transition"
-                  />
-                  <span class="block text-[10px] font-black text-[#D96C2C] truncate">
-                    ฿{{ prod.price.toLocaleString() }}
-                  </span>
-                </RouterLink>
-              </div>
-
-              <!-- Fallback if shop currently has no products -->
-              <div
-                v-else
-                class="p-3 rounded-xl border border-dashed border-[#E8D9C9] bg-white/60 text-center text-xs font-bold text-[#786B62]"
-              >
-                <span>สินค้ากำลังอัปเดต</span>
-              </div>
-            </div>
+          <!-- Tempting CTA Button Bar (Warm Amber Accent) -->
+          <div
+            class="w-full py-2 px-3 rounded-xl bg-amber-600 group-hover:bg-amber-700 text-white font-bold text-xs shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer"
+          >
+            <span>เข้าชมร้านค้าแนะนำ</span>
+            <i
+              class="mdi mdi-arrow-right text-xs group-hover:translate-x-1 transition-transform"
+            ></i>
           </div>
         </div>
-
-        <!-- Action Button Footer -->
-        <div class="p-4 sm:p-5 pt-0">
-          <RouterLink
-            :to="`/shops/${shop.shopId}`"
-            class="flex items-center justify-center gap-2 w-full py-2.5 sm:py-3 rounded-2xl bg-[#D96C2C] hover:bg-[#BF5720] text-white font-black text-xs sm:text-sm shadow-md transition border border-[#D96C2C] cursor-pointer"
-          >
-            <span>เข้าสู่หน้าร้านค้า</span>
-            <i class="mdi mdi-arrow-right text-base text-white"></i>
-          </RouterLink>
-        </div>
-      </div>
+      </RouterLink>
     </div>
   </section>
 </template>

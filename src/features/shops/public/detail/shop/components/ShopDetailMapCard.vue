@@ -46,7 +46,7 @@ function initMap() {
 
   const icon = L.divIcon({
     className: 'custom-shop-detail-marker',
-    html: `<div class="flex items-center justify-center h-11 w-11 rounded-full bg-[#D96C2C] text-white font-bold shadow-2xl border-2 border-white ring-4 ring-[#D96C2C]/30"><i class="mdi mdi-storefront text-2xl text-white"></i></div>`,
+    html: `<div class="flex items-center justify-center h-11 w-11 rounded-full bg-emerald-700 text-white font-bold shadow-2xl border-2 border-white ring-4 ring-emerald-600/30"><i class="mdi mdi-storefront text-2xl text-white"></i></div>`,
     iconSize: [44, 44],
     iconAnchor: [22, 22],
   })
@@ -84,7 +84,7 @@ onBeforeUnmount(() => {
   <div class="rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9] p-6 shadow-xs space-y-4">
     <div class="flex items-center justify-between border-b-2 border-[#E8D9C9] pb-3">
       <h3 class="font-black text-[#332820] text-base flex items-center gap-2">
-        <i class="mdi mdi-map-marker-radius-outline text-[#D96C2C] text-lg"></i>
+        <i class="mdi mdi-map-marker-radius-outline text-emerald-700 text-lg"></i>
         <span>ตำแหน่งและแผนที่</span>
       </h3>
     </div>
@@ -105,7 +105,7 @@ onBeforeUnmount(() => {
 
     <div class="flex items-center justify-between pt-1 text-xs">
       <span class="font-semibold text-[#786B62] flex items-center gap-1">
-        <i class="mdi mdi-compass-outline text-[#D96C2C]"></i>
+        <i class="mdi mdi-compass-outline text-emerald-700"></i>
         {{
           shop.latitude != null && shop.longitude != null
             ? `${shop.latitude.toFixed(4)}°, ${shop.longitude.toFixed(4)}°`
@@ -116,7 +116,7 @@ onBeforeUnmount(() => {
       <button
         v-if="hasShopLocation"
         type="button"
-        class="px-4 py-2 rounded-xl bg-[#D96C2C] hover:bg-[#BF5720] text-white font-black transition flex items-center gap-1.5 shadow-xs cursor-pointer border border-[#D96C2C]"
+        class="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-black transition flex items-center gap-1.5 shadow-xs cursor-pointer border border-amber-600"
         @click="emit('open-directions')"
       >
         <i class="mdi mdi-navigation-variant text-white"></i>

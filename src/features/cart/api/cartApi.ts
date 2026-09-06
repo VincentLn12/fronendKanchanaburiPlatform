@@ -4,6 +4,7 @@ export interface CartItem {
   cartItemId: string
   productId: string
   shopId: string
+  shopName?: string
   productName: string
   imageUrl?: string
   quantity: number
@@ -31,7 +32,7 @@ export async function removeCartItem(id: string) {
   await http.delete(`/cart/items/${id}`)
 }
 export interface CheckoutData {
-  shopId: string
+  shopId?: string
   shippingMethod: 'Delivery' | 'Pickup'
   shippingFee: number
   receiverName?: string

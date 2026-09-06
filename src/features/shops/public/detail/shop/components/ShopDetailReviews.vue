@@ -14,7 +14,7 @@ defineProps<{
     <!-- Header Title Bar -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-2 border-[#E8D9C9] pb-4">
       <div class="flex items-center gap-3">
-        <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#D96C2C] text-white shadow-xs font-bold">
+        <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-700 text-white shadow-xs font-bold">
           <i class="mdi mdi-message-star-outline text-xl text-white"></i>
         </div>
         <div>
@@ -27,7 +27,7 @@ defineProps<{
 
       <!-- Rating Showcase Box -->
       <div class="flex items-center gap-3 bg-amber-50 px-5 py-2.5 rounded-2xl border border-amber-200 shadow-2xs">
-        <span class="text-3xl font-black text-amber-600">
+        <span class="text-3xl font-black text-amber-700">
           {{ reviewData.averageRating ? reviewData.averageRating.toFixed(1) : '5.0' }}
         </span>
         <div>
@@ -46,14 +46,14 @@ defineProps<{
       <div
         v-for="rev in reviewData.reviews"
         :key="rev.reviewId"
-        class="rounded-2xl border-2 border-[#E8D9C9] bg-white p-4 space-y-2.5 flex flex-col justify-between shadow-2xs"
+        class="rounded-2xl border-2 border-[#E8D9C9] bg-[#FFF9F2] p-4 space-y-2.5 flex flex-col justify-between shadow-2xs"
       >
         <div class="space-y-2">
           <!-- Buyer Info Bar -->
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
               <span
-                class="flex h-8 w-8 items-center justify-center rounded-full bg-[#D96C2C] font-black text-white text-xs shadow-xs"
+                class="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-700 font-black text-white text-xs shadow-xs"
               >
                 {{ reviewerInitial(rev.userName || rev.reviewerName || 'ผู้ใช้งาน') }}
               </span>
@@ -61,7 +61,7 @@ defineProps<{
                 <span class="font-bold text-xs text-[#332820] block">
                   {{ rev.userName || rev.reviewerName || 'ผู้ซื้อจากชุมชน' }}
                 </span>
-                <span class="text-[10px] text-emerald-600 font-extrabold flex items-center gap-0.5">
+                <span class="text-[10px] text-emerald-700 font-extrabold flex items-center gap-0.5">
                   <i class="mdi mdi-check-circle text-xs"></i> ผู้ซื้อจริงในระบบ
                 </span>
               </div>
@@ -83,10 +83,10 @@ defineProps<{
         <!-- Shop Reply Box -->
         <div
           v-if="rev.reply"
-          class="rounded-xl bg-[#F7F0E6] p-2.5 text-[11px] text-[#786B62] border border-[#E8D9C9] mt-2"
+          class="rounded-xl bg-[#F5E6D3] p-2.5 text-[11px] text-[#786B62] border border-[#E0CFBD] mt-2"
         >
-          <div class="font-bold text-[#D96C2C] mb-0.5 flex items-center gap-1 text-[10px]">
-            <i class="mdi mdi-reply text-[#D96C2C]"></i>
+          <div class="font-bold text-emerald-800 mb-0.5 flex items-center gap-1 text-[10px]">
+            <i class="mdi mdi-reply text-emerald-700"></i>
             <span>ร้านค้าตอบกลับ</span>
           </div>
           <p class="leading-relaxed">{{ rev.reply }}</p>
@@ -97,7 +97,7 @@ defineProps<{
     <!-- Authentic Empty State when no reviews yet -->
     <div
       v-else
-      class="rounded-2xl border-2 border-dashed border-[#E8D9C9] bg-white p-10 text-center space-y-2"
+      class="rounded-2xl border-2 border-dashed border-[#E8D9C9] bg-[#FFF9F2] p-10 text-center space-y-2"
     >
       <i class="mdi mdi-message-draw text-4xl text-[#786B62]/60"></i>
       <h4 class="text-sm font-black text-[#332820]">ยังไม่มีรีวิวสำหรับร้านค้านี้</h4>

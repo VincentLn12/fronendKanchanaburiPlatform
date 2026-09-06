@@ -44,12 +44,12 @@ function imageUrl(url?: string) {
 
     <!-- Product Details -->
     <div class="min-w-0 flex-1 space-y-1">
-      <h2 class="text-lg font-black text-[#332820] line-clamp-1">
+      <h2 class="text-xl font-bold text-[#332820] line-clamp-1">
         {{ props.item.productName }}
       </h2>
-      <div class="flex items-center gap-2 text-xs text-[#786B62]">
+      <div class="flex items-center gap-2 text-sm text-[#786B62]">
         <span
-          class="font-black text-[#D96C2C] bg-[#D96C2C]/10 px-2.5 py-0.5 rounded-md border border-[#D96C2C]/20"
+          class="font-semibold text-[#D96C2C] bg-[#D96C2C]/10 px-2.5 py-0.5 rounded-md border border-[#D96C2C]/20"
         >
           ฿ {{ Number(props.item.unitPrice).toLocaleString('th-TH') }} / ชิ้น
         </span>
@@ -65,14 +65,14 @@ function imageUrl(url?: string) {
         >
           <button
             type="button"
-            class="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-[#332820] font-black shadow-xs transition hover:bg-[#E8D9C9]/50 disabled:opacity-40 cursor-pointer"
+            class="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-[#332820] font-bold shadow-xs transition hover:bg-[#E8D9C9]/50 disabled:opacity-40 cursor-pointer"
             :disabled="props.updating || props.item.quantity <= 1"
             @click="emit('update-quantity', props.item.quantity - 1)"
           >
             <i class="mdi mdi-minus text-xs"></i>
           </button>
 
-          <span class="min-w-[40px] text-center font-black text-[#332820] text-sm">
+          <span class="min-w-[40px] text-center font-bold text-[#332820] text-base">
             <i
               v-if="props.updating"
               class="mdi mdi-loading mdi-spin text-xs text-[#D96C2C]"
@@ -82,7 +82,7 @@ function imageUrl(url?: string) {
 
           <button
             type="button"
-            class="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-[#332820] font-black shadow-xs transition hover:bg-[#E8D9C9]/50 disabled:opacity-40 cursor-pointer"
+            class="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-[#332820] font-bold shadow-xs transition hover:bg-[#E8D9C9]/50 disabled:opacity-40 cursor-pointer"
             :disabled="props.updating"
             @click="emit('update-quantity', props.item.quantity + 1)"
           >
@@ -93,8 +93,8 @@ function imageUrl(url?: string) {
         <div class="flex items-center gap-4">
           <!-- Total Price for this item line -->
           <div class="text-right">
-            <span class="text-xs text-[#786B62] block font-semibold">รวม</span>
-            <span class="text-lg font-black text-[#D96C2C]">
+            <span class="text-xs text-[#786B62] block font-medium">รวม</span>
+            <span class="text-xl font-bold text-[#D96C2C]">
               ฿ {{ (props.item.unitPrice * props.item.quantity).toLocaleString('th-TH') }}
             </span>
           </div>

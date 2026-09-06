@@ -24,16 +24,28 @@
   --border: #E8D9C9;
   --video: #171412;
 
-  font-family: 'IBM Plex Sans Thai', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Krub', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-body, button, input, select, textarea {
-  font-family: 'IBM Plex Sans Thai', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+html {
+  font-size: 17.5px;
+  font-family: 'Krub', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+body, button, input, select, textarea, div, span, p, h1, h2, h3, h4, h5, h6, a {
+  font-family: 'Krub', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
 }
 
 body {
   background-color: var(--background);
   color: var(--text);
-  font-size: 1.05rem;
-  line-height: 1.65;
+  font-size: 1.1rem;
+  line-height: 1.7;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+/* Tone down ultra-heavy font-black (900) to clean, modern font-bold (700) */
+.font-black {
+  font-weight: 700 !important;
 }

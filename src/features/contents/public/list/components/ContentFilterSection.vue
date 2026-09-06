@@ -44,7 +44,7 @@ const emit = defineEmits<{
       :aria-expanded="filtersOpen"
       @click="emit('update:filtersOpen', !filtersOpen)"
     >
-      <span class="flex items-center gap-2.5 text-base font-black text-[#D96C2C]">
+      <span class="flex items-center gap-2.5 text-lg font-bold text-[#D96C2C]">
         <div
           class="h-8 w-8 rounded-xl bg-[#D96C2C]/15 border border-[#D96C2C]/30 flex items-center justify-center text-[#D96C2C]"
         >
@@ -53,7 +53,7 @@ const emit = defineEmits<{
         <span>ค้นหาและกรองคอนเทนต์</span>
         <span
           v-if="activeFilterCount"
-          class="bg-[#D96C2C]/20 border border-[#D96C2C]/40 px-2.5 py-0.5 text-xs text-[#D96C2C] rounded-full font-black shadow-2xs"
+          class="bg-[#D96C2C]/20 border border-[#D96C2C]/40 px-2.5 py-0.5 text-xs text-[#D96C2C] rounded-full font-bold shadow-2xs"
         >
           {{ activeFilterCount }} ตัวกรอง
         </span>
@@ -68,7 +68,7 @@ const emit = defineEmits<{
       <!-- Dropdowns Row -->
       <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 items-end">
         <div>
-          <label class="block text-xs font-bold text-[#786B62] mb-1.5">หมวดหมู่</label>
+          <label class="block text-sm font-semibold text-[#786B62] mb-1.5">หมวดหมู่</label>
           <AppSelect
             :model-value="categoryId"
             @update:model-value="
@@ -86,7 +86,7 @@ const emit = defineEmits<{
         </div>
 
         <div>
-          <label class="block text-xs font-bold text-[#786B62] mb-1.5">อำเภอ</label>
+          <label class="block text-sm font-semibold text-[#786B62] mb-1.5">อำเภอ</label>
           <AppSelect
             :model-value="districtId"
             @update:model-value="
@@ -104,7 +104,7 @@ const emit = defineEmits<{
         </div>
 
         <div>
-          <label class="block text-xs font-bold text-[#786B62] mb-1.5">ตำบล</label>
+          <label class="block text-sm font-semibold text-[#786B62] mb-1.5">ตำบล</label>
           <AppSelect
             :model-value="subDistrictId"
             @update:model-value="
@@ -123,7 +123,7 @@ const emit = defineEmits<{
         </div>
 
         <div>
-          <label class="block text-xs font-bold text-[#786B62] mb-1.5">แท็กคำค้น</label>
+          <label class="block text-sm font-semibold text-[#786B62] mb-1.5">แท็กคำค้น</label>
           <AppSelect
             :model-value="tagId"
             @update:model-value="
@@ -141,7 +141,7 @@ const emit = defineEmits<{
         </div>
 
         <div>
-          <label class="block text-xs font-bold text-[#786B62] mb-1.5">เรียงตาม</label>
+          <label class="block text-sm font-semibold text-[#786B62] mb-1.5">เรียงตาม</label>
           <AppSelect
             :model-value="sortBy"
             @update:model-value="
@@ -162,15 +162,15 @@ const emit = defineEmits<{
         class="flex flex-wrap items-center justify-between gap-3 border-t-2 border-[#E8D9C9] pt-4"
       >
         <div class="flex flex-wrap items-center gap-2">
-          <span class="text-xs font-extrabold text-[#786B62]">แท็กนิยม:</span>
+          <span class="text-sm font-normal text-[#786B62]">แท็กนิยม:</span>
           <button
             v-for="tg in tags"
             :key="tg.tagId"
             type="button"
-            class="px-3.5 py-1 rounded-full border-2 text-xs font-black transition cursor-pointer active:scale-95 shadow-2xs"
+            class="px-3.5 py-1 rounded-full border-2 text-sm font-normal transition cursor-pointer active:scale-95 shadow-2xs"
             :class="
               tagId === tg.tagId
-                ? 'bg-[#D96C2C] text-white border-[#D96C2C]'
+                ? 'bg-[#D96C2C] text-white border-[#D96C2C] font-semibold'
                 : 'bg-white border-[#E8D9C9] text-[#332820] hover:border-[#D96C2C] hover:text-[#D96C2C]'
             "
             @click="emit('select-tag', tg.tagId)"
@@ -182,7 +182,7 @@ const emit = defineEmits<{
         <button
           v-if="activeFilterCount"
           type="button"
-          class="text-xs font-black text-[#D96C2C] hover:underline flex items-center gap-1 transition cursor-pointer"
+          class="text-sm font-bold text-[#D96C2C] hover:underline flex items-center gap-1 transition cursor-pointer"
           @click="emit('clear-filters')"
         >
           <i class="mdi mdi-refresh"></i>

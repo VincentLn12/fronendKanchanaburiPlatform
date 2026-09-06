@@ -272,14 +272,14 @@ watch(
         @copy-link="copyShopLink"
       />
 
-      <!-- 2. STORE NAVIGATION SUB-BAR (Matches Reference Image 1:1) -->
+      <!-- 2. STORE NAVIGATION SUB-BAR -->
       <section class="sticky top-16 z-30 bg-[#FFF9F2]/95 backdrop-blur-md border-y-2 border-[#E8D9C9] shadow-xs mt-6">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div class="flex items-center gap-6 sm:gap-8 overflow-x-auto text-xs sm:text-sm font-black scrollbar-none py-1">
+          <div class="flex items-center gap-4 sm:gap-6 overflow-x-auto text-xs sm:text-sm font-black scrollbar-none py-1.5">
             <button
               type="button"
-              class="py-3 border-b-4 transition shrink-0 cursor-pointer"
-              :class="activeTab === 'home' ? 'border-[#D96C2C] text-[#D96C2C]' : 'border-transparent text-[#786B62] hover:text-[#332820]'"
+              class="py-2.5 px-4 rounded-xl transition shrink-0 cursor-pointer border-2"
+              :class="activeTab === 'home' ? 'border-amber-600 bg-amber-500/10 text-amber-800 font-black shadow-2xs' : 'border-transparent text-[#786B62] hover:text-[#332820] hover:bg-[#F5E6D3]/50'"
               @click="activeTab = 'home'"
             >
               หน้าแรกของร้าน
@@ -287,8 +287,8 @@ watch(
 
             <button
               type="button"
-              class="py-3 border-b-4 transition shrink-0 cursor-pointer"
-              :class="activeTab === 'products' ? 'border-[#D96C2C] text-[#D96C2C]' : 'border-transparent text-[#786B62] hover:text-[#332820]'"
+              class="py-2.5 px-4 rounded-xl transition shrink-0 cursor-pointer border-2"
+              :class="activeTab === 'products' ? 'border-amber-600 bg-amber-500/10 text-amber-800 font-black shadow-2xs' : 'border-transparent text-[#786B62] hover:text-[#332820] hover:bg-[#F5E6D3]/50'"
               @click="activeTab = 'products'"
             >
               สินค้าทั้งหมด ({{ products.length }})
@@ -296,18 +296,18 @@ watch(
 
             <button
               type="button"
-              class="py-3 border-b-4 transition shrink-0 cursor-pointer flex items-center gap-1"
-              :class="activeTab === 'contents' ? 'border-[#D96C2C] text-[#D96C2C]' : 'border-transparent text-[#786B62] hover:text-[#332820]'"
+              class="py-2.5 px-4 rounded-xl transition shrink-0 cursor-pointer flex items-center gap-1.5 border-2"
+              :class="activeTab === 'contents' ? 'border-amber-600 bg-amber-500/10 text-amber-800 font-black shadow-2xs' : 'border-transparent text-[#786B62] hover:text-[#332820] hover:bg-[#F5E6D3]/50'"
               @click="activeTab = 'contents'"
             >
-              <i class="mdi mdi-book-open-page-variant text-sm"></i>
+              <i class="mdi mdi-book-open-page-variant text-sm text-emerald-700"></i>
               <span>เรื่องราวและคอนเทนต์ ({{ shopContents.length }})</span>
             </button>
 
             <button
               type="button"
-              class="py-3 border-b-4 transition shrink-0 cursor-pointer"
-              :class="activeTab === 'about' ? 'border-[#D96C2C] text-[#D96C2C]' : 'border-transparent text-[#786B62] hover:text-[#332820]'"
+              class="py-2.5 px-4 rounded-xl transition shrink-0 cursor-pointer border-2"
+              :class="activeTab === 'about' ? 'border-amber-600 bg-amber-500/10 text-amber-800 font-black shadow-2xs' : 'border-transparent text-[#786B62] hover:text-[#332820] hover:bg-[#F5E6D3]/50'"
               @click="activeTab = 'about'"
             >
               เกี่ยวกับร้าน & พิกัดแผนที่
@@ -315,12 +315,12 @@ watch(
 
             <button
               type="button"
-              class="py-3 border-b-4 transition shrink-0 cursor-pointer flex items-center gap-1"
-              :class="activeTab === 'reviews' ? 'border-[#D96C2C] text-[#D96C2C]' : 'border-transparent text-[#786B62] hover:text-[#332820]'"
+              class="py-2.5 px-4 rounded-xl transition shrink-0 cursor-pointer flex items-center gap-1.5 border-2"
+              :class="activeTab === 'reviews' ? 'border-amber-600 bg-amber-500/10 text-amber-800 font-black shadow-2xs' : 'border-transparent text-[#786B62] hover:text-[#332820] hover:bg-[#F5E6D3]/50'"
               @click="activeTab = 'reviews'"
             >
               <span>รีวิวจากผู้ซื้อ</span>
-              <span class="text-[10px] bg-[#D96C2C]/10 text-[#D96C2C] px-1.5 py-0.5 rounded-full">
+              <span class="text-[10px] bg-amber-100 text-amber-800 border border-amber-200 px-2 py-0.5 rounded-full font-black">
                 {{ reviewData.totalCount || '0' }}
               </span>
             </button>

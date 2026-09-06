@@ -14,7 +14,7 @@ defineProps<{
     <!-- Header Title Bar -->
     <div class="flex items-center justify-between border-b-2 border-[#E8D9C9] pb-3">
       <div class="flex items-center gap-2.5">
-        <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#D96C2C] text-white shadow-xs font-bold">
+        <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-700 text-white shadow-xs font-bold">
           <i class="mdi mdi-book-open-page-variant-outline text-xl text-white"></i>
         </div>
         <div>
@@ -25,7 +25,7 @@ defineProps<{
 
       <RouterLink
         :to="`/shops/${shop.shopId}/contents`"
-        class="text-xs font-black text-[#D96C2C] hover:underline flex items-center gap-1"
+        class="text-xs font-black text-emerald-700 hover:underline flex items-center gap-1"
       >
         <span>ดูคอนเทนต์ทั้งหมด ({{ shopContents.length }})</span>
         <i class="mdi mdi-chevron-right text-base"></i>
@@ -38,7 +38,7 @@ defineProps<{
         v-for="item in shopContents.slice(0, 3)"
         :key="item.contentId"
         :to="`/contents/${item.contentId}`"
-        class="group bg-[#FFF9F2] rounded-3xl overflow-hidden border-2 border-[#E8D9C9] p-4 shadow-xs hover:shadow-xl hover:border-[#D96C2C] hover:-translate-y-1 transition duration-300 flex flex-col justify-between"
+        class="group bg-[#FFF9F2] rounded-3xl overflow-hidden border-2 border-[#E8D9C9] p-4 shadow-xs hover:shadow-xl hover:border-emerald-600 hover:-translate-y-1 transition duration-300 flex flex-col justify-between"
       >
         <div>
           <div class="relative aspect-16/10 rounded-2xl overflow-hidden bg-[#171412] mb-3.5">
@@ -50,19 +50,19 @@ defineProps<{
             />
             <div
               v-else
-              class="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#D96C2C] to-[#171412] text-white"
+              class="flex h-full w-full items-center justify-center bg-gradient-to-br from-emerald-700 to-[#171412] text-white"
             >
               <i class="mdi mdi-compass-rose text-5xl opacity-50"></i>
             </div>
             <span
-              class="absolute top-2.5 left-2.5 px-3 py-0.5 rounded-full text-[10px] font-black bg-[#D96C2C] text-white shadow-md"
+              class="absolute top-2.5 left-2.5 px-3 py-0.5 rounded-full text-[10px] font-black bg-emerald-700 text-white shadow-md"
             >
               {{ item.contentCategoryName || 'เรื่องราวชุมชน' }}
             </span>
           </div>
 
           <h3
-            class="font-black text-[#332820] text-sm sm:text-base group-hover:text-[#D96C2C] transition line-clamp-2 leading-snug"
+            class="font-black text-[#332820] text-sm sm:text-base group-hover:text-emerald-700 transition line-clamp-2 leading-snug"
           >
             {{ item.title }}
           </h3>
@@ -75,7 +75,7 @@ defineProps<{
         </div>
 
         <div
-          class="flex items-center justify-between text-xs mt-4 pt-2.5 border-t border-[#E8D9C9] font-black text-[#D96C2C]"
+          class="flex items-center justify-between text-xs mt-4 pt-2.5 border-t border-[#E8D9C9] font-black text-emerald-700"
         >
           <span class="flex items-center gap-1">
             <i class="mdi mdi-book-open-outline"></i> อ่านเรื่องราว

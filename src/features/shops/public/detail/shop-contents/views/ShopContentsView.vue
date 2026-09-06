@@ -128,14 +128,14 @@ onMounted(async () => {
       <div
         class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-xs text-[#786B62] flex items-center gap-2 overflow-x-auto scrollbar-none font-bold"
       >
-        <RouterLink to="/" class="hover:text-[#D96C2C] transition">หน้าแรก</RouterLink>
+        <RouterLink to="/" class="hover:text-emerald-700 transition">หน้าแรก</RouterLink>
         <i class="mdi mdi-chevron-right text-[#E8D9C9]"></i>
-        <RouterLink to="/shops" class="hover:text-[#D96C2C] transition">ร้านค้าทั้งหมด</RouterLink>
+        <RouterLink to="/shops" class="hover:text-emerald-700 transition">ร้านค้าทั้งหมด</RouterLink>
         <i class="mdi mdi-chevron-right text-[#E8D9C9]"></i>
         <RouterLink
           v-if="shop"
           :to="`/shops/${shop.shopId}`"
-          class="hover:text-[#D96C2C] line-clamp-1 transition"
+          class="hover:text-emerald-700 line-clamp-1 transition"
           >{{ shop.shopName }}</RouterLink
         >
         <i class="mdi mdi-chevron-right text-[#E8D9C9]"></i>
@@ -155,12 +155,12 @@ onMounted(async () => {
                 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80'
               "
               :alt="shop.shopName"
-              class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-2 border-white ring-4 ring-[#D96C2C]/30 shadow-md shrink-0"
+              class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-2 border-white ring-4 ring-emerald-600/30 shadow-md shrink-0"
             />
             <div class="space-y-1">
               <div class="flex items-center gap-2">
                 <span
-                  class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-[#D96C2C]/10 text-[#D96C2C] border border-[#D96C2C]/20"
+                  class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-200"
                 >
                   {{ shop.categoryName || 'ร้านค้าชุมชน' }}
                 </span>
@@ -171,14 +171,14 @@ onMounted(async () => {
               </h1>
               <p class="text-xs sm:text-sm text-[#786B62] font-semibold">
                 มีเรื่องราวและคอนเทนต์ที่เกี่ยวข้องทั้งหมด
-                <span class="text-[#D96C2C] font-black">{{ contents.length }}</span> บทความ
+                <span class="text-emerald-700 font-black">{{ contents.length }}</span> บทความ
               </p>
             </div>
           </div>
 
           <RouterLink
             :to="`/shops/${shop.shopId}`"
-            class="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-[#D96C2C] hover:bg-[#BF5720] text-white font-black text-xs sm:text-sm shadow-md transition border border-[#D96C2C] shrink-0 active:scale-95 cursor-pointer"
+            class="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-amber-600 hover:bg-amber-700 text-white font-black text-xs sm:text-sm shadow-md transition border border-amber-600 shrink-0 active:scale-95 cursor-pointer"
           >
             <i class="mdi mdi-storefront text-base text-white"></i>
             <span class="!text-white font-black">ย้อนกลับไปหน้าร้านค้า</span>
@@ -200,10 +200,10 @@ onMounted(async () => {
               v-model="searchQuery"
               type="text"
               placeholder="ค้นหาเรื่องราว คอนเทนต์ ของร้านนี้..."
-              class="w-full rounded-2xl border-2 border-[#E8D9C9] bg-white pl-10 pr-9 py-2.5 text-xs sm:text-sm text-[#332820] outline-none focus:border-[#D96C2C] transition font-bold"
+              class="w-full rounded-2xl border-2 border-[#E8D9C9] bg-white pl-10 pr-9 py-2.5 text-xs sm:text-sm text-[#332820] outline-none focus:border-emerald-600 transition font-bold"
             />
             <i
-              class="mdi mdi-magnify absolute left-3.5 top-1/2 -translate-y-1/2 text-[#D96C2C] text-lg"
+              class="mdi mdi-magnify absolute left-3.5 top-1/2 -translate-y-1/2 text-emerald-700 text-lg"
             ></i>
             <button
               v-if="searchQuery"
@@ -220,7 +220,7 @@ onMounted(async () => {
             <span class="text-xs font-black text-[#786B62] shrink-0">เรียงตาม:</span>
             <select
               v-model="sortBy"
-              class="rounded-2xl border-2 border-[#E8D9C9] bg-white px-4 py-2 text-xs font-black text-[#332820] outline-none focus:border-[#D96C2C] transition cursor-pointer"
+              class="rounded-2xl border-2 border-[#E8D9C9] bg-white px-4 py-2 text-xs font-black text-[#332820] outline-none focus:border-emerald-600 transition cursor-pointer"
             >
               <option value="newest">เผยแพรล่าสุด</option>
               <option value="oldest">เผยแพร่เก่าสุด</option>
@@ -241,8 +241,8 @@ onMounted(async () => {
             class="px-4 py-2 rounded-2xl text-xs font-black transition shrink-0 flex items-center gap-1.5 cursor-pointer border-2"
             :class="
               selectedCategory === cat.id
-                ? 'border-[#D96C2C] bg-[#D96C2C] text-white shadow-md'
-                : 'border-[#E8D9C9] bg-white text-[#332820] hover:border-[#D96C2C]'
+                ? 'border-emerald-600 bg-emerald-600 text-white shadow-md'
+                : 'border-[#E8D9C9] bg-white text-[#332820] hover:border-emerald-600'
             "
             @click="selectedCategory = cat.id"
           >
@@ -251,8 +251,8 @@ onMounted(async () => {
               class="text-[10px] rounded-full px-1.5 py-0.5"
               :class="
                 selectedCategory === cat.id
-                  ? 'bg-white text-[#D96C2C] font-black'
-                  : 'bg-[#F7F0E6] text-[#786B62] font-extrabold'
+                  ? 'bg-white text-emerald-800 font-black'
+                  : 'bg-[#F5E6D3] text-[#786B62] font-extrabold'
               "
             >
               {{ cat.count }}
@@ -276,9 +276,9 @@ onMounted(async () => {
         class="rounded-3xl border-2 border-dashed border-[#E8D9C9] bg-[#FFF9F2] py-20 px-6 text-center shadow-sm space-y-3"
       >
         <div
-          class="flex h-20 w-20 items-center justify-center rounded-full bg-[#D96C2C]/15 text-[#D96C2C] mx-auto border border-[#D96C2C]/30"
+          class="flex h-20 w-20 items-center justify-center rounded-full bg-emerald-100 text-emerald-800 mx-auto border border-emerald-200"
         >
-          <i class="mdi mdi-text-box-remove-outline text-4xl text-[#D96C2C]"></i>
+          <i class="mdi mdi-text-box-remove-outline text-4xl text-emerald-700"></i>
         </div>
         <h3 class="text-xl font-black text-[#332820]">ไม่พบเรื่องราวในรายการนี้</h3>
         <p class="text-xs sm:text-sm text-[#786B62] font-semibold max-w-md mx-auto">
@@ -287,7 +287,7 @@ onMounted(async () => {
         <button
           v-if="searchQuery || selectedCategory"
           type="button"
-          class="mt-2 inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-[#D96C2C] text-white font-black text-xs hover:bg-[#BF5720] transition border border-[#D96C2C]"
+          class="mt-2 inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-amber-600 text-white font-black text-xs hover:bg-amber-700 transition border border-amber-600"
           @click="
             () => {
               searchQuery = ''
@@ -305,7 +305,7 @@ onMounted(async () => {
           v-for="item in filteredContents"
           :key="item.contentId"
           :to="`/contents/${item.contentId}`"
-          class="group bg-[#FFF9F2] rounded-3xl overflow-hidden border-2 border-[#E8D9C9] p-4 shadow-2xs hover:shadow-xl hover:border-[#D96C2C] hover:-translate-y-1 transition duration-300 flex flex-col justify-between"
+          class="group bg-[#FFF9F2] rounded-3xl overflow-hidden border-2 border-[#E8D9C9] p-4 shadow-2xs hover:shadow-xl hover:border-emerald-600 hover:-translate-y-1 transition duration-300 flex flex-col justify-between"
         >
           <div>
             <!-- Image / Video Banner -->
@@ -318,19 +318,19 @@ onMounted(async () => {
               />
               <div
                 v-else
-                class="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#D96C2C] to-[#171412] text-white"
+                class="flex h-full w-full items-center justify-center bg-gradient-to-br from-emerald-700 to-[#171412] text-white"
               >
                 <i class="mdi mdi-compass-rose text-5xl opacity-50"></i>
               </div>
               <span
-                class="absolute top-2.5 left-2.5 px-3 py-0.5 rounded-full text-[10px] font-black bg-[#D96C2C] text-white shadow-md"
+                class="absolute top-2.5 left-2.5 px-3 py-0.5 rounded-full text-[10px] font-black bg-emerald-700 text-white shadow-md"
               >
                 {{ item.contentCategoryName || 'เรื่องราวชุมชน' }}
               </span>
             </div>
 
             <h2
-              class="font-black text-[#332820] text-base sm:text-lg group-hover:text-[#D96C2C] transition line-clamp-2 leading-snug"
+              class="font-black text-[#332820] text-base sm:text-lg group-hover:text-emerald-700 transition line-clamp-2 leading-snug"
             >
               {{ item.title }}
             </h2>
@@ -346,7 +346,7 @@ onMounted(async () => {
             class="flex items-center justify-between mt-5 pt-3 border-t-2 border-[#E8D9C9] text-xs font-bold text-[#786B62]"
           >
             <span class="flex items-center gap-1"
-              ><i class="mdi mdi-map-marker text-[#D96C2C]"></i
+              ><i class="mdi mdi-map-marker text-emerald-700"></i
               >{{ item.districtName || 'กาญจนบุรี' }}</span
             >
             <span class="text-[11px] font-semibold text-[#786B62]">{{

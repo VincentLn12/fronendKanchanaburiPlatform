@@ -11,7 +11,7 @@ const coupons = [
     desc: 'เมื่อซื้อครบ ฿1,500',
     type: 'discount',
     color: 'border-emerald-500 bg-emerald-50 text-emerald-800',
-    badge: 'Exclusive',
+    badge: 'สิทธิพิเศษ',
   },
   {
     id: 2,
@@ -23,18 +23,18 @@ const coupons = [
   },
   {
     id: 3,
-    title: 'คืน 10% Coins',
-    desc: 'สูงสุด 200 Coins',
+    title: 'คืน 10% คอยน์',
+    desc: 'สูงสุด 200 คอยน์',
     type: 'coin',
     color: 'border-amber-500 bg-amber-50 text-amber-800',
-    badge: 'Coin Cashback',
+    badge: 'คืนคอยน์',
   },
   {
     id: 4,
     title: 'ลดทันที 15%',
     desc: 'สำหรับลูกค้าใหม่',
     type: 'new',
-    color: 'border-[#D96C2C] bg-orange-50 text-[#D96C2C]',
+    color: 'border-amber-600 bg-amber-50 text-amber-800',
     badge: 'ลูกค้าใหม่',
   },
 ]
@@ -52,7 +52,7 @@ function collectCoupon(c: (typeof coupons)[0]) {
   <section class="space-y-3">
     <div class="flex items-center justify-between">
       <h3 class="font-black text-[#332820] text-sm sm:text-base flex items-center gap-2">
-        <i class="mdi mdi-ticket-percent-outline text-xl text-[#D96C2C]"></i>
+        <i class="mdi mdi-ticket-percent-outline text-xl text-emerald-700"></i>
         <span>คูปองส่วนลดพิเศษของร้าน</span>
       </h3>
       <span class="text-xs font-semibold text-[#786B62]">เก็บแล้วใช้ได้ทันทีเมื่อสั่งซื้อ</span>
@@ -63,11 +63,11 @@ function collectCoupon(c: (typeof coupons)[0]) {
       <div
         v-for="c in coupons"
         :key="c.id"
-        class="min-w-[260px] sm:min-w-0 snap-center relative rounded-2xl border-2 p-3.5 flex items-center justify-between gap-3 shadow-xs transition hover:shadow-md bg-white shrink-0 sm:shrink"
+        class="min-w-[260px] sm:min-w-0 snap-center relative rounded-2xl border-2 p-3.5 flex items-center justify-between gap-3 shadow-xs transition hover:shadow-md shrink-0 sm:shrink"
         :class="c.color"
       >
         <div class="min-w-0 space-y-0.5">
-          <span class="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-white border border-current shadow-2xs">
+          <span class="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-white/90 border border-current shadow-2xs">
             {{ c.badge }}
           </span>
           <h4 class="font-black text-base sm:text-lg leading-tight mt-1">{{ c.title }}</h4>
@@ -80,7 +80,7 @@ function collectCoupon(c: (typeof coupons)[0]) {
           :class="
             collected[c.id]
               ? 'bg-slate-200 text-slate-600 cursor-default'
-              : 'bg-[#171412] hover:bg-[#332820] text-white'
+              : 'bg-[#332820] hover:bg-black text-white'
           "
           :disabled="collected[c.id]"
           @click="collectCoupon(c)"

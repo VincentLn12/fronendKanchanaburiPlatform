@@ -267,15 +267,15 @@ function logout() {
   align-items: center;
   padding: 0.5rem 0;
   color: #332820;
-  font-size: 0.95rem;
-  font-weight: 700;
+  font-size: 1.05rem;
+  font-weight: 600;
   transition: color 200ms ease;
 }
 
 .nav-link:hover,
 .nav-link.is-active {
   color: #D96C2C;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .nav-link::after {
@@ -301,11 +301,11 @@ function logout() {
   align-items: center;
   border: 2px solid #E8D9C9;
   border-radius: 0.75rem;
-  padding: 0.5rem 1rem;
+  padding: 0.55rem 1.1rem;
   background: white;
   color: #332820;
-  font-size: 0.9rem;
-  font-weight: 700;
+  font-size: 1rem;
+  font-weight: 600;
   transition: all 200ms ease;
 }
 
@@ -319,10 +319,10 @@ function logout() {
   display: flex;
   align-items: center;
   border-radius: 0.8rem;
-  padding: 0.8rem 1rem;
+  padding: 0.85rem 1.1rem;
   color: #332820;
-  font-size: 0.95rem;
-  font-weight: 700;
+  font-size: 1.05rem;
+  font-weight: 600;
   transition: all 150ms ease;
 }
 

@@ -72,9 +72,9 @@ function formatDate(value?: string) {
       <!-- Video Overlay Badge -->
       <div class="absolute top-4 left-4 z-20 flex items-center gap-2">
         <span
-          class="px-3.5 py-1.5 rounded-full text-xs font-black bg-[#D96C2C] text-white border border-white/20 backdrop-blur-md shadow-md flex items-center gap-1.5"
+          class="px-3.5 py-1.5 rounded-full text-sm font-semibold bg-[#D96C2C] text-white border border-white/20 backdrop-blur-md shadow-md flex items-center gap-1.5"
         >
-          <i class="mdi mdi-compass-rose text-sm text-white"></i>
+          <i class="mdi mdi-compass-rose text-base text-white"></i>
           {{ content.contentCategoryName || 'ศิลปะการแสดง' }}
         </span>
       </div>
@@ -84,7 +84,7 @@ function formatDate(value?: string) {
     <div class="rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9] p-6 shadow-xs space-y-4">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <!-- Category & Location Badge -->
-        <div class="flex flex-wrap items-center gap-2 text-xs font-black text-[#D96C2C]">
+        <div class="flex flex-wrap items-center gap-2 text-xs sm:text-sm font-semibold text-[#D96C2C]">
           <span class="bg-[#D96C2C]/10 text-[#D96C2C] px-3 py-1 rounded-full flex items-center gap-1 border border-[#D96C2C]/20">
             <i class="mdi mdi-folder-outline"></i>
             {{ content.contentCategoryName || 'วัฒนธรรม' }}
@@ -99,16 +99,16 @@ function formatDate(value?: string) {
         <div class="flex items-center gap-2">
           <button
             type="button"
-            class="flex items-center gap-1.5 px-4 py-2 rounded-xl border-2 border-[#E8D9C9] bg-white text-[#332820] font-black text-xs hover:border-[#D96C2C] hover:text-[#D96C2C] transition cursor-pointer active:scale-95 shadow-2xs"
+            class="flex items-center gap-1.5 px-4 py-2 rounded-xl border-2 border-[#E8D9C9] bg-white text-[#332820] font-bold text-xs sm:text-sm hover:border-[#D96C2C] hover:text-[#D96C2C] transition cursor-pointer active:scale-95 shadow-2xs"
             @click="emit('share')"
           >
-            <i class="mdi mdi-share-variant-outline text-sm text-[#D96C2C]"></i>
+            <i class="mdi mdi-share-variant-outline text-base text-[#D96C2C]"></i>
             <span>แชร์</span>
           </button>
 
           <button
             type="button"
-            class="flex items-center gap-1.5 px-4 py-2 rounded-xl border-2 transition font-black text-xs active:scale-95 cursor-pointer shadow-2xs"
+            class="flex items-center gap-1.5 px-4 py-2 rounded-xl border-2 transition font-bold text-xs sm:text-sm active:scale-95 cursor-pointer shadow-2xs"
             :class="
               isFavorite
                 ? 'border-rose-300 bg-rose-50 text-rose-600'
@@ -118,7 +118,7 @@ function formatDate(value?: string) {
             @click="emit('toggle-favorite')"
           >
             <i
-              class="mdi text-sm"
+              class="mdi text-base"
               :class="isFavorite ? 'mdi-heart text-rose-600' : 'mdi-heart-outline text-[#D96C2C]'"
             ></i>
             <span>{{ isFavorite ? 'บันทึกแล้ว' : 'บันทึก' }}</span>
@@ -127,26 +127,26 @@ function formatDate(value?: string) {
       </div>
 
       <!-- Title -->
-      <h1 class="text-2xl sm:text-3xl font-black text-[#332820] leading-tight tracking-tight">
+      <h1 class="text-2xl sm:text-3xl font-bold text-[#332820] leading-tight tracking-tight">
         {{ content.title }}
       </h1>
 
       <!-- Metadata Statistics Row -->
       <div
-        class="flex flex-wrap items-center justify-between gap-4 py-3 border-y-2 border-[#E8D9C9] text-xs text-[#786B62] font-extrabold"
+        class="flex flex-wrap items-center justify-between gap-4 py-3 border-y-2 border-[#E8D9C9] text-xs sm:text-sm text-[#4A3E35] font-semibold"
       >
         <div class="flex flex-wrap items-center gap-4">
           <span class="flex items-center gap-1">
             <i class="mdi mdi-clock-outline text-[#D96C2C]"></i>
             เผยแพร่: {{ formatDate(content.publishedAt || content.createdAt) }}
           </span>
-          <span class="flex items-center gap-1 text-[#D96C2C] font-black">
+          <span class="flex items-center gap-1 text-[#D96C2C] font-bold">
             <i class="mdi mdi-eye-outline text-[#D96C2C]"></i>
             1,280 เข้าชม
           </span>
           <span v-if="content.shopName" class="flex items-center gap-1 text-[#332820]">
             <i class="mdi mdi-account-circle-outline text-[#D96C2C]"></i>
-            ผู้เผยแพร่: <strong class="text-[#D96C2C]">{{ content.shopName }}</strong>
+            ผู้เผยแพร่: <strong class="text-[#D96C2C] font-bold">{{ content.shopName }}</strong>
           </span>
         </div>
       </div>
@@ -156,16 +156,16 @@ function formatDate(value?: string) {
         <span
           v-for="tag in content.tags"
           :key="tag.tagId"
-          class="px-3 py-1 rounded-lg bg-[#F7F0E6] border border-[#E8D9C9] text-xs font-black text-[#332820] hover:border-[#D96C2C] hover:text-[#D96C2C] transition"
+          class="px-3 py-1 rounded-lg bg-[#F7F0E6] border border-[#E8D9C9] text-xs sm:text-sm font-medium text-[#332820] hover:border-[#D96C2C] hover:text-[#D96C2C] transition"
         >
           #{{ tag.tagName }}
         </span>
       </div>
       <div v-else class="flex flex-wrap gap-1.5">
-        <span class="px-3 py-1 rounded-lg bg-[#F7F0E6] border border-[#E8D9C9] text-xs font-black text-[#332820]">#รำมอญ</span>
-        <span class="px-3 py-1 rounded-lg bg-[#F7F0E6] border border-[#E8D9C9] text-xs font-black text-[#332820]">#วัฒนธรรมมอญ</span>
-        <span class="px-3 py-1 rounded-lg bg-[#F7F0E6] border border-[#E8D9C9] text-xs font-black text-[#332820]">#สังขละบุรี</span>
-        <span class="px-3 py-1 rounded-lg bg-[#F7F0E6] border border-[#E8D9C9] text-xs font-black text-[#332820]">#กาญจนบุรี</span>
+        <span class="px-3 py-1 rounded-lg bg-[#F7F0E6] border border-[#E8D9C9] text-xs sm:text-sm font-medium text-[#332820]">#รำมอญ</span>
+        <span class="px-3 py-1 rounded-lg bg-[#F7F0E6] border border-[#E8D9C9] text-xs sm:text-sm font-medium text-[#332820]">#วัฒนธรรมมอญ</span>
+        <span class="px-3 py-1 rounded-lg bg-[#F7F0E6] border border-[#E8D9C9] text-xs sm:text-sm font-medium text-[#332820]">#สังขละบุรี</span>
+        <span class="px-3 py-1 rounded-lg bg-[#F7F0E6] border border-[#E8D9C9] text-xs sm:text-sm font-medium text-[#332820]">#กาญจนบุรี</span>
       </div>
     </div>
   </div>

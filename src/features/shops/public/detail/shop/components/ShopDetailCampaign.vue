@@ -43,7 +43,7 @@ const campaignCover = computed(() => {
       <div class="absolute inset-0 bg-gradient-to-t from-[#171412]/95 via-[#171412]/65 to-transparent"></div>
 
       <div class="relative z-10 space-y-3 max-w-xl">
-        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-black bg-[#D96C2C] text-white shadow-md">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-black bg-emerald-700 text-white shadow-md">
           <i class="mdi mdi-book-open-page-variant text-xs"></i>
           {{ featuredContent ? (featuredContent.contentCategoryName || 'เรื่องราวชุมชน') : 'เรื่องราวประจำร้าน' }}
         </span>
@@ -60,7 +60,7 @@ const campaignCover = computed(() => {
           <RouterLink
             v-if="featuredContent"
             :to="`/contents/${featuredContent.contentId}`"
-            class="inline-flex items-center gap-1.5 px-6 py-3 rounded-2xl bg-[#D96C2C] hover:bg-[#BF5720] text-white font-black text-xs sm:text-sm shadow-xl transition active:scale-95 border border-[#D96C2C] cursor-pointer"
+            class="inline-flex items-center gap-1.5 px-6 py-3 rounded-2xl bg-amber-600 hover:bg-amber-700 text-white font-black text-xs sm:text-sm shadow-xl transition active:scale-95 border border-amber-600 cursor-pointer"
           >
             <span>อ่านเรื่องราวและชมวิดีโอ</span>
             <i class="mdi mdi-arrow-right text-base text-white"></i>
@@ -69,7 +69,7 @@ const campaignCover = computed(() => {
           <button
             v-else
             type="button"
-            class="px-6 py-3 rounded-2xl bg-[#D96C2C] hover:bg-[#BF5720] text-white font-black text-xs sm:text-sm shadow-xl transition active:scale-95 border border-[#D96C2C] cursor-pointer"
+            class="px-6 py-3 rounded-2xl bg-amber-600 hover:bg-amber-700 text-white font-black text-xs sm:text-sm shadow-xl transition active:scale-95 border border-amber-600 cursor-pointer"
             @click="emit('scroll-to-products')"
           >
             เลือกชมสินค้าทั้งหมด >
@@ -84,7 +84,7 @@ const campaignCover = computed(() => {
       <RouterLink
         v-if="featuredProducts[0]"
         :to="`/products/${featuredProducts[0].productId}`"
-        class="flex-1 rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9] p-4 shadow-xs flex items-center gap-4 hover:border-[#D96C2C] transition group/card"
+        class="flex-1 rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9] p-4 shadow-xs flex items-center gap-4 hover:border-amber-500 transition group/card"
       >
         <img
           :src="
@@ -95,17 +95,17 @@ const campaignCover = computed(() => {
           class="w-24 h-24 rounded-2xl object-cover border border-[#E8D9C9] shrink-0 group-hover/card:scale-105 transition duration-300"
         />
         <div class="space-y-1 min-w-0">
-          <span class="text-[10px] font-black uppercase text-[#D96C2C] bg-[#D96C2C]/10 px-2 py-0.5 rounded">
-            LIMITED EDITION
+          <span class="text-[10px] font-black text-emerald-800 bg-emerald-100 border border-emerald-200 px-2 py-0.5 rounded">
+            สินค้าจำนวนจำกัด
           </span>
-          <h4 class="font-black text-xs sm:text-sm text-[#332820] group-hover/card:text-[#D96C2C] transition truncate">
+          <h4 class="font-black text-xs sm:text-sm text-[#332820] group-hover/card:text-amber-700 transition truncate">
             {{ featuredProducts[0].productName }}
           </h4>
           <p class="text-[11px] text-[#786B62] truncate">
             {{ featuredProducts[0].description || 'สินค้าชุมชนการันตีคุณภาพ' }}
           </p>
           <div class="flex items-baseline gap-2 pt-0.5">
-            <span class="font-black text-[#D96C2C] text-sm sm:text-base">
+            <span class="font-black text-amber-700 text-sm sm:text-base">
               {{ formatPrice(featuredProducts[0].price) }}
             </span>
             <span class="text-[10px] text-[#786B62] line-through font-semibold">
@@ -119,7 +119,7 @@ const campaignCover = computed(() => {
       <RouterLink
         v-if="featuredProducts[1]"
         :to="`/products/${featuredProducts[1].productId}`"
-        class="flex-1 rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9] p-4 shadow-xs flex items-center gap-4 hover:border-[#D96C2C] transition group/card"
+        class="flex-1 rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9] p-4 shadow-xs flex items-center gap-4 hover:border-amber-500 transition group/card"
       >
         <img
           :src="
@@ -130,17 +130,17 @@ const campaignCover = computed(() => {
           class="w-24 h-24 rounded-2xl object-cover border border-[#E8D9C9] shrink-0 group-hover/card:scale-105 transition duration-300"
         />
         <div class="space-y-1 min-w-0">
-          <span class="text-[10px] font-black uppercase text-amber-700 bg-amber-100 px-2 py-0.5 rounded">
-            HOT PICK
+          <span class="text-[10px] font-black text-amber-800 bg-amber-100 border border-amber-200 px-2 py-0.5 rounded">
+            สินค้าขายดี
           </span>
-          <h4 class="font-black text-xs sm:text-sm text-[#332820] group-hover/card:text-[#D96C2C] transition truncate">
+          <h4 class="font-black text-xs sm:text-sm text-[#332820] group-hover/card:text-amber-700 transition truncate">
             {{ featuredProducts[1].productName }}
           </h4>
           <p class="text-[11px] text-[#786B62] truncate">
             {{ featuredProducts[1].description || 'สินค้าขายดีประจำร้าน' }}
           </p>
           <div class="flex items-baseline gap-2 pt-0.5">
-            <span class="font-black text-[#D96C2C] text-sm sm:text-base">
+            <span class="font-black text-amber-700 text-sm sm:text-base">
               {{ formatPrice(featuredProducts[1].price) }}
             </span>
             <span class="text-[10px] text-[#786B62] line-through font-semibold">

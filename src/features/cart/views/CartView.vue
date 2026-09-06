@@ -2,7 +2,7 @@
 // Public storefront - Orange + Cream Shopping Cart View
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { checkout } from '../api/cartApi'
+import { checkout, type CartItem } from '../api/cartApi'
 import { useCartStore } from '@/stores/cart'
 import { getApiErrorMessage } from '@/features/auth/api/getApiErrorMessage'
 import { useSwal } from '@/plugins/sweetalert'
@@ -28,9 +28,28 @@ const shippingAddress = ref('')
 const addresses = ref<UserAddress[]>([])
 const selectedAddressId = ref<string | null>(null)
 
+// Group cart items by Shop
+const groupedItems = computed(() => {
+  const groups: Record<string, { shopId: string; shopName: string; items: CartItem[] }> = {}
+  for (const item of cart.value.items) {
+    const sId = item.shopId || 'default'
+    if (!groups[sId]) {
+      groups[sId] = {
+        shopId: item.shopId,
+        shopName: item.shopName || 'ร้านค้าชุมชน',
+        items: [],
+      }
+    }
+    groups[sId].items.push(item)
+  }
+  return Object.values(groups)
+})
+
 const total = computed(() => cartStore.total)
 const itemCount = computed(() => cartStore.itemCount)
-const shippingFee = computed(() => (shippingMethod.value === 'Delivery' ? 50 : 0))
+const shopCount = computed(() => groupedItems.value.length)
+const shippingFeePerShop = 50
+const shippingFee = computed(() => (shippingMethod.value === 'Delivery' ? shopCount.value * shippingFeePerShop : 0))
 const grandTotal = computed(() => total.value + shippingFee.value)
 
 async function load() {
@@ -83,8 +102,7 @@ async function remove(id: string) {
 }
 
 async function placeOrder() {
-  const shopId = cart.value.items[0]?.shopId
-  if (!shopId) return
+  if (!cart.value.items.length) return
   if (
     shippingMethod.value === 'Delivery' &&
     (!receiverName.value || !receiverPhone.value || !shippingAddress.value)
@@ -95,17 +113,31 @@ async function placeOrder() {
 
   checkingOut.value = true
   try {
-    const order = await checkout({
-      shopId,
+    const res = await checkout({
       shippingMethod: shippingMethod.value,
-      shippingFee: shippingFee.value,
+      shippingFee: 50,
       receiverName: receiverName.value || undefined,
       receiverPhone: receiverPhone.value || undefined,
       shippingAddress: shippingAddress.value || undefined,
     })
     cartStore.clear()
-    await swal.success('สั่งซื้อสินค้าสำเร็จ!', `หมายเลขคำสั่งซื้อของคุณคือ #${order.orderNumber}`)
-    await router.push('/orders')
+    const orders = Array.isArray(res) ? res : [res]
+    const orderIds = orders.map((o: { orderId?: string }) => o.orderId).filter(Boolean) as string[]
+
+    await swal.success(
+      'สร้างคำสั่งซื้อสำเร็จ!',
+      orders.length > 1
+        ? `กำลังนำคุณไปที่หน้าชำระเงินรวมสำหรับ ${orders.length} ร้านค้า...`
+        : 'กำลังนำคุณไปที่หน้าชำระเงิน...',
+    )
+
+    if (orderIds.length === 1) {
+      await router.push(`/orders/${orderIds[0]}/pay`)
+    } else if (orderIds.length > 1) {
+      await router.push({ path: '/orders/pay', query: { orderIds: orderIds.join(',') } })
+    } else {
+      await router.push('/orders')
+    }
   } catch (error) {
     await swal.error(
       'สร้างคำสั่งซื้อไม่สำเร็จ',
@@ -141,28 +173,50 @@ onMounted(load)
       <!-- Cart Items & Order Summary Grid -->
       <div v-else class="grid gap-8 lg:grid-cols-12">
         <!-- Cart Items List (Left Column) -->
-        <section class="lg:col-span-8 space-y-4">
+        <section class="lg:col-span-8 space-y-6">
           <!-- Item Count Header -->
           <div
             class="flex items-center justify-between rounded-2xl bg-[#FFF9F2] p-4 border-2 border-[#E8D9C9] shadow-xs"
           >
             <span class="text-sm font-black text-[#332820]">
-              รายการสินค้าทั้งหมด (<span class="text-[#D96C2C]">{{ itemCount }}</span> ชิ้น)
+              รายการสินค้าทั้งหมด (<span class="text-[#D96C2C]">{{ itemCount }}</span> ชิ้น จาก <span class="text-[#D96C2C]">{{ shopCount }}</span> ร้านค้า)
             </span>
             <span class="text-xs font-semibold text-[#786B62]">
               สินค้าจากร้านค้าชุมชนกาญจนบุรี
             </span>
           </div>
 
-          <!-- Item Cards List -->
-          <CartItemRow
-            v-for="item in cart.items"
-            :key="item.cartItemId"
-            :item="item"
-            :updating="updating === item.cartItemId"
-            @update-quantity="setQuantity(item.cartItemId, $event)"
-            @remove="remove(item.cartItemId)"
-          />
+          <!-- Grouped Cart Items by Shop -->
+          <div
+            v-for="group in groupedItems"
+            :key="group.shopId"
+            class="rounded-3xl border-2 border-[#E8D9C9] bg-[#FFF9F2] p-5 shadow-xs space-y-4"
+          >
+            <!-- Shop Header -->
+            <div class="flex items-center justify-between border-b-2 border-[#E8D9C9] pb-3">
+              <div class="flex items-center gap-2">
+                <i class="mdi mdi-storefront text-xl text-[#D96C2C]"></i>
+                <h3 class="font-black text-base text-[#332820]">
+                  {{ group.shopName }}
+                </h3>
+              </div>
+              <span class="text-xs font-bold text-[#786B62] bg-[#F7F0E6] px-2.5 py-1 rounded-lg border border-[#E8D9C9]">
+                {{ group.items.length }} รายการ
+              </span>
+            </div>
+
+            <!-- Shop Items -->
+            <div class="space-y-3">
+              <CartItemRow
+                v-for="item in group.items"
+                :key="item.cartItemId"
+                :item="item"
+                :updating="updating === item.cartItemId"
+                @update-quantity="setQuantity(item.cartItemId, $event)"
+                @remove="remove(item.cartItemId)"
+              />
+            </div>
+          </div>
         </section>
 
         <!-- Order Summary Sidebar (Right Column) -->

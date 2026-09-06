@@ -41,17 +41,17 @@ function onSearchSubmit() {
 
     <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
       <div class="max-w-3xl">
-        <p class="text-xs font-black tracking-widest text-[#F2A65A] uppercase flex items-center gap-1.5 drop-shadow-sm">
-          <i class="mdi mdi-compass-rose text-base"></i>
+        <p class="text-sm font-semibold tracking-wider text-[#F2A65A] uppercase flex items-center gap-1.5 drop-shadow-sm">
+          <i class="mdi mdi-compass-rose text-lg"></i>
           KANCHANABURI CULTURAL TOURISM PLATFORM
         </p>
         <div class="mt-3 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h1 class="text-3xl font-black leading-tight text-white drop-shadow-md sm:text-5xl">
+            <h1 class="text-3xl font-bold leading-tight text-white drop-shadow-md sm:text-5xl">
               สำรวจเรื่องราวกาญจนบุรี
             </h1>
             <p
-              class="mt-3 max-w-2xl text-sm leading-relaxed text-[#F7F0E6] drop-shadow-sm sm:text-base font-semibold"
+              class="mt-3 max-w-2xl text-base sm:text-lg leading-relaxed text-[#F7F0E6] drop-shadow-sm font-normal"
             >
               สัมผัสความงดงามทางวัฒนธรรม วิถีชีวิตท้องถิ่น และสถานที่ท่องเที่ยวที่คุณไม่ควรพลาด
             </p>
@@ -62,7 +62,7 @@ function onSearchSubmit() {
           >
             <button
               type="button"
-              class="flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-black transition cursor-pointer"
+              class="flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs sm:text-sm font-semibold transition cursor-pointer"
               :class="
                 viewMode === 'contents'
                   ? 'bg-[#D96C2C] text-white shadow-md border border-white/20'
@@ -70,12 +70,12 @@ function onSearchSubmit() {
               "
               @click="emit('update:viewMode', 'contents')"
             >
-              <i class="mdi mdi-play-box-multiple-outline text-base text-white"></i>
-              <span class="!text-white font-black">รายการวิดีโอ</span>
+              <i class="mdi mdi-play-box-multiple-outline text-lg text-white"></i>
+              <span class="!text-white font-bold">รายการวิดีโอ</span>
             </button>
             <button
               type="button"
-              class="flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-black transition cursor-pointer"
+              class="flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs sm:text-sm font-semibold transition cursor-pointer"
               :class="
                 viewMode === 'map'
                   ? 'bg-[#D96C2C] text-white shadow-md border border-white/20'
@@ -83,8 +83,8 @@ function onSearchSubmit() {
               "
               @click="emit('update:viewMode', 'map')"
             >
-              <i class="mdi mdi-map-marker-radius-outline text-base text-white"></i>
-              <span class="!text-white font-black">แผนที่พิกัด</span>
+              <i class="mdi mdi-map-marker-radius-outline text-lg text-white"></i>
+              <span class="!text-white font-bold">แผนที่พิกัด</span>
             </button>
           </div>
         </div>
@@ -99,16 +99,16 @@ function onSearchSubmit() {
               @input="onSearchInput"
               type="text"
               placeholder="ค้นหาคอนเทนต์ เช่น รำมอญ, ที่เที่ยวสังขละบุรี, วัฒนธรรม..."
-              class="w-full bg-transparent py-2 text-sm font-extrabold text-[#332820] focus:outline-none placeholder:text-[#786B62]"
+              class="w-full bg-transparent py-2 text-base font-medium text-[#332820] focus:outline-none placeholder:text-[#786B62]"
               @keyup.enter="onSearchSubmit"
             />
           </div>
           <button
             type="submit"
-            class="shrink-0 rounded-xl bg-[#D96C2C] hover:bg-[#BF5720] px-7 py-3 text-xs font-black text-white transition-all duration-200 shadow-md active:scale-95 flex items-center gap-1.5 cursor-pointer border border-[#D96C2C]"
+            class="shrink-0 rounded-xl bg-[#D96C2C] hover:bg-[#BF5720] px-7 py-3 text-sm font-bold text-white transition-all duration-200 shadow-md active:scale-95 flex items-center gap-1.5 cursor-pointer border border-[#D96C2C]"
           >
-            <i class="mdi mdi-magnify text-base text-white"></i>
-            <span class="!text-white font-black text-sm">ค้นหา</span>
+            <i class="mdi mdi-magnify text-lg text-white"></i>
+            <span class="!text-white font-bold text-base">ค้นหา</span>
           </button>
         </form>
       </div>

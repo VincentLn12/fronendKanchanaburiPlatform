@@ -151,18 +151,18 @@ onMounted(loadHomeData)
           class="backdrop-blur-md bg-[#171412]/75 p-6 sm:p-10 rounded-3xl border-2 border-white/20 shadow-2xl space-y-4"
         >
           <div
-            class="inline-flex items-center gap-2 rounded-full border border-white/20 bg-[#D96C2C]/40 px-4 py-1.5 text-xs font-black text-[#F2A65A] backdrop-blur-md mb-1"
+            class="inline-flex items-center gap-2 rounded-full border border-white/20 bg-[#D96C2C]/40 px-4 py-1.5 text-xs font-bold text-[#F2A65A] backdrop-blur-md mb-1"
           >
             ✨ แพลตฟอร์มท่องเที่ยวและวัฒนธรรมกาญจนบุรี
           </div>
           <h1
-            class="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-tight text-white drop-shadow-xl"
+            class="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight leading-tight text-white drop-shadow-xl"
           >
             ค้นพบเรื่องราว วิถีชุมชน<br />
             และภูมิปัญญาท้องถิ่นกาญจนบุรี
           </h1>
           <p
-            class="text-xs sm:text-base md:text-lg text-[#F7F0E6] max-w-2xl mx-auto font-semibold leading-relaxed drop-shadow-md"
+            class="text-sm sm:text-base md:text-lg text-[#F7F0E6] max-w-2xl mx-auto font-normal leading-relaxed drop-shadow-md"
           >
             แหล่งรวมเรื่องราว วัฒนธรรม ร้านค้า และสินค้าท้องถิ่น<br class="hidden sm:inline" />
             จากชุมชนสู่ชุมชน เพื่อคนกาญจนบุรี
@@ -175,19 +175,19 @@ onMounted(loadHomeData)
               class="flex items-center gap-2 rounded-2xl bg-[#FFF9F2] p-2 shadow-2xl border-2 border-[#E8D9C9]"
             >
               <div class="flex-1 flex items-center px-3">
-                <i class="mdi mdi-magnify text-xl text-[#D96C2C] mr-2"></i>
+                <i class="mdi mdi-magnify text-2xl text-[#D96C2C] mr-2"></i>
                 <input
                   v-model="searchQuery"
                   type="text"
                   placeholder="ค้นหาสถานที่ เรื่องราว อาหาร กิจกรรม ร้านค้า..."
-                  class="w-full bg-transparent text-[#332820] text-xs sm:text-sm font-black focus:outline-none placeholder:text-[#786B62]"
+                  class="w-full bg-transparent text-[#332820] text-sm sm:text-base font-medium focus:outline-none placeholder:text-[#786B62]"
                 />
               </div>
               <button
                 type="submit"
-                class="shrink-0 px-7 py-3 rounded-xl bg-[#D96C2C] hover:bg-[#BF5720] text-white font-black text-xs sm:text-sm transition duration-200 shadow-md flex items-center justify-center gap-2 border border-[#D96C2C] cursor-pointer"
+                class="shrink-0 px-7 py-3 rounded-xl bg-[#D96C2C] hover:bg-[#BF5720] text-white font-bold text-sm transition duration-200 shadow-md flex items-center justify-center gap-2 border border-[#D96C2C] cursor-pointer"
               >
-                <span class="!text-white font-black">ค้นหา</span>
+                <span class="!text-white font-bold text-base">ค้นหา</span>
               </button>
             </form>
           </div>
@@ -208,7 +208,7 @@ onMounted(loadHomeData)
             to="/contents"
             class="group shrink-0 flex flex-col items-center px-4 py-2.5 rounded-2xl border-2 border-[#E8D9C9] bg-white hover:bg-[#D96C2C]/10 hover:border-[#D96C2C] transition duration-200 shadow-2xs"
           >
-            <span class="text-xs sm:text-sm font-black text-[#332820] group-hover:text-[#D96C2C]">
+            <span class="text-sm sm:text-base font-semibold text-[#332820] group-hover:text-[#D96C2C]">
               {{ cat.categoryName }}
             </span>
           </RouterLink>
@@ -222,19 +222,19 @@ onMounted(loadHomeData)
       <section v-if="recommendedContents.length || loading">
         <div class="flex items-center justify-between mb-6">
           <div>
-            <h2 class="text-xl sm:text-2xl font-black text-[#332820] tracking-tight">
+            <h2 class="text-2xl sm:text-3xl font-bold text-[#332820] tracking-tight">
               เรื่องราวและคอนเทนต์แนะนำ
             </h2>
-            <p class="text-xs text-[#786B62] font-semibold mt-0.5">
+            <p class="text-sm text-[#786B62] font-medium mt-0.5">
               รวมเรื่องน่าสนใจ สถานที่ท่องเที่ยว และภูมิปัญญากาญจนบุรี
             </p>
           </div>
           <RouterLink
             to="/contents"
-            class="text-xs sm:text-sm font-black text-[#D96C2C] hover:underline flex items-center gap-1 transition"
+            class="text-sm sm:text-base font-semibold text-[#D96C2C] hover:underline flex items-center gap-1 transition"
           >
             <span>ดูทั้งหมด</span>
-            <i class="mdi mdi-chevron-right text-base"></i>
+            <i class="mdi mdi-chevron-right text-lg"></i>
           </RouterLink>
         </div>
 
@@ -270,7 +270,7 @@ onMounted(loadHomeData)
                 <i class="mdi mdi-compass-rose text-4xl opacity-40"></i>
               </div>
               <span
-                class="absolute top-2 left-2 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-[#D96C2C]/90 text-white shadow-md"
+                class="absolute top-2 left-2 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#D96C2C]/90 text-white shadow-md"
               >
                 {{ item.contentCategoryName || 'คอนเทนต์' }}
               </span>
@@ -278,16 +278,16 @@ onMounted(loadHomeData)
             <div class="p-3.5 flex flex-col flex-1 justify-between">
               <div>
                 <h3
-                  class="font-black text-[#332820] text-sm group-hover:text-[#D96C2C] transition line-clamp-1"
+                  class="font-bold text-[#332820] text-sm sm:text-base group-hover:text-[#D96C2C] transition line-clamp-1"
                 >
                   {{ item.title }}
                 </h3>
-                <p class="text-xs text-[#786B62] line-clamp-2 mt-1 font-semibold leading-relaxed">
+                <p class="text-xs sm:text-sm text-[#786B62] line-clamp-2 mt-1 font-normal leading-relaxed">
                   {{ item.summary || 'เรื่องราวจากกาญจนบุรี' }}
                 </p>
               </div>
               <div
-                class="mt-3 flex items-center justify-between text-[11px] text-[#786B62] border-t border-[#E8D9C9] pt-2 font-bold"
+                class="mt-3 flex items-center justify-between text-xs text-[#786B62] border-t border-[#E8D9C9] pt-2 font-medium"
               >
                 <span class="flex items-center gap-1 line-clamp-1"
                   ><i class="mdi mdi-map-marker text-[#D96C2C]"></i
@@ -303,19 +303,19 @@ onMounted(loadHomeData)
       <section v-if="districts.length">
         <div class="flex items-center justify-between mb-6">
           <div>
-            <h2 class="text-xl sm:text-2xl font-black text-[#332820] tracking-tight">
+            <h2 class="text-2xl sm:text-3xl font-bold text-[#332820] tracking-tight">
               สำรวจตามอำเภอและพื้นที่
             </h2>
-            <p class="text-xs text-[#786B62] font-semibold mt-0.5">
+            <p class="text-sm text-[#786B62] font-medium mt-0.5">
               เลือกท่องเที่ยวและค้นหาเรื่องราวรายอำเภอ
             </p>
           </div>
           <RouterLink
             to="/contents"
-            class="text-xs sm:text-sm font-black text-[#D96C2C] hover:underline flex items-center gap-1 transition"
+            class="text-sm sm:text-base font-semibold text-[#D96C2C] hover:underline flex items-center gap-1 transition"
           >
             <span>ดูทั้งหมด</span>
-            <i class="mdi mdi-chevron-right text-base"></i>
+            <i class="mdi mdi-chevron-right text-lg"></i>
           </RouterLink>
         </div>
 
@@ -332,7 +332,7 @@ onMounted(loadHomeData)
               <i class="mdi mdi-map-marker text-xl"></i>
             </div>
             <h4
-              class="font-black text-[#332820] text-xs sm:text-sm mt-2.5 group-hover:text-[#D96C2C]"
+              class="font-bold text-[#332820] text-sm sm:text-base mt-2.5 group-hover:text-[#D96C2C]"
             >
               {{ dist.districtName }}
             </h4>
@@ -344,19 +344,19 @@ onMounted(loadHomeData)
       <section v-if="shops.length || loading">
         <div class="flex items-center justify-between mb-6">
           <div>
-            <h2 class="text-xl sm:text-2xl font-black text-[#332820] tracking-tight">
+            <h2 class="text-2xl sm:text-3xl font-bold text-[#332820] tracking-tight">
               ร้านค้าชุมชนแนะนำ
             </h2>
-            <p class="text-xs text-[#786B62] font-semibold mt-0.5">
+            <p class="text-sm text-[#786B62] font-medium mt-0.5">
               อุดหนุนสินค้าท้องถิ่น ส่งตรงจากชาวบ้านกาญจนบุรี
             </p>
           </div>
           <RouterLink
             to="/shops"
-            class="text-xs sm:text-sm font-black text-[#D96C2C] hover:underline flex items-center gap-1 transition"
+            class="text-sm sm:text-base font-semibold text-[#D96C2C] hover:underline flex items-center gap-1 transition"
           >
             <span>ดูทั้งหมด</span>
-            <i class="mdi mdi-chevron-right text-base"></i>
+            <i class="mdi mdi-chevron-right text-lg"></i>
           </RouterLink>
         </div>
 
@@ -384,11 +384,11 @@ onMounted(loadHomeData)
             </div>
             <div class="p-3.5">
               <h3
-                class="font-black text-[#332820] text-xs sm:text-sm group-hover:text-[#D96C2C] transition line-clamp-1"
+                class="font-bold text-[#332820] text-sm sm:text-base group-hover:text-[#D96C2C] transition line-clamp-1"
               >
                 {{ shop.shopName }}
               </h3>
-              <p class="mt-1 text-[11px] text-[#786B62] font-semibold flex items-center gap-1">
+              <p class="mt-1 text-xs text-[#786B62] font-medium flex items-center gap-1">
                 <i class="mdi mdi-map-marker text-[#D96C2C]"></i>อ.{{
                   shop.districtName || 'สังขละบุรี'
                 }}
@@ -402,19 +402,19 @@ onMounted(loadHomeData)
       <section v-if="products.length || loading">
         <div class="flex items-center justify-between mb-6">
           <div>
-            <h2 class="text-xl sm:text-2xl font-black text-[#332820] tracking-tight">
+            <h2 class="text-2xl sm:text-3xl font-bold text-[#332820] tracking-tight">
               สินค้าขึ้นชื่อแนะนำ
             </h2>
-            <p class="text-xs text-[#786B62] font-semibold mt-0.5">
+            <p class="text-sm text-[#786B62] font-medium mt-0.5">
               ของฝาก หัตถกรรม และของดีเมืองกาญจน์
             </p>
           </div>
           <RouterLink
             to="/shops"
-            class="text-xs sm:text-sm font-black text-[#D96C2C] hover:underline flex items-center gap-1 transition"
+            class="text-sm sm:text-base font-semibold text-[#D96C2C] hover:underline flex items-center gap-1 transition"
           >
             <span>ดูทั้งหมด</span>
-            <i class="mdi mdi-chevron-right text-base"></i>
+            <i class="mdi mdi-chevron-right text-lg"></i>
           </RouterLink>
         </div>
 
@@ -441,23 +441,23 @@ onMounted(loadHomeData)
                   class="w-full h-full object-cover group-hover:scale-105 transition duration-500"
                 />
               </div>
-              <div class="p-3">
+              <div class="p-3.5">
                 <h3
-                  class="font-black text-[#332820] text-xs sm:text-sm group-hover:text-[#D96C2C] transition line-clamp-1"
+                  class="font-bold text-[#332820] text-sm sm:text-base group-hover:text-[#D96C2C] transition line-clamp-1"
                 >
                   {{ prod.productName }}
                 </h3>
               </div>
             </div>
-            <div class="px-3 pb-3 flex items-center justify-between border-t border-[#E8D9C9] pt-2">
-              <span class="font-black text-[#D96C2C] text-sm sm:text-base"
+            <div class="px-3.5 pb-3.5 flex items-center justify-between border-t border-[#E8D9C9] pt-2.5">
+              <span class="font-bold text-[#D96C2C] text-base sm:text-lg"
                 >฿ {{ Number(prod.price).toLocaleString('th-TH') }}</span
               >
               <button
-                class="flex h-8 w-8 items-center justify-center rounded-xl bg-[#D96C2C] text-white hover:bg-[#BF5720] transition shadow-xs"
+                class="flex h-9 w-9 items-center justify-center rounded-xl bg-[#D96C2C] text-white hover:bg-[#BF5720] transition shadow-xs"
                 title="ดูสินค้า"
               >
-                <i class="mdi mdi-arrow-right text-base text-white"></i>
+                <i class="mdi mdi-arrow-right text-lg text-white"></i>
               </button>
             </div>
           </RouterLink>

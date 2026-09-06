@@ -27,13 +27,13 @@
               </svg>
             </div>
             <div class="flex flex-col">
-              <span class="text-xl font-black text-white leading-tight">เกี่ยวกับโครงการ</span>
-              <span class="text-[11px] font-bold text-[#F2A65A]"
+              <span class="text-xl font-bold text-white leading-tight">เกี่ยวกับโครงการ</span>
+              <span class="text-xs font-semibold text-[#F2A65A]"
                 >แพลตฟอร์มท่องเที่ยวเชิงวัฒนธรรม</span
               >
             </div>
           </div>
-          <p class="text-xs sm:text-sm leading-relaxed text-[#F7F0E6]/70 max-w-sm font-medium">
+          <p class="text-sm leading-relaxed text-[#F7F0E6]/70 max-w-sm font-normal">
             แพลตฟอร์มท่องเที่ยวเชิงวัฒนธรรม แหล่งรวมเรื่องราว วัฒนธรรม ร้านค้า และสินค้าท้องถิ่น
             จากชุมชนสู่ชุมชน เพื่อคนกาญจนบุรี
           </p>
@@ -68,10 +68,10 @@
 
         <!-- Col 2: Quick Links -->
         <div class="lg:col-span-2 space-y-3">
-          <h4 class="text-sm font-black text-white tracking-wide uppercase text-[#F2A65A]">
+          <h4 class="text-base font-bold text-white tracking-wide uppercase text-[#F2A65A]">
             ลิงก์ด่วน
           </h4>
-          <ul class="space-y-2.5 text-xs sm:text-sm font-bold">
+          <ul class="space-y-2.5 text-sm font-medium">
             <li>
               <RouterLink to="/" class="hover:text-[#D96C2C] transition-colors">หน้าแรก</RouterLink>
             </li>
@@ -95,10 +95,10 @@
 
         <!-- Col 3: Help -->
         <div class="lg:col-span-3 space-y-3">
-          <h4 class="text-sm font-black text-white tracking-wide uppercase text-[#F2A65A]">
+          <h4 class="text-base font-bold text-white tracking-wide uppercase text-[#F2A65A]">
             ช่วยเหลือ
           </h4>
-          <ul class="space-y-2.5 text-xs sm:text-sm font-bold">
+          <ul class="space-y-2.5 text-sm font-medium">
             <li>
               <a href="#" class="hover:text-[#D96C2C] transition-colors">คำถามที่พบบ่อย (FAQ)</a>
             </li>
@@ -116,21 +116,21 @@
 
         <!-- Col 4: Contact Us -->
         <div class="lg:col-span-3 space-y-3">
-          <h4 class="text-sm font-black text-white tracking-wide uppercase text-[#F2A65A]">
+          <h4 class="text-base font-bold text-white tracking-wide uppercase text-[#F2A65A]">
             ติดต่อเรา
           </h4>
-          <ul class="space-y-2.5 text-xs sm:text-sm font-semibold">
+          <ul class="space-y-2.5 text-sm font-medium">
             <li class="flex items-center gap-2.5">
-              <i class="mdi mdi-phone text-[#D96C2C] text-base"></i>
+              <i class="mdi mdi-phone text-[#D96C2C] text-lg"></i>
               <span>034-123-456</span>
             </li>
             <li class="flex items-center gap-2.5">
-              <i class="mdi mdi-email-outline text-[#D96C2C] text-base"></i>
+              <i class="mdi mdi-email-outline text-[#D96C2C] text-lg"></i>
               <span>info@kanchanaburi-platform.go.th</span>
             </li>
             <li class="flex items-start gap-2.5">
-              <i class="mdi mdi-map-marker-outline text-[#D96C2C] text-base mt-0.5"></i>
-              <span class="leading-snug"
+              <i class="mdi mdi-map-marker-outline text-[#D96C2C] text-lg mt-0.5"></i>
+              <span class="leading-relaxed"
                 >ศาลากลางจังหวัดกาญจนบุรี อ.เมืองกาญจนบุรี จ.กาญจนบุรี 71000</span
               >
             </li>
@@ -140,7 +140,7 @@
 
       <!-- Bottom Bar -->
       <div
-        class="pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-[#F7F0E6]/60 gap-3 font-semibold"
+        class="pt-6 flex flex-col sm:flex-row items-center justify-between text-xs sm:text-sm text-[#F7F0E6]/60 gap-3 font-medium"
       >
         <p>© 2024 Kanchanaburi Cultural Platform. All rights reserved.</p>
         <div class="flex items-center gap-6">

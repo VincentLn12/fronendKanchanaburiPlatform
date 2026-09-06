@@ -65,7 +65,7 @@ function formatPublishedDate(value?: string) {
         <!-- Top Left Category Badge -->
         <span
           v-if="item.contentCategoryName"
-          class="absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-black bg-[#D96C2C] text-white shadow-md backdrop-blur-md border border-white/20 flex items-center gap-1.5"
+          class="absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-semibold bg-[#D96C2C] text-white shadow-md backdrop-blur-md border border-white/20 flex items-center gap-1.5"
         >
           <i class="mdi mdi-folder-outline text-xs text-white"></i>
           {{ item.contentCategoryName }}
@@ -74,7 +74,7 @@ function formatPublishedDate(value?: string) {
         <!-- Top Right District Badge -->
         <span
           v-if="item.districtName"
-          class="absolute top-3 right-3 px-3 py-1 rounded-full text-[11px] font-black bg-[#171412]/90 text-white shadow-md backdrop-blur-md border border-white/20 flex items-center gap-1"
+          class="absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-semibold bg-[#171412]/90 text-white shadow-md backdrop-blur-md border border-white/20 flex items-center gap-1"
         >
           <i class="mdi mdi-map-marker text-[#F2A65A] text-xs"></i>
           อ.{{ item.districtName }}
@@ -84,11 +84,11 @@ function formatPublishedDate(value?: string) {
       <!-- Card Content Body -->
       <div class="p-5 space-y-2.5">
         <h3
-          class="font-black text-[#332820] text-base sm:text-lg group-hover:text-[#D96C2C] transition-colors leading-snug line-clamp-2"
+          class="font-bold text-[#332820] text-lg sm:text-xl group-hover:text-[#D96C2C] transition-colors leading-snug line-clamp-2"
         >
           {{ item.title }}
         </h3>
-        <p class="text-xs text-[#786B62] line-clamp-2 leading-relaxed font-semibold">
+        <p class="text-sm text-[#4A3E35] line-clamp-2 leading-relaxed font-medium">
           {{ item.summary || 'ค้นพบเรื่องราวน่าสนใจและการท่องเที่ยวในจังหวัดกาญจนบุรี' }}
         </p>
       </div>
@@ -96,19 +96,19 @@ function formatPublishedDate(value?: string) {
 
     <!-- Card Footer -->
     <div
-      class="px-5 py-3.5 bg-[#F7F0E6] border-t-2 border-[#E8D9C9] flex items-center justify-between text-xs font-extrabold"
+      class="px-5 py-3.5 bg-[#F7F0E6] border-t-2 border-[#E8D9C9] flex items-center justify-between text-sm font-semibold"
     >
       <span class="flex items-center gap-1.5 text-[#786B62]">
-        <i class="mdi mdi-calendar-blank-outline text-[#D96C2C] text-sm"></i>
+        <i class="mdi mdi-calendar-blank-outline text-[#D96C2C] text-base"></i>
         {{ formatPublishedDate(item.publishedAt ?? item.createdAt) }}
       </span>
 
       <div
-        class="flex items-center gap-1 font-black text-[#D96C2C] group-hover:text-[#BF5720] transition"
+        class="flex items-center gap-1 font-bold text-[#D96C2C] group-hover:text-[#BF5720] transition"
       >
         <span>อ่านรายละเอียด</span>
         <i
-          class="mdi mdi-arrow-right text-sm transition-transform duration-200 group-hover:translate-x-1"
+          class="mdi mdi-arrow-right text-base transition-transform duration-200 group-hover:translate-x-1"
         ></i>
       </div>
     </div>
@@ -142,43 +142,43 @@ function formatPublishedDate(value?: string) {
         <div class="flex items-center justify-between gap-2 mb-2">
           <span
             v-if="item.contentCategoryName"
-            class="text-xs font-black text-[#D96C2C] bg-[#D96C2C]/10 border border-[#D96C2C]/20 px-2.5 py-0.5 rounded-full"
+            class="text-xs font-semibold text-[#D96C2C] bg-[#D96C2C]/10 border border-[#D96C2C]/20 px-2.5 py-0.5 rounded-full"
           >
             {{ item.contentCategoryName }}
           </span>
           <span
             v-if="item.districtName"
-            class="text-xs font-extrabold text-[#786B62] flex items-center gap-1"
+            class="text-xs font-semibold text-[#786B62] flex items-center gap-1"
           >
             <i class="mdi mdi-map-marker text-[#D96C2C]"></i>
             อ.{{ item.districtName }}
           </span>
         </div>
         <h3
-          class="font-black text-[#332820] text-lg group-hover:text-[#D96C2C] transition-colors leading-snug"
+          class="font-bold text-[#332820] text-xl group-hover:text-[#D96C2C] transition-colors leading-snug"
         >
           {{ item.title }}
         </h3>
         <p
-          class="text-xs sm:text-sm text-[#786B62] line-clamp-2 mt-1.5 leading-relaxed font-semibold"
+          class="text-sm text-[#4A3E35] line-clamp-2 mt-1.5 leading-relaxed font-medium"
         >
           {{ item.summary || 'ค้นพบเรื่องราวน่าสนใจและการท่องเที่ยวในจังหวัดกาญจนบุรี' }}
         </p>
       </div>
 
       <div
-        class="flex items-center justify-between text-xs text-[#786B62] border-t-2 border-[#E8D9C9] pt-3 font-extrabold"
+        class="flex items-center justify-between text-sm text-[#786B62] border-t-2 border-[#E8D9C9] pt-3 font-semibold"
       >
         <span class="flex items-center gap-1.5 text-[#786B62]">
           <i class="mdi mdi-calendar-blank-outline text-[#D96C2C]"></i>
           {{ formatPublishedDate(item.publishedAt ?? item.createdAt) }}
         </span>
         <div
-          class="flex items-center gap-1 font-black text-[#D96C2C] group-hover:text-[#BF5720] transition"
+          class="flex items-center gap-1 font-bold text-[#D96C2C] group-hover:text-[#BF5720] transition"
         >
           <span>อ่านรายละเอียด</span>
           <i
-            class="mdi mdi-arrow-right text-sm transition-transform duration-200 group-hover:translate-x-1"
+            class="mdi mdi-arrow-right text-base transition-transform duration-200 group-hover:translate-x-1"
           ></i>
         </div>
       </div>

@@ -1,9 +1,9 @@
 <template>
   <div v-if="content" class="min-h-screen bg-[#F7F0E6] text-[#332820] pb-16">
     <!-- BREADCRUMB BAR -->
-    <div class="bg-[#FFF9F2] border-b-2 border-[#E8D9C9] py-3 shadow-2xs">
+    <div class="bg-[#FFF9F2] border-b-2 border-[#E8D9C9] py-3.5 shadow-2xs">
       <div
-        class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-xs text-[#786B62] flex items-center gap-2 font-bold"
+        class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-sm text-[#4A3E35] flex items-center gap-2 font-semibold"
       >
         <RouterLink to="/" class="hover:text-[#D96C2C] transition">หน้าแรก</RouterLink>
         <i class="mdi mdi-chevron-right text-[#E8D9C9]"></i>
@@ -11,11 +11,11 @@
           >สำรวจคอนเทนต์</RouterLink
         >
         <i class="mdi mdi-chevron-right text-[#E8D9C9]"></i>
-        <span class="text-[#D96C2C] font-black">{{
+        <span class="text-[#D96C2C] font-bold">{{
           content.contentCategoryName || 'ท่องเที่ยวและวัฒนธรรม'
         }}</span>
         <i class="mdi mdi-chevron-right text-[#E8D9C9]"></i>
-        <span class="text-[#332820] font-black line-clamp-1">{{ content.title }}</span>
+        <span class="text-[#332820] font-bold line-clamp-1">{{ content.title }}</span>
       </div>
     </div>
 
@@ -35,10 +35,10 @@
 
           <section
             v-if="content.summary"
-            class="rounded-3xl border-2 border-[#E8D9C9] bg-[#FFF9F2] p-6 sm:p-7 shadow-xs"
+            class="rounded-3xl border-2 border-[#E8D9C9] bg-[#FFF9F2] p-6 sm:p-7 shadow-xs space-y-3"
           >
-            <h2 class="text-xl font-black text-[#D96C2C]">เกี่ยวกับวิดีโอนี้</h2>
-            <p class="mt-3 text-sm leading-relaxed text-[#786B62] font-semibold">
+            <h2 class="text-2xl font-bold text-[#D96C2C]">เกี่ยวกับวิดีโอนี้</h2>
+            <p class="text-base sm:text-lg leading-relaxed text-[#332820] font-normal">
               {{ content.summary }}
             </p>
           </section>
@@ -56,14 +56,14 @@
                   <i class="mdi mdi-calendar-clock-outline text-xl text-white"></i>
                 </div>
                 <div>
-                  <h2 class="text-xl font-black text-[#332820]">รอบการแสดง / กิจกรรม</h2>
-                  <p class="text-xs text-[#786B62] font-medium">
+                  <h2 class="text-2xl font-bold text-[#332820]">รอบการแสดง / กิจกรรม</h2>
+                  <p class="text-sm text-[#4A3E35] font-normal">
                     รอบการแสดงสดและกิจกรรมวัฒนธรรมที่กำลังจะเกิดขึ้น
                   </p>
                 </div>
               </div>
               <span
-                class="text-xs font-black text-[#D96C2C] bg-[#D96C2C]/10 border border-[#D96C2C]/20 px-3.5 py-1 rounded-full shadow-2xs"
+                class="text-xs font-bold text-[#D96C2C] bg-[#D96C2C]/10 border border-[#D96C2C]/20 px-3.5 py-1 rounded-full shadow-2xs"
               >
                 มี {{ schedules.length }} รอบการแสดง
               </span>
@@ -73,16 +73,16 @@
               <div
                 v-for="sch in schedules"
                 :key="sch.scheduleId"
-                class="rounded-2xl border-2 border-[#E8D9C9] bg-[#F7F0E6] p-4 space-y-2 shadow-2xs hover:border-[#D96C2C] transition"
+                class="rounded-2xl border-2 border-[#E8D9C9] bg-[#F7F0E6] p-4.5 space-y-2 shadow-2xs hover:border-[#D96C2C] transition"
               >
-                <span class="font-black text-[#332820] text-sm block">{{ sch.title }}</span>
-                <p class="text-xs text-[#786B62] flex items-center gap-1.5 font-bold">
+                <span class="font-bold text-[#332820] text-base block">{{ sch.title }}</span>
+                <p class="text-sm text-[#4A3E35] flex items-center gap-1.5 font-medium">
                   <i class="mdi mdi-clock-outline text-[#D96C2C]"></i>
                   <span>{{ formatDate(sch.startDateTime) }}</span>
                 </p>
                 <p
                   v-if="sch.address"
-                  class="text-xs text-[#786B62] flex items-center gap-1.5 font-medium"
+                  class="text-sm text-[#4A3E35] flex items-center gap-1.5 font-normal"
                 >
                   <i class="mdi mdi-map-marker-outline text-[#D96C2C]"></i>
                   <span>{{ sch.address }}</span>
@@ -119,11 +119,11 @@
 
       <!-- FOOTER SHARE / REPORT SECTION -->
       <section
-        class="flex flex-wrap items-center justify-end gap-4 border-t-2 border-[#E8D9C9] pt-6 text-xs text-[#786B62]"
+        class="flex flex-wrap items-center justify-end gap-4 border-t-2 border-[#E8D9C9] pt-6 text-sm text-[#4A3E35]"
       >
         <div class="flex items-center gap-4">
           <div class="flex items-center gap-2">
-            <span class="font-black text-[#332820]">แชร์คอนเทนต์</span>
+            <span class="font-bold text-[#332820]">แชร์คอนเทนต์</span>
             <button
               type="button"
               class="h-8 w-8 rounded-full bg-blue-600 text-white flex items-center justify-center hover:opacity-90 transition cursor-pointer shadow-2xs"
@@ -149,7 +149,7 @@
 
           <button
             type="button"
-            class="text-xs font-bold text-[#786B62] hover:text-rose-600 flex items-center gap-1 transition cursor-pointer"
+            class="text-sm font-semibold text-[#786B62] hover:text-rose-600 flex items-center gap-1 transition cursor-pointer"
             @click="openReport({ contentId: content.contentId, label: content.title })"
           >
             <i class="mdi mdi-flag-outline"></i>

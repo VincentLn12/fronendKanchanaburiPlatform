@@ -62,7 +62,7 @@ function clearFilters() {
     <!-- Section Header & In-store Search Bar -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b-2 border-[#E8D9C9] pb-5">
       <div class="flex items-center gap-3">
-        <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#D96C2C] text-white shadow-sm font-bold">
+        <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-700 text-white shadow-sm font-bold">
           <i class="mdi mdi-store-search-outline text-2xl text-white"></i>
         </div>
         <div>
@@ -81,9 +81,9 @@ function clearFilters() {
             v-model="productSearchInput"
             type="text"
             placeholder="ค้นหาสินค้าในร้านนี้..."
-            class="w-full rounded-2xl border-2 border-[#E8D9C9] bg-white pl-9 pr-8 py-2 text-xs font-bold outline-none focus:border-[#D96C2C] transition shadow-2xs"
+            class="w-full rounded-2xl border-2 border-[#E8D9C9] bg-white pl-9 pr-8 py-2 text-xs font-bold outline-none focus:border-emerald-600 transition shadow-2xs"
           />
-          <i class="mdi mdi-magnify absolute left-3 top-1/2 -translate-y-1/2 text-[#D96C2C] text-base"></i>
+          <i class="mdi mdi-magnify absolute left-3 top-1/2 -translate-y-1/2 text-emerald-700 text-base"></i>
           <button
             v-if="productSearchInput"
             type="button"
@@ -97,7 +97,7 @@ function clearFilters() {
         <!-- Sort Select -->
         <select
           v-model="sortBy"
-          class="rounded-2xl border-2 border-[#E8D9C9] bg-white px-3 py-2 text-xs font-black text-[#332820] outline-none focus:border-[#D96C2C] transition cursor-pointer shadow-2xs"
+          class="rounded-2xl border-2 border-[#E8D9C9] bg-white px-3 py-2 text-xs font-black text-[#332820] outline-none focus:border-emerald-600 transition cursor-pointer shadow-2xs"
         >
           <option value="popular">ยอดนิยม</option>
           <option value="sales">ยอดขายสูงสุด</option>
@@ -116,8 +116,8 @@ function clearFilters() {
         class="px-4 py-2 rounded-2xl text-xs font-black transition shrink-0 flex items-center gap-1.5 cursor-pointer border-2 shadow-2xs"
         :class="
           selectedCategory === cat.id
-            ? 'border-[#D96C2C] bg-[#D96C2C] text-white shadow-xs'
-            : 'border-[#E8D9C9] bg-white text-[#332820] hover:border-[#D96C2C]'
+            ? 'border-emerald-600 bg-emerald-600 text-white shadow-xs'
+            : 'border-[#E8D9C9] bg-[#FFF9F2] text-[#332820] hover:border-emerald-600'
         "
         @click="selectedCategory = cat.id"
       >
@@ -126,8 +126,8 @@ function clearFilters() {
           class="text-[10px] rounded-full px-1.5 py-0.5"
           :class="
             selectedCategory === cat.id
-              ? 'bg-white text-[#D96C2C] font-black'
-              : 'bg-[#F7F0E6] text-[#786B62] font-extrabold'
+              ? 'bg-white text-emerald-800 font-black'
+              : 'bg-[#F5E6D3] text-[#786B62] font-extrabold'
           "
         >
           {{ cat.count }}
@@ -135,12 +135,12 @@ function clearFilters() {
       </button>
     </div>
 
-    <!-- 4-Column Products Grid (Matches Reference Image 1:1) -->
+    <!-- 4-Column Products Grid -->
     <div v-if="sortedFilteredProducts.length" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
       <div
         v-for="(prod, idx) in sortedFilteredProducts.slice(0, 8)"
         :key="prod.productId"
-        class="group bg-white rounded-3xl overflow-hidden border-2 border-[#E8D9C9] p-3 sm:p-3.5 shadow-2xs hover:shadow-xl hover:border-[#D96C2C] hover:-translate-y-1 transition duration-300 flex flex-col justify-between"
+        class="group bg-[#FFF9F2] rounded-3xl overflow-hidden border-2 border-[#E8D9C9] p-3 sm:p-3.5 shadow-md hover:shadow-xl hover:border-amber-500 hover:-translate-y-1 transition duration-300 flex flex-col justify-between"
       >
         <div>
           <!-- Product Photo Frame with Badges -->
@@ -152,8 +152,8 @@ function clearFilters() {
               class="w-full h-full object-cover group-hover:scale-108 transition duration-500"
             />
 
-            <!-- Top Left Badge (พร้อมส่ง / ขายดี) -->
-            <span class="absolute top-2 left-2 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-[#D96C2C] text-white shadow-md">
+            <!-- Top Left Badge -->
+            <span class="absolute top-2 left-2 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-700 text-white shadow-md">
               {{ idx === 0 ? 'ขายดีอันดับ 1' : 'พร้อมส่ง' }}
             </span>
 
@@ -164,35 +164,35 @@ function clearFilters() {
               title="บันทึกในรายการโปรด"
               @click.prevent
             >
-              <i class="mdi mdi-heart-outline text-sm text-[#D96C2C]"></i>
+              <i class="mdi mdi-heart-outline text-sm text-amber-500"></i>
             </button>
           </RouterLink>
 
           <!-- Category Pill -->
-          <span class="text-[10px] font-black text-[#D96C2C] bg-[#D96C2C]/10 px-2 py-0.5 rounded-md border border-[#D96C2C]/20 inline-block mb-1">
+          <span class="text-[10px] font-black text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 inline-block mb-1">
             {{ productCategoryName(prod.productCategoryId) }}
           </span>
 
           <!-- Product Name Link -->
           <RouterLink
             :to="`/products/${prod.productId}`"
-            class="font-black text-[#332820] text-xs sm:text-sm group-hover:text-[#D96C2C] transition line-clamp-2 leading-snug block"
+            class="font-black text-[#332820] text-xs sm:text-sm group-hover:text-amber-700 transition line-clamp-2 leading-snug block"
           >
             {{ prod.productName }}
           </RouterLink>
 
           <!-- Price & Discount -->
           <div class="flex items-baseline gap-2 mt-2">
-            <span class="font-black text-[#D96C2C] text-sm sm:text-base">{{ formatPrice(prod.price) }}</span>
+            <span class="font-black text-amber-700 text-sm sm:text-base">{{ formatPrice(prod.price) }}</span>
             <span class="text-[10px] text-[#786B62] line-through font-semibold">
               {{ formatPrice(prod.price * 1.25) }}
             </span>
           </div>
 
           <!-- Rating & Sold Count Strip -->
-          <div class="flex items-center justify-between text-[10px] text-[#786B62] font-bold mt-1.5 pt-1.5 border-t border-[#E8D9C9]/60">
-            <span class="flex items-center gap-0.5 text-amber-600">
-              <i class="mdi mdi-star text-xs"></i>
+          <div class="flex items-center justify-between text-[10px] text-[#786B62] font-bold mt-2 p-2 rounded-xl bg-[#F5E6D3] border border-[#E0CFBD]">
+            <span class="flex items-center gap-0.5 text-amber-700">
+              <i class="mdi mdi-star text-xs text-amber-500"></i>
               <span class="font-black">4.9</span>
               <span class="text-[#786B62]">(40+)</span>
             </span>
@@ -204,10 +204,10 @@ function clearFilters() {
         <div class="mt-3 pt-2">
           <RouterLink
             :to="`/products/${prod.productId}`"
-            class="flex items-center justify-center gap-1.5 w-full py-2 rounded-xl bg-[#D96C2C]/10 hover:bg-[#D96C2C] text-[#D96C2C] hover:text-white font-black text-xs transition border border-[#D96C2C] cursor-pointer group/btn"
+            class="flex items-center justify-center gap-1.5 w-full py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-black text-xs transition border border-amber-600 shadow-xs cursor-pointer group/btn"
           >
-            <i class="mdi mdi-cart-plus text-sm group-hover/btn:text-white"></i>
-            <span class="group-hover/btn:text-white">สั่งซื้อสินค้า</span>
+            <i class="mdi mdi-cart-plus text-sm text-white"></i>
+            <span class="text-white font-black">สั่งซื้อสินค้า</span>
           </RouterLink>
         </div>
       </div>
@@ -220,7 +220,7 @@ function clearFilters() {
       <button
         v-if="productSearch || selectedCategory"
         type="button"
-        class="text-xs font-bold text-[#D96C2C] hover:underline"
+        class="text-xs font-bold text-amber-700 hover:underline"
         @click="clearFilters"
       >
         ล้างตัวกรองทั้งหมด
@@ -231,7 +231,7 @@ function clearFilters() {
     <div v-if="products.length > 0" class="pt-2">
       <RouterLink
         :to="`/shops/${shop.shopId}/products`"
-        class="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl bg-[#D96C2C] hover:bg-[#BF5720] text-white font-black text-xs sm:text-sm shadow-md transition duration-200 cursor-pointer"
+        class="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl bg-amber-600 hover:bg-amber-700 text-white font-black text-xs sm:text-sm shadow-md transition duration-200 cursor-pointer border border-amber-600"
       >
         <i class="mdi mdi-grid text-lg text-white"></i>
         <span class="!text-white font-black">ดูสินค้าทั้งหมดของร้านนี้ ({{ products.length }} รายการ)</span>

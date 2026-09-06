@@ -15,7 +15,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <section class="relative bg-[#171412] text-white border-b-2 border-[#E8D9C9] overflow-hidden">
+  <section class="relative bg-slate-900 text-white border-b border-slate-800 overflow-hidden">
     <!-- Authentic Kanchanaburi Landmark Background Cover -->
     <div class="absolute inset-0 pointer-events-none overflow-hidden">
       <img
@@ -25,116 +25,114 @@ const emit = defineEmits<{
       />
       <!-- Deep Cinematic Multi-layer Gradient Overlays for High Legibility and Dignified Tone -->
       <div
-        class="absolute inset-0 bg-gradient-to-r from-[#171412]/95 via-[#171412]/85 to-[#171412]/60"
+        class="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-teal-950/90 to-slate-900/70"
       ></div>
       <div
-        class="absolute inset-0 bg-gradient-to-t from-[#171412] via-transparent to-black/50"
+        class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-black/50"
       ></div>
-      <!-- Subtle Brand Tint Overlay -->
-      <div class="absolute inset-0 bg-[#D96C2C]/10 mix-blend-multiply"></div>
+      <!-- Subtle Emerald Nature Tint Overlay -->
+      <div class="absolute inset-0 bg-emerald-600/10 mix-blend-multiply"></div>
     </div>
 
-    <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 sm:py-14 space-y-6 sm:space-y-8">
+    <div class="relative mx-auto w-full max-w-[1800px] px-3 sm:px-6 lg:px-10 py-5 sm:py-7 space-y-4">
       <!-- Top Provincial Identity Badge & Mode Switcher -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <!-- Serious Official Provincial Tag -->
         <div
-          class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-black text-amber-200 shadow-md self-start sm:self-auto"
+          class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-900/40 backdrop-blur-md border border-emerald-400/30 text-[11px] sm:text-xs font-bold text-emerald-200 shadow-sm self-start sm:self-auto"
         >
-          <i class="mdi mdi-seal-variant text-amber-400 text-sm"></i>
-          <span>KANCHANABURI COMMUNITY COMMERCE PLATFORM</span>
+          <i class="mdi mdi-seal-variant text-emerald-400 text-sm"></i>
+          <span>ศูนย์รวมร้านค้าและสินค้าชุมชนจังหวัดกาญจนบุรี</span>
           <span class="text-white/40">•</span>
           <span class="text-white/90">จังหวัดกาญจนบุรี</span>
         </div>
 
         <!-- Mode Switcher: Shops / Map -->
-        <div class="inline-flex shrink-0 self-start sm:self-auto border-2 border-white/25 bg-[#171412]/80 backdrop-blur-md p-1.5 rounded-2xl shadow-xl">
+        <div class="inline-flex shrink-0 self-start sm:self-auto border border-white/20 bg-slate-950/80 backdrop-blur-md p-1 rounded-xl shadow-md">
           <button
             type="button"
-            class="flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-black transition cursor-pointer"
-            :class="viewMode === 'shops' ? 'bg-[#D96C2C] text-white shadow-md' : 'text-amber-100/75 hover:text-white'"
+            class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition cursor-pointer"
+            :class="viewMode === 'shops' ? 'bg-amber-500 text-slate-950 shadow-xs' : 'text-slate-300 hover:text-white'"
             @click="emit('update:viewMode', 'shops')"
           >
-            <i class="mdi mdi-storefront-outline text-base"></i>
+            <i class="mdi mdi-storefront-outline text-sm"></i>
             <span>ร้านค้า</span>
           </button>
           <button
             type="button"
-            class="flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-black transition cursor-pointer"
-            :class="viewMode === 'map' ? 'bg-[#D96C2C] text-white shadow-md' : 'text-amber-100/75 hover:text-white'"
+            class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition cursor-pointer"
+            :class="viewMode === 'map' ? 'bg-amber-500 text-slate-950 shadow-xs' : 'text-slate-300 hover:text-white'"
             @click="emit('update:viewMode', 'map')"
           >
-            <i class="mdi mdi-map-marker-radius text-base"></i>
+            <i class="mdi mdi-map-marker-radius text-sm"></i>
             <span>แผนที่</span>
           </button>
         </div>
       </div>
 
-      <div class="space-y-4 text-center sm:text-left max-w-4xl">
-
-        <div class="space-y-3">
+      <div class="space-y-2.5 text-center sm:text-left max-w-3xl">
+        <div class="space-y-1.5">
           <h1
-            class="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight drop-shadow-lg"
+            class="text-2xl sm:text-3xl font-black text-white tracking-tight leading-tight drop-shadow-md"
           >
             ศูนย์รวมร้านค้าและของดีเมืองกาญจน์
           </h1>
           <p
-            class="text-sm sm:text-base text-amber-100/90 font-medium leading-relaxed drop-shadow-sm max-w-3xl"
+            class="text-xs sm:text-sm text-slate-200/90 font-medium leading-relaxed drop-shadow-sm max-w-2xl"
           >
             แพลตฟอร์มรวบรวมร้านค้า วิสาหกิจชุมชน และผู้ประกอบการท้องถิ่นทั้ง 13
-            อำเภอในจังหวัดกาญจนบุรี ส่งเสริมเศรษฐกิจสร้างสรรค์ ผลิตภัณฑ์อัตลักษณ์พื้นถิ่น
-            และงานหัตถกรรมคุณภาพสู่ระดับสากล
+            อำเภอในจังหวัดกาญจนบุรี ส่งเสริมเศรษฐกิจสร้างสรรค์ และงานหัตถกรรมคุณภาพ
           </p>
         </div>
 
-        <!-- Official Quality Credential Indicators -->
-        <div class="flex flex-wrap items-center gap-4 pt-2 justify-center sm:justify-start">
+        <!-- Official Quality Credential Indicators (Compact Single Line) -->
+        <div class="flex flex-wrap items-center gap-2.5 pt-1 justify-center sm:justify-start">
           <div
-            class="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-[#171412]/80 backdrop-blur-md border border-white/20 shadow-md"
+            class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/80 backdrop-blur-md border border-white/15 shadow-sm"
           >
             <div
-              class="h-9 w-9 rounded-xl bg-[#D96C2C] flex items-center justify-center text-white shrink-0 shadow-sm"
+              class="h-7 w-7 rounded-lg bg-amber-500 flex items-center justify-center text-slate-950 shrink-0 shadow-2xs"
             >
-              <i class="mdi mdi-store-check text-xl"></i>
+              <i class="mdi mdi-store-check text-base"></i>
             </div>
             <div class="text-left">
-              <span class="font-black text-white text-sm block leading-none"
+              <span class="font-bold text-white text-xs block leading-none"
                 >ผู้ประกอบการรับรอง</span
               >
-              <span class="text-[11px] text-amber-200/90 font-bold">13 อำเภอเมืองกาญจน์</span>
+              <span class="text-[10px] text-amber-200 font-semibold">13 อำเภอ</span>
             </div>
           </div>
 
           <div
-            class="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-[#171412]/80 backdrop-blur-md border border-white/20 shadow-md"
+            class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/80 backdrop-blur-md border border-white/15 shadow-sm"
           >
             <div
-              class="h-9 w-9 rounded-xl bg-emerald-700 flex items-center justify-center text-white shrink-0 shadow-sm"
+              class="h-7 w-7 rounded-lg bg-emerald-600 flex items-center justify-center text-white shrink-0 shadow-2xs"
             >
-              <i class="mdi mdi-shield-check text-xl text-white"></i>
+              <i class="mdi mdi-shield-check text-base text-white"></i>
             </div>
             <div class="text-left">
-              <span class="font-black text-white text-sm block leading-none"
+              <span class="font-bold text-white text-xs block leading-none"
                 >ของแท้จากแหล่งผลิต</span
               >
-              <span class="text-[11px] text-emerald-300 font-bold">การันตีคุณภาพชุมชน</span>
+              <span class="text-[10px] text-emerald-300 font-semibold">การันตีคุณภาพ</span>
             </div>
           </div>
 
           <div
-            class="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-[#171412]/80 backdrop-blur-md border border-white/20 shadow-md"
+            class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/80 backdrop-blur-md border border-white/15 shadow-sm"
           >
             <div
-              class="h-9 w-9 rounded-xl bg-amber-600 flex items-center justify-center text-white shrink-0 shadow-sm"
+              class="h-7 w-7 rounded-lg bg-amber-500 flex items-center justify-center text-slate-950 shrink-0 shadow-2xs"
             >
-              <i class="mdi mdi-star text-xl text-white"></i>
+              <i class="mdi mdi-star text-base text-slate-950"></i>
             </div>
             <div class="text-left">
-              <span class="font-black text-white text-sm block leading-none"
+              <span class="font-bold text-white text-xs block leading-none"
                 >4.8 / 5.0 เรตติ้ง</span
               >
-              <span class="text-[11px] text-amber-200/90 font-bold"
-                >จากผู้ซื้อและนักท่องเที่ยวจริง</span
+              <span class="text-[10px] text-amber-200 font-semibold"
+                >จากผู้ซื้อจริง</span
               >
             </div>
           </div>
@@ -142,26 +140,26 @@ const emit = defineEmits<{
       </div>
 
       <!-- Quick Category Navigation Pill Tabs -->
-      <div class="pt-4 border-t border-white/15">
-        <div class="flex items-center justify-between pb-2 text-xs font-bold text-amber-200/80">
+      <div class="pt-2.5 border-t border-white/15 space-y-1.5">
+        <div class="flex items-center justify-between text-xs font-bold text-amber-200/90">
           <span class="flex items-center gap-1.5">
-            <i class="mdi mdi-tag-multiple-outline text-[#F2A65A]"></i>
+            <i class="mdi mdi-tag-multiple-outline text-amber-400"></i>
             เลือกชมตามประเภทผลิตภัณฑ์ชุมชน:
           </span>
         </div>
 
-        <div class="flex items-center gap-2.5 overflow-x-auto pb-2 scrollbar-none">
+        <div class="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
           <button
             type="button"
-            class="px-5 py-2.5 rounded-2xl text-xs font-black transition shrink-0 flex items-center gap-2 cursor-pointer border-2 shadow-md"
+            class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition shrink-0 flex items-center gap-1.5 cursor-pointer border shadow-sm"
             :class="
               selectedCategoryId === null
-                ? 'bg-[#D96C2C] text-white border-[#D96C2C] shadow-lg scale-102'
-                : 'bg-[#171412]/80 hover:bg-white/20 text-white border-white/20 backdrop-blur-md'
+                ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md scale-102 font-black'
+                : 'bg-slate-900/80 hover:bg-white/20 text-white border-white/20 backdrop-blur-md'
             "
             @click="emit('select-category', null)"
           >
-            <i class="mdi mdi-view-grid text-base"></i>
+            <i class="mdi mdi-view-grid text-sm"></i>
             <span>ทั้งหมดทุกประเภท</span>
           </button>
 
@@ -169,15 +167,15 @@ const emit = defineEmits<{
             v-for="cat in categories"
             :key="cat.shopCategoryId"
             type="button"
-            class="px-5 py-2.5 rounded-2xl text-xs font-black transition shrink-0 flex items-center gap-2 cursor-pointer border-2"
+            class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition shrink-0 flex items-center gap-1.5 cursor-pointer border"
             :class="
               selectedCategoryId === cat.shopCategoryId
-                ? 'bg-[#D96C2C] text-white border-[#D96C2C] shadow-lg scale-102'
-                : 'bg-[#171412]/80 hover:bg-white/20 text-white border-white/20 backdrop-blur-md'
+                ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md scale-102 font-black'
+                : 'bg-slate-900/80 hover:bg-white/20 text-white border-white/20 backdrop-blur-md'
             "
             @click="emit('select-category', cat.shopCategoryId)"
           >
-            <i class="mdi mdi-storefront-outline text-base text-amber-300"></i>
+            <i class="mdi mdi-storefront-outline text-sm text-amber-300"></i>
             <span>{{ cat.categoryName }}</span>
           </button>
         </div>

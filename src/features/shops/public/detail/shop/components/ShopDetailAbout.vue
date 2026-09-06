@@ -9,7 +9,7 @@ defineProps<{
 <template>
   <section class="rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9] p-6 sm:p-7 shadow-xs space-y-5">
     <div class="flex items-center gap-3 border-b-2 border-[#E8D9C9] pb-4">
-      <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#D96C2C] text-white shadow-xs font-bold">
+      <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-700 text-white shadow-xs font-bold">
         <i class="mdi mdi-store-check-outline text-xl text-white"></i>
       </div>
       <div>
@@ -26,18 +26,18 @@ defineProps<{
     </p>
 
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-      <div class="flex items-center gap-2.5 p-3 rounded-2xl bg-[#F7F0E6] border border-[#E8D9C9] text-xs font-bold text-[#332820]">
-        <i class="mdi mdi-leaf text-[#D96C2C] text-xl shrink-0"></i>
+      <div class="flex items-center gap-2.5 p-3 rounded-2xl bg-[#F5E6D3] border border-[#E0CFBD] text-xs font-bold text-[#332820]">
+        <i class="mdi mdi-leaf text-emerald-700 text-xl shrink-0"></i>
         <span>สินค้าชุมชนแท้ 100%</span>
       </div>
 
-      <div class="flex items-center gap-2.5 p-3 rounded-2xl bg-[#F7F0E6] border border-[#E8D9C9] text-xs font-bold text-[#332820]">
-        <i class="mdi mdi-truck-check-outline text-[#D96C2C] text-xl shrink-0"></i>
+      <div class="flex items-center gap-2.5 p-3 rounded-2xl bg-[#F5E6D3] border border-[#E0CFBD] text-xs font-bold text-[#332820]">
+        <i class="mdi mdi-truck-check-outline text-emerald-700 text-xl shrink-0"></i>
         <span>บริการจัดส่งทั่วประเทศ</span>
       </div>
 
-      <div class="flex items-center gap-2.5 p-3 rounded-2xl bg-[#F7F0E6] border border-[#E8D9C9] text-xs font-bold text-[#332820]">
-        <i class="mdi mdi-shield-check-outline text-[#D96C2C] text-xl shrink-0"></i>
+      <div class="flex items-center gap-2.5 p-3 rounded-2xl bg-[#F5E6D3] border border-[#E0CFBD] text-xs font-bold text-[#332820]">
+        <i class="mdi mdi-shield-check-outline text-emerald-700 text-xl shrink-0"></i>
         <span>รับประกันคุณภาพสินค้า</span>
       </div>
     </div>

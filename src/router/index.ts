@@ -121,6 +121,12 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: '/orders/pay',
+      name: 'pay-orders-batch',
+      component: () => import('@/features/cart/views/PaymentView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
       path: '/orders/:id/pay',
       name: 'pay-order',
       component: () => import('@/features/cart/views/PaymentView.vue'),

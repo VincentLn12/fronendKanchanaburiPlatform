@@ -29,11 +29,11 @@ function youtubeThumbnail(url?: string) {
           <i class="mdi mdi-book-open-page-variant-outline text-xl text-white"></i>
         </div>
         <div>
-          <h2 class="text-xl sm:text-2xl font-black text-[#332820]">คอนเทนต์เรื่องราวที่เกี่ยวข้อง</h2>
-          <p class="text-xs text-[#786B62] font-medium">สำรวจเรื่องราวแนะนำจากสถานที่ใกล้เคียงในกาญจนบุรี</p>
+          <h2 class="text-2xl font-bold text-[#332820]">คอนเทนต์เรื่องราวที่เกี่ยวข้อง</h2>
+          <p class="text-sm text-[#4A3E35] font-normal">สำรวจเรื่องราวแนะนำจากสถานที่ใกล้เคียงในกาญจนบุรี</p>
         </div>
       </div>
-      <RouterLink to="/contents" class="text-xs font-black text-[#D96C2C] hover:underline flex items-center gap-1">
+      <RouterLink to="/contents" class="text-xs sm:text-sm font-bold text-[#D96C2C] hover:underline flex items-center gap-1">
         ดูทั้งหมด <i class="mdi mdi-arrow-right"></i>
       </RouterLink>
     </div>
@@ -64,7 +64,7 @@ function youtubeThumbnail(url?: string) {
           <div class="absolute inset-0 bg-slate-950/10 group-hover:bg-slate-950/20 transition"></div>
 
           <!-- Category Badge -->
-          <span class="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded-md bg-[#D96C2C] text-white text-[10px] font-black shadow-xs">
+          <span class="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded-md bg-[#D96C2C] text-white text-xs font-semibold shadow-xs">
             {{ item.contentCategoryName || 'วัฒนธรรม' }}
           </span>
         </div>
@@ -72,18 +72,18 @@ function youtubeThumbnail(url?: string) {
         <!-- Content Info -->
         <div class="p-3.5 space-y-2 flex-1 flex flex-col justify-between">
           <div>
-            <h4 class="font-black text-[#332820] text-sm line-clamp-2 group-hover:text-[#D96C2C] transition">
+            <h4 class="font-bold text-[#332820] text-base line-clamp-2 group-hover:text-[#D96C2C] transition">
               {{ item.title }}
             </h4>
           </div>
 
-          <div class="pt-2 border-t-2 border-[#E8D9C9] flex items-center justify-between text-[11px] font-extrabold text-[#786B62]">
-            <span class="flex items-center gap-1 text-[#D96C2C]">
+          <div class="pt-2 border-t-2 border-[#E8D9C9] flex items-center justify-between text-xs font-semibold text-[#4A3E35]">
+            <span class="flex items-center gap-1 text-[#D96C2C] font-bold">
               <i class="mdi mdi-map-marker text-[#D96C2C]"></i>
               อ.{{ item.districtName || 'กาญจนบุรี' }}
             </span>
             <span class="flex items-center gap-1">
-              <i class="mdi mdi-eye-outline text-[#786B62]"></i>
+              <i class="mdi mdi-eye-outline text-[#4A3E35]"></i>
               980 เข้าชม
             </span>
           </div>
