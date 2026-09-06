@@ -13,12 +13,12 @@ defineProps<{
         <i class="mdi mdi-store-check-outline text-xl text-white"></i>
       </div>
       <div>
-        <h2 class="text-xl font-black text-[#332820]">เกี่ยวกับร้านค้า</h2>
-        <p class="text-xs text-[#786B62]">ข้อมูลความเป็นมาและบริการของร้านค้า</p>
+        <h2 class="text-2xl font-black text-[#332820]">เกี่ยวกับร้านค้า</h2>
+        <p class="text-xs sm:text-sm text-[#786B62]">ข้อมูลความเป็นมาและบริการของร้านค้า</p>
       </div>
     </div>
 
-    <p class="text-xs sm:text-sm text-[#786B62] leading-relaxed whitespace-pre-line font-semibold">
+    <p class="text-sm sm:text-base text-[#786B62] leading-relaxed whitespace-pre-line font-semibold">
       {{
         shop.description ||
         'ยินดีต้อนรับสู่ร้านค้าท้องถิ่นคุณภาพ พร้อมให้บริการสินค้าหลากหลายในจังหวัดกาญจนบุรี ผลิตภัณฑ์ชุมชนคุณภาพสูง ส่งตรงจากเกษตรกรและชุมชนท้องถิ่น'
@@ -26,17 +26,17 @@ defineProps<{
     </p>
 
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-      <div class="flex items-center gap-2.5 p-3 rounded-2xl bg-[#F5E6D3] border border-[#E0CFBD] text-xs font-bold text-[#332820]">
+      <div class="flex items-center gap-2.5 p-3 rounded-2xl bg-[#F5E6D3] border border-[#E0CFBD] text-xs sm:text-sm font-bold text-[#332820]">
         <i class="mdi mdi-leaf text-emerald-700 text-xl shrink-0"></i>
         <span>สินค้าชุมชนแท้ 100%</span>
       </div>
 
-      <div class="flex items-center gap-2.5 p-3 rounded-2xl bg-[#F5E6D3] border border-[#E0CFBD] text-xs font-bold text-[#332820]">
+      <div class="flex items-center gap-2.5 p-3 rounded-2xl bg-[#F5E6D3] border border-[#E0CFBD] text-xs sm:text-sm font-bold text-[#332820]">
         <i class="mdi mdi-truck-check-outline text-emerald-700 text-xl shrink-0"></i>
         <span>บริการจัดส่งทั่วประเทศ</span>
       </div>
 
-      <div class="flex items-center gap-2.5 p-3 rounded-2xl bg-[#F5E6D3] border border-[#E0CFBD] text-xs font-bold text-[#332820]">
+      <div class="flex items-center gap-2.5 p-3 rounded-2xl bg-[#F5E6D3] border border-[#E0CFBD] text-xs sm:text-sm font-bold text-[#332820]">
         <i class="mdi mdi-shield-check-outline text-emerald-700 text-xl shrink-0"></i>
         <span>รับประกันคุณภาพสินค้า</span>
       </div>

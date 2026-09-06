@@ -66,7 +66,9 @@ const bannerImageUrl = computed(() => {
       >
         <div class="flex flex-col md:flex-row items-center md:items-start justify-between gap-6">
           <!-- Left: Avatar & Info -->
-          <div class="flex flex-col sm:flex-row items-center sm:items-start gap-5 text-center sm:text-left">
+          <div
+            class="flex flex-col sm:flex-row items-center sm:items-start gap-5 text-center sm:text-left"
+          >
             <!-- Avatar Logo with Verified Ring -->
             <div class="relative shrink-0">
               <img
@@ -88,42 +90,55 @@ const bannerImageUrl = computed(() => {
             <!-- Identity Details -->
             <div class="space-y-2">
               <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                <h1 class="text-2xl sm:text-3xl font-black text-[#332820] tracking-tight">
+                <h1 class="text-2xl sm:text-3xl lg:text-4xl font-black text-[#332820] tracking-tight">
                   {{ shop.shopName }}
                 </h1>
-                <span class="px-3 py-1 rounded-full text-[11px] font-black bg-amber-600 text-white shadow-xs">
+                <span
+                  class="px-3.5 py-1 rounded-full text-xs font-black bg-amber-600 text-white shadow-xs"
+                >
                   ร้านค้าอย่างเป็นทางการ
                 </span>
               </div>
 
-              <p class="text-xs sm:text-sm text-[#786B62] font-semibold max-w-xl line-clamp-2">
-                {{ shop.description || 'แหล่งรวบรวมผลิตภัณฑ์ชุมชนคุณภาพสูง ส่งตรงจากท้องถิ่นจังหวัดกาญจนบุรี' }}
+              <p class="text-sm sm:text-base text-[#786B62] font-semibold max-w-xl line-clamp-2">
+                {{
+                  shop.description ||
+                  'แหล่งรวบรวมผลิตภัณฑ์ชุมชนคุณภาพสูง ส่งตรงจากท้องถิ่นจังหวัดกาญจนบุรี'
+                }}
               </p>
 
               <!-- Rating, Products Count, and Location Bar (All Real Data) -->
-              <div class="flex flex-wrap items-center justify-center sm:justify-start gap-3 pt-1 text-xs font-bold text-[#786B62]">
-                <div class="flex items-center gap-1 text-amber-800 bg-amber-50 px-2.5 py-1 rounded-xl border border-amber-200 font-black">
+              <div
+                class="flex flex-wrap items-center justify-center sm:justify-start gap-3 pt-1 text-xs sm:text-sm font-bold text-[#786B62]"
+              >
+                <div
+                  class="flex items-center gap-1 text-amber-800 bg-amber-50 px-2.5 py-1 rounded-xl border border-amber-200 font-black"
+                >
                   <i class="mdi mdi-star text-base text-amber-500"></i>
                   <span>{{ averageRating ? averageRating.toFixed(1) : '5.0' }}</span>
-                  <span class="text-[#786B62] font-semibold">({{ totalReviews ? `${totalReviews} รีวิว` : 'ยังไม่มีรีวิว' }})</span>
+                  <span class="text-[#786B62] font-semibold"
+                    >({{ totalReviews ? `${totalReviews} รีวิว` : 'ยังไม่มีรีวิว' }})</span
+                  >
                 </div>
 
                 <span>•</span>
                 <span class="text-[#332820] font-black flex items-center gap-1">
-                  <i class="mdi mdi-package-variant text-sm text-emerald-700"></i>
+                  <i class="mdi mdi-package-variant text-base text-emerald-700"></i>
                   มีสินค้า {{ totalProductsCount }} รายการ
                 </span>
 
                 <span>•</span>
                 <span class="flex items-center gap-1 text-[#332820]">
-                  <i class="mdi mdi-map-marker text-emerald-700"></i>
+                  <i class="mdi mdi-map-marker text-emerald-700 text-base"></i>
                   {{ shopArea }}
                 </span>
 
                 <span>•</span>
                 <span
-                  class="px-2.5 py-0.5 rounded-full text-[10px] font-black"
-                  :class="isOpenNow ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'"
+                  class="px-2.5 py-0.5 rounded-full text-xs font-black"
+                  :class="
+                    isOpenNow ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
+                  "
                 >
                   {{ isOpenNow ? 'เปิดบริการอยู่' : 'ปิดทำการ' }} ({{ businessHours }})
                 </span>
@@ -132,7 +147,9 @@ const bannerImageUrl = computed(() => {
           </div>
 
           <!-- Right: Follow, Call & Share Buttons (Optimized for Mobile Grid) -->
-          <div class="grid grid-cols-12 gap-2 w-full sm:flex sm:w-auto sm:items-center sm:gap-3 shrink-0 pt-2 sm:pt-0">
+          <div
+            class="grid grid-cols-12 gap-2 w-full sm:flex sm:w-auto sm:items-center sm:gap-3 shrink-0 pt-2 sm:pt-0"
+          >
             <!-- Share Button -->
             <button
               type="button"
@@ -166,16 +183,23 @@ const bannerImageUrl = computed(() => {
               @click="isFollowing = !isFollowing"
             >
               <i
-                :class="['mdi text-base', isFollowing ? 'mdi-check text-emerald-400' : 'mdi-plus text-white']"
+                :class="[
+                  'mdi text-base',
+                  isFollowing ? 'mdi-check text-emerald-400' : 'mdi-plus text-white',
+                ]"
               ></i>
-              <span class="!text-white font-black truncate">{{ isFollowing ? 'ติดตามแล้ว' : '+ ติดตาม' }}</span>
+              <span class="!text-white font-black truncate">{{
+                isFollowing ? 'ติดตามแล้ว' : '+ ติดตาม'
+              }}</span>
             </button>
           </div>
         </div>
 
         <!-- 3. Four Trust Stats Badges Row (Optimized for Mobile Screens) -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 pt-4 border-t-2 border-[#E8D9C9]">
-          <div class="flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-2xl bg-[#F5E6D3] border border-[#E0CFBD]">
+        <div
+          class="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 pt-4 border-t-2 border-[#E8D9C9]"
+        >
+          <!-- <div class="flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-2xl bg-[#F5E6D3] border border-[#E0CFBD]">
             <div class="h-8 w-8 sm:h-9 sm:w-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
               <i class="mdi mdi-truck-fast-outline text-lg sm:text-xl"></i>
             </div>
@@ -215,7 +239,7 @@ const bannerImageUrl = computed(() => {
               <span class="block font-black text-[11px] sm:text-xs text-[#332820] truncate">ของแท้ 100%</span>
               <span class="text-[9px] sm:text-[10px] text-[#786B62] font-semibold truncate block">สินค้าแท้จากชุมชน</span>
             </div>
-          </div>
+          </div> -->
         </div>
       </div>
     </div>

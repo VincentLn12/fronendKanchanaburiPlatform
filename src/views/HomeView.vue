@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   getContentCategories,
@@ -25,6 +25,50 @@ const communityStories = ref<PublicContent[]>([])
 const districts = ref<District[]>([])
 const shops = ref<Shop[]>([])
 const products = ref<Product[]>([])
+const scrollY = ref(0)
+
+const quickTags = [
+  '🔥 สะพานข้ามแม่น้ำแคว',
+  'สังขละบุรี',
+  'น้ำตกเอราวัณ',
+  'ผ้าทอกะเหรี่ยง',
+  'ทองผาภูมิ',
+  'แพเปียก',
+]
+
+// Route-map stats shown under the hero, styled as three stations on one line.
+const routeStats = [
+  { value: '13', label: 'อำเภอบนเส้นทาง' },
+  { value: '500+', label: 'ร้านค้าชุมชน' },
+  { value: '1,000+', label: 'เรื่องราวความประทับใจ' },
+]
+
+// Value pillars shown as one editorial band
+const pillars = [
+  {
+    icon: 'mdi-leaf',
+    title: 'ภูมิปัญญา & วิถีชุมชน',
+    desc: 'สัมผัสเสน่ห์เรื่องราวท้องถิ่นและประเพณีดั้งเดิมของชาวกาญจนบุรี',
+  },
+  {
+    icon: 'mdi-store-check-outline',
+    title: 'สินค้าตรงจากชาวบ้าน',
+    desc: 'อุดหนุนผู้ผลิตและกลุ่มวิสาหกิจชุมชนโดยตรง ไม่ผ่านคนกลาง',
+  },
+  {
+    icon: 'mdi-map-search-outline',
+    title: 'พิกัดสถานที่อันซีน',
+    desc: 'ค้นพบสถานที่ท่องเที่ยว พิกัดธรรมชาติ และร้านเด็ดรายอำเภอ',
+  },
+  {
+    icon: 'mdi-shield-check-outline',
+    title: 'การันตีคุณภาพ',
+    desc: 'คัดสรรสินค้าและเรื่องราวทรงคุณค่าโดยทีมงานแพลตฟอร์ม',
+  },
+]
+
+// Cycled dot colors for the "transit line" category strip.
+const lineColors = ['#D96C2C', '#059669', '#D97706', '#2563EB', '#7C3AED']
 
 const apiOrigin = (import.meta.env.VITE_API_URL ?? 'https://localhost:7289/api').replace(
   /\/api$/,
@@ -63,9 +107,11 @@ function getProductCover(prod: Product, idx: number) {
   return defaultProductCovers[idx % defaultProductCovers.length]
 }
 
-function handleSearch() {
-  if (searchQuery.value.trim()) {
-    router.push({ path: '/contents', query: { search: searchQuery.value } })
+function handleSearch(queryText?: string) {
+  const q = queryText ?? searchQuery.value
+  if (q && q.trim()) {
+    const cleanTag = q.replace(/^🔥\s*/, '').trim()
+    router.push({ path: '/contents', query: { search: cleanTag } })
   } else {
     router.push('/contents')
   }
@@ -84,6 +130,17 @@ function youtubeThumbnail(url?: string) {
   }
 }
 
+function handleScroll() {
+  scrollY.value = window.scrollY
+}
+
+function scrollToContent() {
+  window.scrollTo({
+    top: window.innerHeight - 80,
+    behavior: 'smooth',
+  })
+}
+
 async function loadHomeData() {
   loading.value = true
   try {
@@ -100,8 +157,8 @@ async function loadHomeData() {
 
     if (contentRes.status === 'fulfilled' && contentRes.value) {
       const items = contentRes.value.items || []
-      recommendedContents.value = items.slice(0, 5)
-      communityStories.value = items.slice(5, 9)
+      recommendedContents.value = items.slice(0, 6)
+      communityStories.value = items.slice(6, 10)
     }
 
     if (distRes.status === 'fulfilled') {
@@ -126,341 +183,643 @@ async function loadHomeData() {
   loading.value = false
 }
 
-onMounted(loadHomeData)
+onMounted(() => {
+  void loadHomeData()
+  window.addEventListener('scroll', handleScroll, { passive: true })
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll)
+})
 </script>
 
 <template>
-  <div class="min-h-screen bg-[#F7F0E6] text-[#332820]">
-    <!-- HERO BANNER SECTION -->
+  <div class="min-h-screen bg-[#F7F0E6] text-[#332820] font-body">
+    <!-- 1. HERO — FULL-SCREEN IMMERSIVE BANNER WITH CLEAR PHOTO & PARALLAX MOTION -->
     <section
-      class="relative bg-[#171412] text-white min-h-[520px] lg:min-h-[580px] flex items-center justify-center overflow-hidden border-b-4 border-[#D96C2C] shadow-2xl"
+      class="relative bg-[#171412] text-[#FFF9F2] min-h-[90vh] lg:min-h-screen overflow-hidden flex flex-col justify-between border-b-4 border-[#D96C2C]"
     >
-      <!-- Background Image (Prominent & Vivid) -->
+      <!-- Background Image (Clear, Vivid, High Contrast with Parallax Motion) -->
       <img
         :src="heroCoverImage"
         alt="สะพานข้ามแม่น้ำแคว กาญจนบุรี"
-        class="absolute inset-0 w-full h-full object-cover object-center opacity-90 brightness-105 contrast-105 transition duration-700 hover:scale-105"
+        class="absolute inset-0 w-full h-full object-cover object-center opacity-90 brightness-105 contrast-105 pointer-events-none transition-transform duration-75 ease-out"
+        :style="{
+          transform: `translateY(${scrollY * 0.35}px) scale(${1.05 + scrollY * 0.0003})`,
+        }"
       />
+
+      <!-- Subtle Gradient Mask (Keeps text crisp while showing clear photo) -->
       <div
-        class="absolute inset-0 bg-gradient-to-t from-[#171412] via-[#171412]/50 to-black/30"
+        class="absolute inset-0 bg-gradient-to-t from-[#171412] via-[#171412]/50 to-black/30 pointer-events-none"
       ></div>
 
-      <!-- Hero Glass Content Frame -->
-      <div class="relative z-10 mx-auto max-w-4xl px-4 text-center py-16">
-        <div
-          class="backdrop-blur-md bg-[#171412]/75 p-6 sm:p-10 rounded-3xl border-2 border-white/20 shadow-2xl space-y-4"
+      <!-- Hero Glass Content Frame with Parallax Floating Effect -->
+      <div
+        class="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 pt-20 sm:pt-28 pb-12 transition-all duration-75 ease-out"
+        :style="{
+          transform: `translateY(${scrollY * 0.15}px)`,
+          opacity: Math.max(0, 1 - scrollY / 650),
+        }"
+      >
+        <!-- Route line as the eyebrow -->
+        <p
+          class="font-body text-xs sm:text-sm font-bold text-amber-300 flex flex-wrap items-center gap-x-2 drop-shadow-md mb-2"
         >
-          <div
-            class="inline-flex items-center gap-2 rounded-full border border-white/20 bg-[#D96C2C]/40 px-4 py-1.5 text-xs font-bold text-[#F2A65A] backdrop-blur-md mb-1"
-          >
-            ✨ แพลตฟอร์มท่องเที่ยวและวัฒนธรรมกาญจนบุรี
-          </div>
-          <h1
-            class="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight leading-tight text-white drop-shadow-xl"
-          >
-            ค้นพบเรื่องราว วิถีชุมชน<br />
-            และภูมิปัญญาท้องถิ่นกาญจนบุรี
-          </h1>
-          <p
-            class="text-sm sm:text-base md:text-lg text-[#F7F0E6] max-w-2xl mx-auto font-normal leading-relaxed drop-shadow-md"
-          >
-            แหล่งรวมเรื่องราว วัฒนธรรม ร้านค้า และสินค้าท้องถิ่น<br class="hidden sm:inline" />
-            จากชุมชนสู่ชุมชน เพื่อคนกาญจนบุรี
-          </p>
+          <span>กรุงเทพฯ</span>
+          <span class="text-amber-400/60">—</span>
+          <span>นครปฐม</span>
+          <span class="text-amber-400/60">—</span>
+          <span>ราชบุรี</span>
+          <span class="text-amber-400/60">—</span>
+          <span class="text-amber-400 font-black flex items-center gap-1">
+            <i class="mdi mdi-map-marker text-amber-400"></i>
+            กาญจนบุรี
+          </span>
+        </p>
 
-          <!-- Search Input Bar -->
-          <div class="mt-8 mx-auto max-w-2xl">
+        <h1
+          class="font-display font-black text-4xl sm:text-6xl md:text-7xl leading-[1.12] tracking-tight text-white drop-shadow-2xl max-w-4xl"
+        >
+          ค้นพบเรื่องราว วิถีชุมชน <br class="hidden sm:inline" />
+          <span
+            class="bg-gradient-to-r from-amber-300 via-amber-400 to-amber-200 bg-clip-text text-transparent"
+          >
+            และภูมิปัญญาท้องถิ่นกาญจนบุรี
+          </span>
+        </h1>
+        <p
+          class="text-[#F7F0E6] max-w-2xl mt-4 text-base sm:text-lg font-semibold leading-relaxed drop-shadow-xl"
+        >
+          ศูนย์รวมเรื่องราวน่าสนใจ สถานที่อันซีน ร้านค้าชุมชน และของดีส่งตรงจากชาวบ้าน<br
+            class="hidden sm:inline"
+          />
+          ร่วมสัมผัสเสน่ห์แท้จริงของเมืองกาญจน์ได้ที่นี่
+        </p>
+
+        <!-- Ticket card: destination stub + perforation + search stub -->
+        <div class="relative mt-8 sm:mt-10 max-w-3xl">
+          <div
+            class="grid sm:grid-cols-[1fr_auto_0.85fr] bg-[#FFF9F2]/95 backdrop-blur-md text-[#332820] rounded-3xl border-2 border-[#E8D9C9] overflow-hidden shadow-2xl"
+          >
+            <div class="p-6 sm:p-7 space-y-4">
+              <p class="text-xs font-black text-[#786B62] uppercase tracking-wider">
+                🔥 คำค้นยอดนิยม
+              </p>
+              <div class="flex flex-wrap items-center gap-x-2 gap-y-2">
+                <template v-for="(tag, i) in quickTags" :key="tag">
+                  <button
+                    type="button"
+                    class="text-xs sm:text-sm font-black text-amber-800 underline decoration-[#E8D9C9] decoration-2 underline-offset-4 hover:decoration-[#D96C2C] hover:text-[#D96C2C] transition cursor-pointer"
+                    @click="handleSearch(tag)"
+                  >
+                    {{ tag.replace(/^🔥\s*/, '') }}
+                  </button>
+                  <span v-if="i < quickTags.length - 1" class="text-[#786B62]/40">•</span>
+                </template>
+              </div>
+            </div>
+
+            <!-- Perforation with punch-hole notches (desktop only) -->
+            <div class="relative hidden sm:block w-px">
+              <div
+                class="absolute inset-y-3 left-0 border-l-2 border-dashed border-[#E8D9C9]"
+              ></div>
+              <span
+                class="absolute -top-3 left-1/2 -translate-x-1/2 h-5 w-5 rounded-full bg-[#171412]"
+              ></span>
+              <span
+                class="absolute -bottom-3 left-1/2 -translate-x-1/2 h-5 w-5 rounded-full bg-[#171412]"
+              ></span>
+            </div>
+            <div class="border-t-2 border-dashed border-[#E8D9C9] sm:hidden mx-6"></div>
+
             <form
-              @submit.prevent="handleSearch"
-              class="flex items-center gap-2 rounded-2xl bg-[#FFF9F2] p-2 shadow-2xl border-2 border-[#E8D9C9]"
+              @submit.prevent="handleSearch()"
+              class="p-6 sm:p-7 bg-[#F5E6D3] flex flex-col gap-3 justify-center"
             >
-              <div class="flex-1 flex items-center px-3">
-                <i class="mdi mdi-magnify text-2xl text-[#D96C2C] mr-2"></i>
+              <label class="text-xs font-black text-[#786B62]" for="home-search">ค้นหาข้อมูล</label>
+              <div
+                class="flex items-center gap-2 bg-[#FFF9F2] rounded-2xl px-3.5 py-2.5 border-2 border-[#E8D9C9]"
+              >
+                <i class="mdi mdi-magnify text-xl text-[#D96C2C] shrink-0"></i>
                 <input
+                  id="home-search"
                   v-model="searchQuery"
                   type="text"
-                  placeholder="ค้นหาสถานที่ เรื่องราว อาหาร กิจกรรม ร้านค้า..."
-                  class="w-full bg-transparent text-[#332820] text-sm sm:text-base font-medium focus:outline-none placeholder:text-[#786B62]"
+                  placeholder="สถานที่ เรื่องราว อาหาร ร้านค้า..."
+                  class="w-full bg-transparent text-xs sm:text-sm font-bold text-[#332820] focus:outline-none placeholder:text-[#786B62]"
                 />
               </div>
               <button
                 type="submit"
-                class="shrink-0 px-7 py-3 rounded-xl bg-[#D96C2C] hover:bg-[#BF5720] text-white font-bold text-sm transition duration-200 shadow-md flex items-center justify-center gap-2 border border-[#D96C2C] cursor-pointer"
+                class="rounded-xl bg-gradient-to-r from-[#D96C2C] to-[#BF5720] hover:from-[#BF5720] hover:to-[#a84614] text-white font-black text-xs sm:text-sm py-3 transition cursor-pointer shadow-md border border-[#D96C2C]/50 active:scale-95 flex items-center justify-center gap-1.5"
               >
-                <span class="!text-white font-bold text-base">ค้นหา</span>
+                <i class="mdi mdi-compass-outline text-base text-white"></i>
+                <span>ออกเดินทางค้นหา</span>
               </button>
             </form>
           </div>
         </div>
       </div>
+
+      <!-- Route-map stats & Interactive Scroll Indicator -->
+      <div class="relative z-10 border-t border-white/15 bg-black/60 backdrop-blur-xl py-6 sm:py-8">
+        <div class="mx-auto max-w-3xl px-4">
+          <div class="relative flex items-center justify-between">
+            <div class="absolute left-6 right-6 top-2 h-0.5 bg-amber-500/40"></div>
+            <div
+              v-for="stat in routeStats"
+              :key="stat.label"
+              class="relative z-10 flex flex-col items-center gap-1.5 bg-[#171412] px-4 text-center"
+            >
+              <span
+                class="h-4 w-4 rounded-full bg-amber-400 ring-4 ring-[#171412] shadow-sm"
+              ></span>
+              <span class="font-display text-2xl sm:text-3xl font-black text-amber-300">{{
+                stat.value
+              }}</span>
+              <span class="text-xs text-[#E8D9C9] font-bold max-w-[8rem]">{{ stat.label }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Scroll Indicator Button (Bouncing Arrow with Smooth Scroll) -->
+        <button
+          type="button"
+          class="mt-4 mx-auto flex items-center gap-2 px-4 py-1.5 rounded-full bg-black/40 hover:bg-black/70 text-white/90 hover:text-amber-300 border border-white/20 hover:border-amber-400 backdrop-blur-md transition duration-300 cursor-pointer group shadow-lg"
+          @click="scrollToContent"
+        >
+          <span
+            class="text-xs font-black tracking-wider uppercase text-amber-200 group-hover:text-amber-300"
+          >
+            เลื่อนเพื่อสำรวจ
+          </span>
+          <i
+            class="mdi mdi-chevron-down text-lg text-amber-400 group-hover:translate-y-0.5 transition animate-bounce"
+          ></i>
+        </button>
+      </div>
     </section>
 
-    <!-- CATEGORIES BAR (DYNAMIC FROM API) -->
-    <section
-      v-if="categories.length"
-      class="relative z-20 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 -mt-10 sm:-mt-12"
-    >
-      <div class="rounded-3xl bg-[#FFF9F2] p-4 sm:p-5 shadow-xl border-2 border-[#E8D9C9]">
-        <div class="flex items-center gap-3 overflow-x-auto pb-1 scrollbar-none">
-          <RouterLink
-            v-for="cat in categories"
-            :key="cat.contentCategoryId"
-            to="/contents"
-            class="group shrink-0 flex flex-col items-center px-4 py-2.5 rounded-2xl border-2 border-[#E8D9C9] bg-white hover:bg-[#D96C2C]/10 hover:border-[#D96C2C] transition duration-200 shadow-2xs"
+    <!-- 2. CATEGORIES — TRANSIT LINE STRIP -->
+    <section v-if="categories.length" class="relative z-20 mx-auto max-w-6xl px-4 sm:px-6 -mt-6">
+      <div
+        class="rounded-2xl bg-[#FFF9F2] border-2 border-[#E8D9C9] shadow-xl px-5 sm:px-7 py-3.5 flex items-center gap-5 overflow-x-auto scrollbar-none"
+      >
+        <span class="text-xs font-black text-[#786B62] shrink-0 flex items-center gap-1">
+          <i class="mdi mdi-routes text-amber-700 text-sm"></i>
+          สายการท่องเที่ยว
+        </span>
+        <RouterLink
+          v-for="(cat, i) in categories"
+          :key="cat.contentCategoryId"
+          :to="{ path: '/contents', query: { categoryId: String(cat.contentCategoryId) } }"
+          class="shrink-0 flex items-center gap-2 group cursor-pointer"
+        >
+          <span
+            class="h-2.5 w-2.5 rounded-full shrink-0"
+            :style="{ background: lineColors[i % lineColors.length] }"
+          ></span>
+          <span
+            class="text-xs sm:text-sm font-black text-[#332820] group-hover:text-[#D96C2C] whitespace-nowrap transition"
           >
-            <span class="text-sm sm:text-base font-semibold text-[#332820] group-hover:text-[#D96C2C]">
-              {{ cat.categoryName }}
-            </span>
-          </RouterLink>
+            {{ cat.categoryName }}
+          </span>
+        </RouterLink>
+        <RouterLink
+          to="/contents"
+          class="ml-auto shrink-0 text-xs font-black text-[#D96C2C] hover:underline whitespace-nowrap flex items-center gap-0.5"
+        >
+          <span>ดูทั้งหมด</span>
+          <i class="mdi mdi-chevron-right text-base"></i>
+        </RouterLink>
+      </div>
+    </section>
+
+    <!-- 3. VALUE PILLARS — EDITORIAL BAND -->
+    <section class="bg-[#171412] text-[#FFF9F2] border-y-2 border-amber-600/40 my-14 shadow-xl">
+      <div
+        class="mx-auto max-w-6xl px-4 sm:px-6 py-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-white/10"
+      >
+        <div
+          v-for="pillar in pillars"
+          :key="pillar.title"
+          class="flex items-start gap-4 py-6 sm:py-0 sm:px-6 first:sm:pl-0"
+        >
+          <i :class="`mdi ${pillar.icon}`" class="text-2xl text-amber-400 shrink-0 mt-0.5"></i>
+          <div>
+            <h3 class="font-display font-black text-base sm:text-lg text-white">
+              {{ pillar.title }}
+            </h3>
+            <p class="text-xs text-[#E8D9C9] font-medium mt-1.5 leading-relaxed">
+              {{ pillar.desc }}
+            </p>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- MAIN CONTENT CONTAINER -->
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 space-y-16">
-      <!-- SECTION 1: คอนเทนต์แนะนำ (REAL API DATA) -->
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 space-y-16">
+      <!-- 4. RECOMMENDED STORIES -->
       <section v-if="recommendedContents.length || loading">
-        <div class="flex items-center justify-between mb-6">
-          <div>
-            <h2 class="text-2xl sm:text-3xl font-bold text-[#332820] tracking-tight">
-              เรื่องราวและคอนเทนต์แนะนำ
-            </h2>
-            <p class="text-sm text-[#786B62] font-medium mt-0.5">
-              รวมเรื่องน่าสนใจ สถานที่ท่องเที่ยว และภูมิปัญญากาญจนบุรี
-            </p>
+        <div
+          class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b-2 border-[#E8D9C9] pb-4 mb-6"
+        >
+          <div class="flex items-center gap-3">
+            <div
+              class="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-700 text-white shadow-xs font-bold"
+            >
+              <i class="mdi mdi-book-open-page-variant-outline text-2xl text-white"></i>
+            </div>
+            <div>
+              <h2 class="font-display text-2xl sm:text-3xl font-black text-[#332820]">
+                เรื่องราวและคอนเทนต์แนะนำ
+              </h2>
+              <p class="text-xs sm:text-sm text-[#786B62] font-semibold mt-0.5">
+                รวมเรื่องน่าสนใจ สถานที่ท่องเที่ยว และภูมิปัญญากาญจนบุรี
+              </p>
+            </div>
           </div>
           <RouterLink
             to="/contents"
-            class="text-sm sm:text-base font-semibold text-[#D96C2C] hover:underline flex items-center gap-1 transition"
+            class="text-xs sm:text-sm font-black text-emerald-800 hover:underline flex items-center gap-1 shrink-0"
           >
-            <span>ดูทั้งหมด</span>
-            <i class="mdi mdi-chevron-right text-lg"></i>
+            <span>ดูเรื่องราวทั้งหมด</span>
+            <i class="mdi mdi-arrow-right text-base"></i>
           </RouterLink>
         </div>
 
-        <div v-if="loading" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+        <div v-if="loading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           <div
-            v-for="i in 5"
+            v-for="i in 6"
             :key="i"
-            class="animate-pulse bg-[#FFF9F2] rounded-2xl h-48 border-2 border-[#E8D9C9]"
+            class="animate-pulse bg-[#FFF9F2] rounded-3xl h-64 border-2 border-[#E8D9C9]"
           ></div>
         </div>
 
         <div
           v-else-if="recommendedContents.length"
-          class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 sm:gap-5"
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
         >
           <RouterLink
-            v-for="item in recommendedContents"
+            v-for="item in recommendedContents.slice(0, 6)"
             :key="item.contentId"
             :to="`/contents/${item.contentId}`"
-            class="group bg-[#FFF9F2] rounded-2xl overflow-hidden border-2 border-[#E8D9C9] shadow-2xs hover:shadow-xl hover:border-[#D96C2C] hover:-translate-y-1 transition duration-300 flex flex-col"
-          >
-            <div class="relative aspect-4/3 overflow-hidden bg-[#171412]">
-              <img
-                v-if="youtubeThumbnail(item.youtubeUrl)"
-                :src="youtubeThumbnail(item.youtubeUrl)"
-                :alt="item.title"
-                class="w-full h-full object-cover group-hover:scale-105 transition duration-500"
-              />
-              <div
-                v-else
-                class="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#D96C2C] to-[#171412] text-white"
-              >
-                <i class="mdi mdi-compass-rose text-4xl opacity-40"></i>
-              </div>
-              <span
-                class="absolute top-2 left-2 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#D96C2C]/90 text-white shadow-md"
-              >
-                {{ item.contentCategoryName || 'คอนเทนต์' }}
-              </span>
-            </div>
-            <div class="p-3.5 flex flex-col flex-1 justify-between">
-              <div>
-                <h3
-                  class="font-bold text-[#332820] text-sm sm:text-base group-hover:text-[#D96C2C] transition line-clamp-1"
-                >
-                  {{ item.title }}
-                </h3>
-                <p class="text-xs sm:text-sm text-[#786B62] line-clamp-2 mt-1 font-normal leading-relaxed">
-                  {{ item.summary || 'เรื่องราวจากกาญจนบุรี' }}
-                </p>
-              </div>
-              <div
-                class="mt-3 flex items-center justify-between text-xs text-[#786B62] border-t border-[#E8D9C9] pt-2 font-medium"
-              >
-                <span class="flex items-center gap-1 line-clamp-1"
-                  ><i class="mdi mdi-map-marker text-[#D96C2C]"></i
-                  >{{ item.districtName || 'กาญจนบุรี' }}</span
-                >
-              </div>
-            </div>
-          </RouterLink>
-        </div>
-      </section>
-
-      <!-- SECTION 2: สำรวจตามพื้นที่ (DISTRICTS FROM REAL API) -->
-      <section v-if="districts.length">
-        <div class="flex items-center justify-between mb-6">
-          <div>
-            <h2 class="text-2xl sm:text-3xl font-bold text-[#332820] tracking-tight">
-              สำรวจตามอำเภอและพื้นที่
-            </h2>
-            <p class="text-sm text-[#786B62] font-medium mt-0.5">
-              เลือกท่องเที่ยวและค้นหาเรื่องราวรายอำเภอ
-            </p>
-          </div>
-          <RouterLink
-            to="/contents"
-            class="text-sm sm:text-base font-semibold text-[#D96C2C] hover:underline flex items-center gap-1 transition"
-          >
-            <span>ดูทั้งหมด</span>
-            <i class="mdi mdi-chevron-right text-lg"></i>
-          </RouterLink>
-        </div>
-
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3.5">
-          <RouterLink
-            v-for="dist in districts"
-            :key="dist.districtId"
-            to="/contents"
-            class="group bg-[#FFF9F2] p-4 rounded-2xl border-2 border-[#E8D9C9] shadow-2xs hover:border-[#D96C2C] hover:shadow-md transition duration-200 text-center"
-          >
-            <div
-              class="flex h-10 w-10 mx-auto items-center justify-center rounded-xl bg-[#D96C2C]/10 text-[#D96C2C] group-hover:bg-[#D96C2C] group-hover:text-white transition"
-            >
-              <i class="mdi mdi-map-marker text-xl"></i>
-            </div>
-            <h4
-              class="font-bold text-[#332820] text-sm sm:text-base mt-2.5 group-hover:text-[#D96C2C]"
-            >
-              {{ dist.districtName }}
-            </h4>
-          </RouterLink>
-        </div>
-      </section>
-
-      <!-- SECTION 3: ร้านค้าแนะนำ (SHOPS FROM REAL API) -->
-      <section v-if="shops.length || loading">
-        <div class="flex items-center justify-between mb-6">
-          <div>
-            <h2 class="text-2xl sm:text-3xl font-bold text-[#332820] tracking-tight">
-              ร้านค้าชุมชนแนะนำ
-            </h2>
-            <p class="text-sm text-[#786B62] font-medium mt-0.5">
-              อุดหนุนสินค้าท้องถิ่น ส่งตรงจากชาวบ้านกาญจนบุรี
-            </p>
-          </div>
-          <RouterLink
-            to="/shops"
-            class="text-sm sm:text-base font-semibold text-[#D96C2C] hover:underline flex items-center gap-1 transition"
-          >
-            <span>ดูทั้งหมด</span>
-            <i class="mdi mdi-chevron-right text-lg"></i>
-          </RouterLink>
-        </div>
-
-        <div v-if="loading" class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div
-            v-for="i in 4"
-            :key="i"
-            class="animate-pulse bg-[#FFF9F2] rounded-2xl h-44 border-2 border-[#E8D9C9]"
-          ></div>
-        </div>
-
-        <div v-else-if="shops.length" class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <RouterLink
-            v-for="(shop, idx) in shops"
-            :key="shop.shopId"
-            :to="`/shops/${shop.shopId}`"
-            class="group bg-[#FFF9F2] rounded-2xl overflow-hidden border-2 border-[#E8D9C9] shadow-2xs hover:shadow-xl hover:border-[#D96C2C] hover:-translate-y-1 transition duration-300"
-          >
-            <div class="relative aspect-16/10 overflow-hidden bg-[#171412]">
-              <img
-                :src="getShopCover(shop, idx)"
-                :alt="shop.shopName"
-                class="w-full h-full object-cover group-hover:scale-105 transition duration-500"
-              />
-            </div>
-            <div class="p-3.5">
-              <h3
-                class="font-bold text-[#332820] text-sm sm:text-base group-hover:text-[#D96C2C] transition line-clamp-1"
-              >
-                {{ shop.shopName }}
-              </h3>
-              <p class="mt-1 text-xs text-[#786B62] font-medium flex items-center gap-1">
-                <i class="mdi mdi-map-marker text-[#D96C2C]"></i>อ.{{
-                  shop.districtName || 'สังขละบุรี'
-                }}
-              </p>
-            </div>
-          </RouterLink>
-        </div>
-      </section>
-
-      <!-- SECTION 4: สินค้าแนะนำ (PRODUCTS FROM REAL API) -->
-      <section v-if="products.length || loading">
-        <div class="flex items-center justify-between mb-6">
-          <div>
-            <h2 class="text-2xl sm:text-3xl font-bold text-[#332820] tracking-tight">
-              สินค้าขึ้นชื่อแนะนำ
-            </h2>
-            <p class="text-sm text-[#786B62] font-medium mt-0.5">
-              ของฝาก หัตถกรรม และของดีเมืองกาญจน์
-            </p>
-          </div>
-          <RouterLink
-            to="/shops"
-            class="text-sm sm:text-base font-semibold text-[#D96C2C] hover:underline flex items-center gap-1 transition"
-          >
-            <span>ดูทั้งหมด</span>
-            <i class="mdi mdi-chevron-right text-lg"></i>
-          </RouterLink>
-        </div>
-
-        <div v-if="loading" class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div
-            v-for="i in 4"
-            :key="i"
-            class="animate-pulse bg-[#FFF9F2] rounded-2xl h-44 border-2 border-[#E8D9C9]"
-          ></div>
-        </div>
-
-        <div v-else-if="products.length" class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <RouterLink
-            v-for="(prod, idx) in products"
-            :key="prod.productId"
-            :to="`/products/${prod.productId}`"
-            class="group bg-[#FFF9F2] rounded-2xl overflow-hidden border-2 border-[#E8D9C9] shadow-2xs hover:shadow-xl hover:border-[#D96C2C] hover:-translate-y-1 transition duration-300 flex flex-col justify-between"
+            class="group bg-[#FFF9F2] rounded-3xl overflow-hidden border-2 border-[#E8D9C9] shadow-md hover:shadow-2xl hover:border-emerald-600 hover:-translate-y-1.5 transition duration-300 flex flex-col justify-between"
           >
             <div>
               <div class="relative aspect-16/10 overflow-hidden bg-[#171412]">
                 <img
-                  :src="getProductCover(prod, idx)"
-                  :alt="prod.productName"
+                  v-if="youtubeThumbnail(item.youtubeUrl)"
+                  :src="youtubeThumbnail(item.youtubeUrl)"
+                  :alt="item.title"
                   class="w-full h-full object-cover group-hover:scale-105 transition duration-500"
                 />
-              </div>
-              <div class="p-3.5">
-                <h3
-                  class="font-bold text-[#332820] text-sm sm:text-base group-hover:text-[#D96C2C] transition line-clamp-1"
+                <div
+                  v-else
+                  class="flex h-full w-full items-center justify-center bg-gradient-to-br from-emerald-700 via-teal-900 to-[#171412] text-white"
                 >
-                  {{ prod.productName }}
+                  <i class="mdi mdi-compass-rose text-5xl opacity-40"></i>
+                </div>
+
+                <div class="absolute top-2.5 left-2.5 flex items-center gap-1.5 flex-wrap">
+                  <span
+                    class="px-3 py-0.5 rounded-full text-xs font-black bg-emerald-700 text-white shadow-md"
+                  >
+                    {{ item.contentCategoryName || 'เรื่องราวชุมชน' }}
+                  </span>
+                </div>
+              </div>
+
+              <div class="p-4 sm:p-5 space-y-2">
+                <h3
+                  class="font-display font-black text-[#332820] text-base sm:text-lg group-hover:text-emerald-700 transition line-clamp-2 leading-snug"
+                >
+                  {{ item.title }}
                 </h3>
+                <p
+                  class="text-xs sm:text-sm text-[#786B62] line-clamp-2 font-medium leading-relaxed"
+                >
+                  {{ item.summary || 'เรื่องราวและภูมิปัญญาอันทรงคุณค่าจากจังหวัดกาญจนบุรี' }}
+                </p>
               </div>
             </div>
-            <div class="px-3.5 pb-3.5 flex items-center justify-between border-t border-[#E8D9C9] pt-2.5">
-              <span class="font-bold text-[#D96C2C] text-base sm:text-lg"
-                >฿ {{ Number(prod.price).toLocaleString('th-TH') }}</span
+
+            <div
+              class="px-4 sm:px-5 pb-4 pt-3 flex items-center justify-between text-xs sm:text-sm text-[#786B62] border-t border-[#E8D9C9] font-bold"
+            >
+              <span class="flex items-center gap-1 text-[#332820]">
+                <i class="mdi mdi-map-marker text-emerald-700 text-base"></i>
+                {{ item.districtName || 'กาญจนบุรี' }}
+              </span>
+              <span
+                class="text-emerald-700 font-black flex items-center gap-1 group-hover:translate-x-1 transition"
               >
-              <button
-                class="flex h-9 w-9 items-center justify-center rounded-xl bg-[#D96C2C] text-white hover:bg-[#BF5720] transition shadow-xs"
-                title="ดูสินค้า"
-              >
-                <i class="mdi mdi-arrow-right text-lg text-white"></i>
-              </button>
+                <span>อ่านเรื่องราว</span>
+                <i class="mdi mdi-arrow-right text-base"></i>
+              </span>
             </div>
           </RouterLink>
+        </div>
+      </section>
+
+      <!-- 5. DISTRICTS — HORIZONTAL ROUTE MAP -->
+      <section v-if="districts.length">
+        <div
+          class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b-2 border-[#E8D9C9] pb-4 mb-4"
+        >
+          <div class="flex items-center gap-3">
+            <div
+              class="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-600 text-white shadow-xs font-bold"
+            >
+              <i class="mdi mdi-map-marker-radius-outline text-2xl text-white"></i>
+            </div>
+            <div>
+              <h2 class="font-display text-2xl sm:text-3xl font-black text-[#332820]">
+                สำรวจตามอำเภอและพื้นที่
+              </h2>
+              <p class="text-xs sm:text-sm text-[#786B62] font-semibold mt-0.5">
+                เลือกท่องเที่ยวและค้นหาเรื่องราวรายอำเภอทั่วกาญจนบุรี
+              </p>
+            </div>
+          </div>
+          <RouterLink
+            to="/contents"
+            class="text-xs sm:text-sm font-black text-amber-700 hover:underline flex items-center gap-1 shrink-0"
+          >
+            <span>ดูพื้นที่ทั้งหมด</span>
+            <i class="mdi mdi-arrow-right text-base"></i>
+          </RouterLink>
+        </div>
+
+        <div class="overflow-x-auto scrollbar-none py-2">
+          <div
+            class="relative flex w-full min-w-[720px] md:min-w-0 justify-between items-center px-4 py-2"
+            style="height: 7.5rem"
+          >
+            <div
+              class="absolute left-6 right-6 top-1/2 -translate-y-1/2 h-1 bg-[#E8D9C9] rounded-full"
+            ></div>
+            <RouterLink
+              v-for="(dist, idx) in districts"
+              :key="dist.districtId"
+              :to="{ path: '/contents', query: { districtId: String(dist.districtId) } }"
+              class="group relative flex-1 shrink-0 md:shrink h-full cursor-pointer"
+            >
+              <span
+                class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-3.5 w-3.5 rounded-full bg-emerald-700 ring-4 ring-[#F7F0E6] group-hover:bg-[#D96C2C] group-hover:scale-125 transition z-10 shadow-xs"
+              ></span>
+              <div
+                class="absolute left-1/2 -translate-x-1/2 w-full text-center px-0.5"
+                :class="idx % 2 === 0 ? 'top-1' : 'bottom-1'"
+              >
+                <p
+                  class="text-xs font-black text-[#332820] group-hover:text-[#D96C2C] transition leading-tight break-words"
+                >
+                  {{ dist.districtName }}
+                </p>
+                <span
+                  class="text-[10px] text-[#786B62] font-semibold block mt-0.5 whitespace-nowrap"
+                  >จ.กาญจนบุรี</span
+                >
+              </div>
+            </RouterLink>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6. SHOPS -->
+      <section v-if="shops.length || loading">
+        <div
+          class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b-2 border-[#E8D9C9] pb-4 mb-6"
+        >
+          <div class="flex items-center gap-3">
+            <div
+              class="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-700 text-white shadow-xs font-bold"
+            >
+              <i class="mdi mdi-store-outline text-2xl text-white"></i>
+            </div>
+            <div>
+              <h2 class="font-display text-2xl sm:text-3xl font-black text-[#332820]">
+                ร้านค้าชุมชนแนะนำ
+              </h2>
+              <p class="text-xs sm:text-sm text-[#786B62] font-semibold mt-0.5">
+                อุดหนุนสินค้าท้องถิ่น ส่งตรงจากชาวบ้านและเกษตรกรกาญจนบุรี
+              </p>
+            </div>
+          </div>
+          <RouterLink
+            to="/shops"
+            class="text-xs sm:text-sm font-black text-emerald-800 hover:underline flex items-center gap-1 shrink-0"
+          >
+            <span>ดูร้านค้าทั้งหมด</span>
+            <i class="mdi mdi-arrow-right text-base"></i>
+          </RouterLink>
+        </div>
+
+        <div v-if="loading" class="grid grid-cols-2 sm:grid-cols-4 gap-5">
+          <div
+            v-for="i in 4"
+            :key="i"
+            class="animate-pulse bg-[#FFF9F2] rounded-3xl h-52 border-2 border-[#E8D9C9]"
+          ></div>
+        </div>
+
+        <div v-else-if="shops.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <RouterLink
+            v-for="(shop, idx) in shops"
+            :key="shop.shopId"
+            :to="`/shops/${shop.shopId}`"
+            class="group bg-[#FFF9F2] rounded-3xl overflow-hidden border-2 border-[#E8D9C9] shadow-md hover:shadow-xl hover:border-amber-500 hover:-translate-y-1.5 transition duration-300 flex flex-col justify-between"
+          >
+            <div>
+              <div class="relative aspect-4/3 overflow-hidden bg-[#171412]">
+                <img
+                  :src="getShopCover(shop, idx)"
+                  :alt="shop.shopName"
+                  class="w-full h-full object-cover object-center group-hover:scale-105 transition duration-500"
+                />
+                <span
+                  class="absolute top-2.5 left-2.5 px-3 py-0.5 rounded-full text-xs font-black bg-amber-600 text-white shadow-md"
+                >
+                  ร้านค้าผ่านการรับรอง
+                </span>
+              </div>
+
+              <div class="p-4 space-y-1.5">
+                <h3
+                  class="font-display font-black text-[#332820] text-base sm:text-lg group-hover:text-amber-800 transition line-clamp-1"
+                >
+                  {{ shop.shopName }}
+                </h3>
+                <p class="text-xs sm:text-sm text-[#786B62] font-semibold flex items-center gap-1">
+                  <i class="mdi mdi-map-marker text-emerald-700 text-base"></i>
+                  <span>อ.{{ shop.districtName || 'สังขละบุรี' }} จ.กาญจนบุรี</span>
+                </p>
+              </div>
+            </div>
+
+            <div class="p-4 pt-0">
+              <span
+                class="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-black text-xs sm:text-sm transition border border-amber-600 shadow-xs cursor-pointer"
+              >
+                <i class="mdi mdi-store-check-outline text-base text-white"></i>
+                <span class="text-white font-black">เข้าชมร้านค้า</span>
+              </span>
+            </div>
+          </RouterLink>
+        </div>
+      </section>
+
+      <!-- 7. PRODUCTS — LUGGAGE-TAG PRICE BADGE -->
+      <section v-if="products.length || loading">
+        <div
+          class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b-2 border-[#E8D9C9] pb-4 mb-6"
+        >
+          <div class="flex items-center gap-3">
+            <div
+              class="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-600 text-white shadow-xs font-bold"
+            >
+              <i class="mdi mdi-package-variant-closed text-2xl text-white"></i>
+            </div>
+            <div>
+              <h2 class="font-display text-2xl sm:text-3xl font-black text-[#332820]">
+                สินค้าขึ้นชื่อแนะนำ
+              </h2>
+              <p class="text-xs sm:text-sm text-[#786B62] font-semibold mt-0.5">
+                ของฝาก หัตถกรรม ผลิตภัณฑ์เกษตร และของดีเมืองกาญจน์
+              </p>
+            </div>
+          </div>
+          <RouterLink
+            to="/shops"
+            class="text-xs sm:text-sm font-black text-amber-700 hover:underline flex items-center gap-1 shrink-0"
+          >
+            <span>ดูสินค้าทั้งหมด</span>
+            <i class="mdi mdi-arrow-right text-base"></i>
+          </RouterLink>
+        </div>
+
+        <div v-if="loading" class="grid grid-cols-2 sm:grid-cols-4 gap-5">
+          <div
+            v-for="i in 4"
+            :key="i"
+            class="animate-pulse bg-[#FFF9F2] rounded-3xl h-52 border-2 border-[#E8D9C9]"
+          ></div>
+        </div>
+
+        <div
+          v-else-if="products.length"
+          class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5"
+        >
+          <RouterLink
+            v-for="(prod, idx) in products"
+            :key="prod.productId"
+            :to="`/products/${prod.productId}`"
+            class="group bg-[#FFF9F2] rounded-3xl overflow-hidden border-2 border-[#E8D9C9] p-3.5 shadow-md hover:shadow-xl hover:border-amber-500 hover:-translate-y-1 transition duration-300 flex flex-col justify-between"
+          >
+            <div>
+              <div class="relative aspect-4/3 rounded-2xl overflow-hidden bg-[#171412] mb-3">
+                <img
+                  :src="getProductCover(prod, idx)"
+                  :alt="prod.productName"
+                  class="w-full h-full object-cover object-center group-hover:scale-105 transition duration-500"
+                />
+                <span
+                  class="absolute top-2 left-2 px-2.5 py-0.5 rounded-full text-xs font-black bg-emerald-700 text-white shadow-md"
+                >
+                  พร้อมส่ง
+                </span>
+              </div>
+
+              <h3
+                class="font-display font-black text-[#332820] text-sm sm:text-base group-hover:text-amber-800 transition line-clamp-2 leading-snug"
+              >
+                {{ prod.productName }}
+              </h3>
+
+              <div class="flex items-baseline gap-2 mt-2">
+                <span class="font-black text-amber-700 text-base sm:text-lg">
+                  ฿ {{ Number(prod.price).toLocaleString('th-TH') }}
+                </span>
+                <span class="text-xs text-[#786B62] line-through font-semibold">
+                  ฿ {{ (Number(prod.price) * 1.25).toLocaleString('th-TH') }}
+                </span>
+              </div>
+            </div>
+
+            <div class="mt-3 pt-2">
+              <span
+                class="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-black text-xs sm:text-sm transition border border-amber-600 shadow-xs cursor-pointer"
+              >
+                <i class="mdi mdi-cart-plus text-base text-white"></i>
+                <span class="text-white font-black">สั่งซื้อสินค้า</span>
+              </span>
+            </div>
+          </RouterLink>
+        </div>
+      </section>
+
+      <!-- 8. CTA — TWO TICKET STUBS SIDE BY SIDE (WITH APPS BRAND COLORS) -->
+      <section class="relative rounded-3xl border-2 border-[#E8D9C9] overflow-hidden shadow-2xl">
+        <div class="grid sm:grid-cols-2">
+          <div
+            class="relative bg-gradient-to-br from-[#171412] to-[#2d1f14] text-white p-8 sm:p-10 space-y-4"
+          >
+            <span
+              class="text-xs font-black text-amber-400 bg-amber-400/10 px-3 py-1 rounded-full border border-amber-400/30 inline-block"
+            >
+              สำหรับผู้ประกอบการ
+            </span>
+            <h2 class="font-display text-2xl sm:text-3xl font-black leading-tight text-white">
+              เริ่มต้นเปิดร้านค้าชุมชนของคุณ
+            </h2>
+            <p class="text-xs sm:text-sm text-[#E8D9C9] font-medium leading-relaxed">
+              เพิ่มโอกาสสร้างรายได้สู่ชุมชน นำเสนอสินค้าโอทอปและสินค้าเกษตรให้คนทั่วประเทศเห็น
+            </p>
+            <RouterLink
+              to="/shops"
+              class="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-[#D96C2C] to-[#BF5720] hover:from-[#BF5720] hover:to-[#a84614] text-white font-black text-xs sm:text-sm px-6 py-3 transition shadow-md border border-[#D96C2C] cursor-pointer"
+            >
+              <span>เริ่มต้นเปิดร้านค้า</span>
+              <i class="mdi mdi-arrow-right text-base"></i>
+            </RouterLink>
+          </div>
+
+          <!-- Perforation between the two stubs -->
+          <div
+            class="hidden sm:block absolute inset-y-4 left-1/2 border-l-2 border-dashed border-white/20 z-10"
+          ></div>
+          <span
+            class="hidden sm:block absolute -top-3 left-1/2 -translate-x-1/2 h-6 w-6 rounded-full bg-[#F7F0E6] border-2 border-[#E8D9C9] z-20"
+          ></span>
+          <span
+            class="hidden sm:block absolute -bottom-3 left-1/2 -translate-x-1/2 h-6 w-6 rounded-full bg-[#F7F0E6] border-2 border-[#E8D9C9] z-20"
+          ></span>
+
+          <div
+            class="relative bg-gradient-to-br from-[#0d2821] to-[#171412] text-white p-8 sm:p-10 space-y-4"
+          >
+            <span
+              class="text-xs font-black text-emerald-400 bg-emerald-400/10 px-3 py-1 rounded-full border border-emerald-400/30 inline-block"
+            >
+              สำหรับนักเล่าเรื่อง
+            </span>
+            <h2 class="font-display text-2xl sm:text-3xl font-black leading-tight text-white">
+              ร่วมแบ่งปันเรื่องราวเมืองกาญจน์
+            </h2>
+            <p class="text-xs sm:text-sm text-[#E8D9C9] font-medium leading-relaxed">
+              ถ่ายทอดภูมิปัญญาท้องถิ่นและวิถีชุมชน เพื่อส่งต่อคุณค่าให้ผู้คนทั่วประเทศ
+            </p>
+            <RouterLink
+              to="/contents"
+              class="inline-flex items-center gap-2 rounded-2xl bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs sm:text-sm px-6 py-3 transition shadow-md border border-emerald-600 cursor-pointer"
+            >
+              <span>แบ่งปันเรื่องราว</span>
+              <i class="mdi mdi-arrow-right text-base"></i>
+            </RouterLink>
+          </div>
         </div>
       </section>
     </div>
@@ -468,11 +827,26 @@ onMounted(loadHomeData)
 </template>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+Thai:wght@500;700;900&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap');
+
+.font-display {
+  font-family: 'Noto Serif Thai', serif;
+}
+.font-body {
+  font-family: 'IBM Plex Sans Thai', sans-serif;
+}
+
 .scrollbar-none::-webkit-scrollbar {
   display: none;
 }
 .scrollbar-none {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: 0.01ms !important;
+  }
 }
 </style>

@@ -21,12 +21,12 @@ export interface ScheduleFormData {
   contentId: string | null
   title: string
   startDateTime: string
-  endDateTime: string
-  address: string
+  endDateTime?: string | null
+  address?: string | null
   latitude: number | null
   longitude: number | null
-  description: string
-  status: ScheduleStatus
+  description?: string | null
+  status?: ScheduleStatus
 }
 
 export async function getSchedules(contentId?: string) {

@@ -18,8 +18,6 @@ import { getApiErrorMessage } from '@/features/auth/api/getApiErrorMessage'
 
 // Sub-components
 import ShopDetailHeader from '../components/ShopDetailHeader.vue'
-import ShopDetailCoupons from '../components/ShopDetailCoupons.vue'
-import ShopDetailCampaign from '../components/ShopDetailCampaign.vue'
 import ShopDetailProducts from '../components/ShopDetailProducts.vue'
 import ShopDetailContents from '../components/ShopDetailContents.vue'
 import ShopDetailAbout from '../components/ShopDetailAbout.vue'
@@ -225,7 +223,10 @@ async function loadShopData(shopId: string) {
 
     nearbyShops.value = await getNearbyShops(shopData)
   } catch (error) {
-    push.error({ title: 'ไม่พบร้านค้า', message: getApiErrorMessage(error, 'ร้านค้านี้อาจถูกปิดการใช้งาน') })
+    push.error({
+      title: 'ไม่พบร้านค้า',
+      message: getApiErrorMessage(error, 'ร้านค้านี้อาจถูกปิดการใช้งาน'),
+    })
     await router.replace('/shops')
   } finally {
     loading.value = false
@@ -250,7 +251,9 @@ watch(
     <div v-if="loading" class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 space-y-6">
       <div class="h-64 animate-pulse rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9]"></div>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="h-80 animate-pulse rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9] md:col-span-2"></div>
+        <div
+          class="h-80 animate-pulse rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9] md:col-span-2"
+        ></div>
         <div class="h-80 animate-pulse rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9]"></div>
       </div>
     </div>
@@ -273,13 +276,21 @@ watch(
       />
 
       <!-- 2. STORE NAVIGATION SUB-BAR -->
-      <section class="sticky top-16 z-30 bg-[#FFF9F2]/95 backdrop-blur-md border-y-2 border-[#E8D9C9] shadow-xs mt-6">
+      <section
+        class="sticky top-16 z-30 bg-[#FFF9F2]/95 backdrop-blur-md border-y-2 border-[#E8D9C9] shadow-xs mt-6"
+      >
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div class="flex items-center gap-4 sm:gap-6 overflow-x-auto text-xs sm:text-sm font-black scrollbar-none py-1.5">
+          <div
+            class="flex items-center gap-4 sm:gap-6 overflow-x-auto text-sm sm:text-base font-black scrollbar-none py-1.5"
+          >
             <button
               type="button"
               class="py-2.5 px-4 rounded-xl transition shrink-0 cursor-pointer border-2"
-              :class="activeTab === 'home' ? 'border-amber-600 bg-amber-500/10 text-amber-800 font-black shadow-2xs' : 'border-transparent text-[#786B62] hover:text-[#332820] hover:bg-[#F5E6D3]/50'"
+              :class="
+                activeTab === 'home'
+                  ? 'border-amber-600 bg-amber-500/10 text-amber-800 font-black shadow-2xs'
+                  : 'border-transparent text-[#786B62] hover:text-[#332820] hover:bg-[#F5E6D3]/50'
+              "
               @click="activeTab = 'home'"
             >
               หน้าแรกของร้าน
@@ -288,7 +299,11 @@ watch(
             <button
               type="button"
               class="py-2.5 px-4 rounded-xl transition shrink-0 cursor-pointer border-2"
-              :class="activeTab === 'products' ? 'border-amber-600 bg-amber-500/10 text-amber-800 font-black shadow-2xs' : 'border-transparent text-[#786B62] hover:text-[#332820] hover:bg-[#F5E6D3]/50'"
+              :class="
+                activeTab === 'products'
+                  ? 'border-amber-600 bg-amber-500/10 text-amber-800 font-black shadow-2xs'
+                  : 'border-transparent text-[#786B62] hover:text-[#332820] hover:bg-[#F5E6D3]/50'
+              "
               @click="activeTab = 'products'"
             >
               สินค้าทั้งหมด ({{ products.length }})
@@ -297,7 +312,11 @@ watch(
             <button
               type="button"
               class="py-2.5 px-4 rounded-xl transition shrink-0 cursor-pointer flex items-center gap-1.5 border-2"
-              :class="activeTab === 'contents' ? 'border-amber-600 bg-amber-500/10 text-amber-800 font-black shadow-2xs' : 'border-transparent text-[#786B62] hover:text-[#332820] hover:bg-[#F5E6D3]/50'"
+              :class="
+                activeTab === 'contents'
+                  ? 'border-amber-600 bg-amber-500/10 text-amber-800 font-black shadow-2xs'
+                  : 'border-transparent text-[#786B62] hover:text-[#332820] hover:bg-[#F5E6D3]/50'
+              "
               @click="activeTab = 'contents'"
             >
               <i class="mdi mdi-book-open-page-variant text-sm text-emerald-700"></i>
@@ -307,7 +326,11 @@ watch(
             <button
               type="button"
               class="py-2.5 px-4 rounded-xl transition shrink-0 cursor-pointer border-2"
-              :class="activeTab === 'about' ? 'border-amber-600 bg-amber-500/10 text-amber-800 font-black shadow-2xs' : 'border-transparent text-[#786B62] hover:text-[#332820] hover:bg-[#F5E6D3]/50'"
+              :class="
+                activeTab === 'about'
+                  ? 'border-amber-600 bg-amber-500/10 text-amber-800 font-black shadow-2xs'
+                  : 'border-transparent text-[#786B62] hover:text-[#332820] hover:bg-[#F5E6D3]/50'
+              "
               @click="activeTab = 'about'"
             >
               เกี่ยวกับร้าน & พิกัดแผนที่
@@ -316,11 +339,17 @@ watch(
             <button
               type="button"
               class="py-2.5 px-4 rounded-xl transition shrink-0 cursor-pointer flex items-center gap-1.5 border-2"
-              :class="activeTab === 'reviews' ? 'border-amber-600 bg-amber-500/10 text-amber-800 font-black shadow-2xs' : 'border-transparent text-[#786B62] hover:text-[#332820] hover:bg-[#F5E6D3]/50'"
+              :class="
+                activeTab === 'reviews'
+                  ? 'border-amber-600 bg-amber-500/10 text-amber-800 font-black shadow-2xs'
+                  : 'border-transparent text-[#786B62] hover:text-[#332820] hover:bg-[#F5E6D3]/50'
+              "
               @click="activeTab = 'reviews'"
             >
               <span>รีวิวจากผู้ซื้อ</span>
-              <span class="text-[10px] bg-amber-100 text-amber-800 border border-amber-200 px-2 py-0.5 rounded-full font-black">
+              <span
+                class="text-xs bg-amber-100 text-amber-800 border border-amber-200 px-2 py-0.5 rounded-full font-black"
+              >
                 {{ reviewData.totalCount || '0' }}
               </span>
             </button>
@@ -330,21 +359,6 @@ watch(
 
       <!-- 3. MAIN STORE BODY CONTAINER -->
       <main class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-8 space-y-10">
-        <!-- 3.1 STORE COUPONS ROW (Matches Reference Image 1:1) -->
-        <ShopDetailCoupons />
-
-        <!-- 3.2 FEATURED CAMPAIGN / STORY HIGHLIGHT BANNER (Using Real Content & Real Products) -->
-        <ShopDetailCampaign
-          v-if="activeTab === 'home'"
-          :shop="shop"
-          :featured-content="shopContents[0]"
-          :featured-products="products.slice(0, 2)"
-          :youtube-thumbnail="youtubeThumbnail"
-          :image-url="imageUrl"
-          :format-price="formatPrice"
-          @scroll-to-products="scrollToProducts"
-        />
-
         <!-- 3.3 COMMUNITY CONTENTS & STORIES SECTION (*EXPLICIT USER REQUEST*) -->
         <div v-if="activeTab === 'home' || activeTab === 'contents'">
           <ShopDetailContents
@@ -372,7 +386,10 @@ watch(
         </div>
 
         <!-- 3.5 ABOUT & MAP SECTION -->
-        <div v-if="activeTab === 'home' || activeTab === 'about'" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div
+          v-if="activeTab === 'home' || activeTab === 'about'"
+          class="grid grid-cols-1 lg:grid-cols-12 gap-6"
+        >
           <div class="lg:col-span-7">
             <ShopDetailAbout :shop="shop" />
           </div>

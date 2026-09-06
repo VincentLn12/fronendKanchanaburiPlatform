@@ -141,6 +141,16 @@ async function load() {
         status: (content.status === 'Draft' ? 'Draft' : 'Published') as SubmissionStatus,
       })
       await loadSubDistricts(form.districtId, true)
+
+      // โหลดข้อมูลตารางเวลา/กิจกรรมที่มีอยู่เดิม
+      const existingSchs = await getContentSchedules(contentId.value).catch(() => [])
+      schedulesForm.value = existingSchs.map((s) => ({
+        scheduleId: s.scheduleId,
+        title: s.title,
+        startDateTime: s.startDateTime ? new Date(s.startDateTime).toISOString().slice(0, 16) : '',
+        endDateTime: s.endDateTime ? new Date(s.endDateTime).toISOString().slice(0, 16) : '',
+        address: s.address || '',
+      }))
     }
   } catch (error) {
     await swal.error('โหลดข้อมูลไม่สำเร็จ', getApiErrorMessage(error, 'กรุณาลองใหม่อีกครั้ง'))
@@ -150,9 +160,48 @@ async function load() {
   }
 }
 
+import { getCategoryRule } from '@/features/contents/constants/categoryRules'
+import { getContentSchedules } from '@/features/contents/api'
+import { createSchedule, updateSchedule } from '@/features/admin/schedules/api/adminScheduleApi'
+
+const selectedCategoryName = computed(
+  () => categories.value.find((c) => c.contentCategoryId === form.contentCategoryId)?.categoryName,
+)
+const selectedCategoryRule = computed(() => getCategoryRule(selectedCategoryName.value))
+
+interface ScheduleItemForm {
+  scheduleId?: string
+  title: string
+  startDateTime: string
+  endDateTime: string
+  address: string
+}
+
+const schedulesForm = ref<ScheduleItemForm[]>([])
+
+function addScheduleRow() {
+  schedulesForm.value.push({
+    title: '',
+    startDateTime: '',
+    endDateTime: '',
+    address: '',
+  })
+}
+
+function removeScheduleRow(index: number) {
+  schedulesForm.value.splice(index, 1)
+}
+
 async function save() {
   if (!form.title.trim() || !form.contentCategoryId) {
     await swal.warning('กรอกข้อมูลไม่ครบ', 'กรุณาระบุชื่อคอนเทนต์และหมวดหมู่')
+    return
+  }
+  if (selectedCategoryRule.value.shopRequirement === 'required' && !form.shopId) {
+    await swal.warning(
+      'หมวดหมู่นี้จำเป็นต้องเชื่อมโยงร้านค้า',
+      selectedCategoryRule.value.shopRequirementLabel,
+    )
     return
   }
   saving.value = true
@@ -163,8 +212,37 @@ async function save() {
       longitude: toNullableNumber(form.longitude),
       status: form.status || 'Published',
     }
-    if (isEdit.value) await updateMyContent(contentId.value, payload)
-    else await createMyContent(payload)
+    let targetContentId = contentId.value
+    if (isEdit.value) {
+      await updateMyContent(contentId.value, payload)
+    } else {
+      const res = await createMyContent(payload)
+      targetContentId = res.contentId
+    }
+
+    // บันทึกตารางเวลา/กิจกรรม
+    if (targetContentId && selectedCategoryRule.value.hasSchedule !== false && schedulesForm.value.length > 0) {
+      for (const item of schedulesForm.value) {
+        if (!item.title.trim() || !item.startDateTime) continue
+        const schPayload = {
+          contentId: targetContentId,
+          title: item.title.trim(),
+          startDateTime: item.startDateTime,
+          endDateTime: item.endDateTime || null,
+          address: item.address?.trim() || null,
+          latitude: form.latitude,
+          longitude: form.longitude,
+          description: null,
+          status: 'Active' as const,
+        }
+        if (item.scheduleId) {
+          await updateSchedule(item.scheduleId, schPayload).catch(() => undefined)
+        } else {
+          await createSchedule(schPayload).catch(() => undefined)
+        }
+      }
+    }
+
     await swal.success(
       isEdit.value ? 'บันทึกการแก้ไขแล้ว' : 'บันทึกคอนเทนต์แล้ว',
       form.status === 'Published'
@@ -323,13 +401,23 @@ onMounted(load)
                   <!-- LINK TO SHOP SELECT DROPDOWN -->
                   <AppSelect
                     v-model="form.shopId"
-                    label="เชื่อมโยงกับร้านค้า (เลือกร้านค้า)"
+                    :label="selectedCategoryRule.shopRequirement === 'required' ? 'เชื่อมโยงกับร้านค้า * (จำเป็นสำหรับหมวดนี้)' : 'เชื่อมโยงกับร้านค้า (เลือกร้านค้า)'"
                     :items="shops"
                     item-title="shopName"
                     item-value="shopId"
-                    placeholder="เลือกร้านค้าที่เกี่ยวข้อง (ถ้ามี)"
+                    :placeholder="selectedCategoryRule.shopRequirementLabel"
                     clearable
                   />
+                </div>
+
+                <!-- CATEGORY RULE INFO BOX -->
+                <div v-if="selectedCategoryName" class="p-3.5 rounded-2xl bg-[#D96C2C]/10 border border-[#D96C2C]/30 text-xs text-[#332820] space-y-1">
+                  <div class="flex items-center gap-1.5 text-[#D96C2C] font-bold">
+                    <i class="mdi mdi-information-outline text-sm"></i>
+                    <span>เงื่อนไขการแสดงผลหมวดหมู่: {{ selectedCategoryName }}</span>
+                  </div>
+                  <p class="text-[#4A3E35] font-medium">- ร้านค้า: <span class="font-bold" :class="selectedCategoryRule.shopRequirement === 'required' ? 'text-rose-600' : 'text-[#332820]'">{{ selectedCategoryRule.shopRequirement === 'required' ? 'จำเป็นต้องเชื่อมโยงร้านค้าผู้ผลิต/จำหน่าย' : 'สามารถระบุเพิ่มเติมได้ (ถ้ามี)' }}</span></p>
+                  <p class="text-[#4A3E35] font-medium">- ตารางเวลา/กิจกรรม: <span class="font-bold">{{ selectedCategoryRule.hasSchedule === false ? 'ซ่อนส่วนตารางเวลาสำหรับหมวดหมู่นี้' : 'เปิดแสดงส่วนตารางเวลาและกิจกรรม' }}</span></p>
                 </div>
 
                 <div class="grid gap-5 sm:grid-cols-2">
@@ -361,6 +449,60 @@ onMounted(load)
                   v-model:longitude="form.longitude"
                   @address-detected="onAddressDetected"
                 />
+              </div>
+            </section>
+
+            <!-- Section 3: Schedule & Events (if applicable) -->
+            <section
+              v-if="selectedCategoryRule.hasSchedule !== false"
+              class="rounded-3xl border-2 border-[#E8D9C9] bg-[#FFF9F2] p-6 shadow-xs space-y-4"
+            >
+              <div class="flex items-center justify-between border-b-2 border-[#E8D9C9] pb-3">
+                <h2 class="text-lg font-black text-[#332820] flex items-center gap-2">
+                  <i class="mdi mdi-calendar-clock text-[#D96C2C] text-xl"></i>
+                  ตารางเวลาและกิจกรรม (Schedule & Events)
+                </h2>
+                <button
+                  type="button"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#D96C2C] text-white text-xs font-bold hover:bg-[#BF5720] transition cursor-pointer"
+                  @click="addScheduleRow"
+                >
+                  <i class="mdi mdi-plus text-sm"></i>
+                  เพิ่มตารางเวลา
+                </button>
+              </div>
+
+              <p class="text-xs text-[#786B62]">
+                ระบุวัน เวลา และสถานที่จัดงานหรือรอบกิจกรรมสำหรับคอนเทนต์นี้ (สามารถเพิ่มได้มากกว่า 1 รายการ)
+              </p>
+
+              <div v-if="schedulesForm.length === 0" class="py-6 text-center text-xs text-[#786B62] border-2 border-dashed border-[#E8D9C9] rounded-2xl">
+                ยังไม่มีตารางเวลา คลิก "เพิ่มตารางเวลา" เพื่อระบุวันเวลาและสถานที่จัดงาน
+              </div>
+
+              <div v-else class="space-y-4">
+                <div
+                  v-for="(item, idx) in schedulesForm"
+                  :key="idx"
+                  class="p-4 rounded-2xl border border-[#E8D9C9] bg-white space-y-3 relative"
+                >
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-[#D96C2C]">รายการที่ {{ idx + 1 }}</span>
+                    <button
+                      type="button"
+                      class="text-rose-600 hover:text-rose-800 text-xs font-bold flex items-center gap-1 cursor-pointer"
+                      @click="removeScheduleRow(idx)"
+                    >
+                      <i class="mdi mdi-trash-can-outline"></i> ลบ
+                    </button>
+                  </div>
+                  <div class="grid gap-3 sm:grid-cols-2">
+                    <AppTextField v-model="item.title" label="หัวข้อกิจกรรม / ตาราง *" placeholder="เช่น พิธีตักบาตรมอญ หรือ รอบการแสดง" />
+                    <AppTextField v-model="item.address" label="สถานที่ / จุดจัดงาน" placeholder="เช่น สะพานมอญ หรือ เวทีกลาง" />
+                    <AppTextField v-model="item.startDateTime" type="datetime-local" label="วัน-เวลาเริ่มต้น *" />
+                    <AppTextField v-model="item.endDateTime" type="datetime-local" label="วัน-เวลาสิ้นสุด (ถ้ามี)" />
+                  </div>
+                </div>
               </div>
             </section>
           </div>

@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import AppSelect from '@/components/common/input/AppSelect.vue'
 import ShipmentFulfillmentForm from './ShipmentFulfillmentForm.vue'
+import { useSwal } from '@/plugins/sweetalert'
 
 export interface OrderItem {
   orderId: string
@@ -10,6 +12,8 @@ export interface OrderItem {
   paymentStatus: string
   shippingMethod: string
   createdAt: string
+  slipImageUrl?: string
+  slipUploadedAt?: string
 }
 
 const props = defineProps<{
@@ -21,7 +25,11 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'update-status', payload: { order: OrderItem; status: string }): void
   (e: 'ship-order', payload: { order: OrderItem; provider: string; trackingNumber: string }): void
+  (e: 'update-payment', payload: { order: OrderItem; paymentStatus: string }): void
 }>()
+
+const swal = useSwal()
+const showSlipModal = ref(false)
 
 function getStatusTitle(status: string) {
   const match = props.orderStatusOptions.find((opt) => opt.value === status)
@@ -42,6 +50,28 @@ function formatDate(dateStr: string) {
     })
   } catch {
     return dateStr
+  }
+}
+
+async function handleApproveSlip() {
+  const confirm = await swal.confirm(
+    'ยืนยันอนุมัติสลิปชำระเงิน?',
+    `ออเดอร์ #${props.order.orderNumber} ยอดเงิน ฿${props.order.totalAmount.toLocaleString('th-TH')}`,
+  )
+  if (confirm.isConfirmed) {
+    showSlipModal.value = false
+    emit('update-payment', { order: props.order, paymentStatus: 'Paid' })
+  }
+}
+
+async function handleRejectSlip() {
+  const confirm = await swal.confirm(
+    'ปฏิเสธสลิปการโอนเงิน?',
+    'ลูกค้าจะได้รับการแจ้งเตือนให้แนบสลิปใหม่',
+  )
+  if (confirm.isConfirmed) {
+    showSlipModal.value = false
+    emit('update-payment', { order: props.order, paymentStatus: 'Failed' })
   }
 }
 </script>
@@ -81,19 +111,29 @@ function formatDate(dateStr: string) {
         <!-- Payment Status Badge -->
         <span
           class="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-black border-2"
-          :class="
-            order.paymentStatus === 'Paid'
-              ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
-              : 'bg-amber-100 text-amber-800 border-amber-300'
-          "
+          :class="{
+            'bg-emerald-100 text-emerald-800 border-emerald-300': order.paymentStatus === 'Paid',
+            'bg-orange-100 text-orange-900 border-orange-300 animate-pulse': order.paymentStatus === 'PendingVerification',
+            'bg-amber-100 text-amber-800 border-amber-300': order.paymentStatus !== 'Paid' && order.paymentStatus !== 'PendingVerification',
+          }"
         >
           <i
             :class="[
               'mdi',
-              order.paymentStatus === 'Paid' ? 'mdi-check-circle' : 'mdi-clock-outline',
+              order.paymentStatus === 'Paid'
+                ? 'mdi-check-circle'
+                : order.paymentStatus === 'PendingVerification'
+                  ? 'mdi-file-document-outline'
+                  : 'mdi-clock-outline',
             ]"
           ></i>
-          {{ order.paymentStatus === 'Paid' ? 'ชำระเงินเรียบร้อย' : 'รอการชำระเงิน' }}
+          {{
+            order.paymentStatus === 'Paid'
+              ? 'ชำระเงินเรียบร้อย'
+              : order.paymentStatus === 'PendingVerification'
+                ? 'รอตรวจสอบสลิปโอนเงิน'
+                : 'รอการชำระเงิน'
+          }}
         </span>
 
         <!-- Current Order Status Badge -->
@@ -115,6 +155,17 @@ function formatDate(dateStr: string) {
           ></i>
           {{ order.shippingMethod === 'Pickup' ? 'รับที่ร้านค้า' : 'จัดส่งสินค้าทางพัสดุ' }}
         </span>
+
+        <!-- Inspect Payment Slip Button -->
+        <button
+          v-if="order.paymentStatus === 'PendingVerification' || order.slipImageUrl"
+          type="button"
+          class="inline-flex items-center gap-1 rounded-full bg-[#D96C2C] hover:bg-[#BF5720] px-3.5 py-1 text-xs font-black text-white shadow-xs transition active:scale-95 cursor-pointer border border-[#D96C2C]"
+          @click="showSlipModal = true"
+        >
+          <i class="mdi mdi-eye-outline text-sm text-white"></i>
+          <span class="!text-white font-black">ตรวจสอบสลิปโอนเงิน</span>
+        </button>
       </div>
 
       <!-- Update Order Status Dropdown -->
@@ -148,13 +199,86 @@ function formatDate(dateStr: string) {
       @submit="emit('ship-order', { order, ...$event })"
     />
 
+    <!-- Pending Slip Notice -->
+    <div
+      v-if="order.paymentStatus === 'PendingVerification'"
+      class="rounded-2xl bg-orange-100/90 p-4 text-xs text-orange-950 border-2 border-orange-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3 font-bold shadow-xs"
+    >
+      <div class="flex items-center gap-2">
+        <i class="mdi mdi-alert-decagram-outline text-orange-700 text-xl shrink-0"></i>
+        <span>ลูกค้าได้แนบสลิปโอนเงินแล้ว กรุณาตรวจสอบหลักฐานและอนุมัติก่อนจัดส่งสินค้า</span>
+      </div>
+      <button
+        type="button"
+        class="shrink-0 px-4 py-2 rounded-xl bg-[#D96C2C] hover:bg-[#BF5720] text-white text-xs font-black transition cursor-pointer shadow-xs border border-[#D96C2C] flex items-center justify-center gap-1.5"
+        @click="showSlipModal = true"
+      >
+        <i class="mdi mdi-file-find-outline text-white text-base"></i>
+        <span class="!text-white font-black">เปิดดูสลิปการโอน</span>
+      </button>
+    </div>
+
     <!-- Unpaid Warning Banner -->
     <div
-      v-if="order.paymentStatus !== 'Paid'"
+      v-else-if="order.paymentStatus !== 'Paid'"
       class="rounded-2xl bg-amber-100/80 px-4 py-2.5 text-xs text-amber-900 border border-amber-300 flex items-center gap-2 font-bold"
     >
       <i class="mdi mdi-alert-circle-outline text-amber-700 text-lg shrink-0"></i>
       <span>ลูกค้ายังไม่ได้ชำระเงินในระบบ กรุณารอการชำระเงินสำเร็จก่อนจัดส่งสินค้า</span>
+    </div>
+
+    <!-- Payment Slip Inspection Modal -->
+    <div
+      v-if="showSlipModal"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-xs p-4"
+      @click.self="showSlipModal = false"
+    >
+      <div class="relative w-full max-w-md rounded-3xl bg-[#FFF9F2] p-6 shadow-2xl border-2 border-[#E8D9C9] space-y-4 max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between border-b border-[#E8D9C9] pb-3">
+          <div>
+            <h3 class="font-black text-[#332820] text-base sm:text-lg">สลิปการโอนเงิน</h3>
+            <p class="text-xs text-[#786B62] font-semibold">ออเดอร์ #{{ order.orderNumber }} (฿{{ order.totalAmount.toLocaleString('th-TH') }})</p>
+          </div>
+          <button
+            type="button"
+            class="h-8 w-8 rounded-full bg-black/10 hover:bg-black/20 text-[#332820] flex items-center justify-center text-lg font-bold transition cursor-pointer"
+            @click="showSlipModal = false"
+          >
+            <i class="mdi mdi-close"></i>
+          </button>
+        </div>
+
+        <div v-if="order.slipImageUrl" class="rounded-2xl border-2 border-[#E8D9C9] overflow-hidden bg-black/5 p-2">
+          <img :src="order.slipImageUrl" alt="หลักฐานสลิปการโอนเงิน" class="w-full max-h-96 object-contain rounded-xl" />
+        </div>
+        <div v-else class="rounded-2xl bg-amber-50 p-6 text-center text-amber-800 border border-amber-200 font-bold text-xs">
+          ยังไม่มีรูปสลิปในระบบ
+        </div>
+
+        <div v-if="order.slipUploadedAt" class="text-xs text-[#786B62] font-semibold flex items-center justify-between bg-[#F7F0E6] p-3 rounded-xl">
+          <span>เวลาที่แจ้งโอน:</span>
+          <span class="font-black text-[#332820]">{{ formatDate(order.slipUploadedAt) }}</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 pt-2">
+          <button
+            type="button"
+            class="py-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-black text-xs transition cursor-pointer shadow-md flex items-center justify-center gap-1"
+            @click="handleRejectSlip"
+          >
+            <i class="mdi mdi-close-circle text-base"></i>
+            <span>ปฏิเสธสลิป</span>
+          </button>
+          <button
+            type="button"
+            class="py-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs transition cursor-pointer shadow-md flex items-center justify-center gap-1"
+            @click="handleApproveSlip"
+          >
+            <i class="mdi mdi-check-circle text-base"></i>
+            <span>อนุมัติการชำระเงิน</span>
+          </button>
+        </div>
+      </div>
     </div>
   </article>
 </template>

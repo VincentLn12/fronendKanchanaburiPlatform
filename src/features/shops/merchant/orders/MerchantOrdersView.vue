@@ -214,6 +214,7 @@
           :updating-id="updatingId"
           @update-status="handleUpdateStatus"
           @ship-order="handleShipOrder"
+          @update-payment="handleUpdatePayment"
         />
       </div>
     </template>
@@ -359,6 +360,23 @@ async function handleShipOrder({
     await swal.success('บันทึกการจัดส่งแล้ว', 'ระบบอัปเดตเลขพัสดุและแจ้งลูกค้าเรียบร้อยแล้ว')
   } catch (error) {
     await swal.error('บันทึกการจัดส่งไม่สำเร็จ', getApiErrorMessage(error, 'กรุณาลองใหม่อีกครั้ง'))
+  } finally {
+    updatingId.value = null
+  }
+}
+
+async function handleUpdatePayment({ order, paymentStatus }: { order: OrderItem; paymentStatus: string }) {
+  updatingId.value = order.orderId
+  try {
+    await http.patch(`/orders/${order.orderId}/status`, { paymentStatus })
+    order.paymentStatus = paymentStatus
+    if (paymentStatus === 'Paid' && order.orderStatus === 'Pending') {
+      order.orderStatus = 'Confirmed'
+    }
+    const msg = paymentStatus === 'Paid' ? 'อนุมัติการชำระเงินเรียบร้อยแล้ว' : 'ปฏิเสธสลิปการโอนเงินแล้ว'
+    await swal.success('บันทึกผลสำเร็จ', msg)
+  } catch (error) {
+    await swal.error('ทำรายการไม่สำเร็จ', getApiErrorMessage(error, 'กรุณาลองใหม่อีกครั้ง'))
   } finally {
     updatingId.value = null
   }

@@ -13,8 +13,6 @@ import {
 } from '@/features/shops/api'
 
 // Sub-components
-import ShopListHeroBanner from '../components/ShopListHeroBanner.vue'
-import ShopListFeaturedSection from '../components/ShopListFeaturedSection.vue'
 import ShopListSidebarFilter from '../components/ShopListSidebarFilter.vue'
 import ShopCardItem from '../components/ShopCardItem.vue'
 import ShopMerchantCtaBanner from '../components/ShopMerchantCtaBanner.vue'
@@ -214,23 +212,7 @@ onMounted(async () => {
 
 <template>
   <div class="min-h-screen bg-[#F7F0E6] text-[#2C221E] pb-24 font-sans space-y-8">
-    <!-- 1. HERO BANNER & STATS SECTION -->
-    <!-- <ShopListHeroBanner
-      :categories="categories"
-      :selected-category-id="categoryId"
-      :view-mode="viewMode"
-      @select-category="selectCategoryPill"
-      @update:view-mode="viewMode = $event"
-    /> -->
-
     <main class="mx-auto mt-5 w-full max-w-[1800px] px-3 sm:px-6 lg:px-10 space-y-6 sm:space-y-8">
-      <!-- 2. FEATURED SHOPS SECTION (Only on Page 1 without active filters in shops mode) -->
-      <!-- <ShopListFeaturedSection
-        v-if="viewMode === 'shops' && page === 1 && !activeFilterCount"
-        :shops="shops"
-        :products-by-shop-id="productsByShopId"
-      /> -->
-
       <!-- 2. FULL-WIDTH INTERACTIVE MAP VIEW MODE (Filters On Top & Wide Map) -->
       <div v-if="viewMode === 'map'" class="space-y-6">
         <!-- TOP HORIZONTAL FILTER BAR FOR MAP -->
@@ -249,7 +231,9 @@ onMounted(async () => {
           @filter-change="loadMapShops"
         />
         <!-- FULL-WIDTH LEAFLET MAP CONTAINER -->
-        <div class="rounded-2xl overflow-hidden border-2 border-[#E8D9C9] shadow-md bg-white h-[65vh] sm:h-[650px]">
+        <div
+          class="rounded-2xl overflow-hidden border-2 border-[#E8D9C9] shadow-md bg-white h-[65vh] sm:h-[650px]"
+        >
           <ShopMapView :shops="filteredMapShops" :loading="mapLoading" />
         </div>
       </div>
@@ -257,7 +241,10 @@ onMounted(async () => {
       <!-- 3. MAIN 2-COLUMN MARKETPLACE LAYOUT (SHOPS LIST MODE) -->
       <template v-else>
         <!-- MOBILE QUICK CATEGORY PILLS BAR -->
-        <div v-if="categories.length" class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none sm:hidden">
+        <div
+          v-if="categories.length"
+          class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none sm:hidden"
+        >
           <button
             type="button"
             class="px-3.5 py-2 rounded-xl text-xs font-black shrink-0 transition border-2 shadow-2xs cursor-pointer"
@@ -359,7 +346,9 @@ onMounted(async () => {
                 />
               </div>
 
-              <div class="pt-4 border-t-2 border-[#E8D9C9] space-y-2 sticky bottom-0 bg-[#FFF9F2] pt-3">
+              <div
+                class="pt-4 border-t-2 border-[#E8D9C9] space-y-2 sticky bottom-0 bg-[#FFF9F2] pt-3"
+              >
                 <button
                   type="button"
                   class="w-full py-3 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-black text-xs sm:text-sm shadow-md transition cursor-pointer"
@@ -410,7 +399,9 @@ onMounted(async () => {
               </div>
 
               <!-- View Mode Switcher & Sort By Dropdown -->
-              <div class="flex items-center gap-3 shrink-0 flex-wrap sm:flex-nowrap w-full sm:w-auto justify-between sm:justify-end">
+              <div
+                class="flex items-center gap-3 shrink-0 flex-wrap sm:flex-nowrap w-full sm:w-auto justify-between sm:justify-end"
+              >
                 <!-- Mode Switcher Buttons -->
                 <div
                   class="inline-flex rounded-xl border border-[#E8D9C9] bg-[#F5E6D3] p-1 shadow-2xs"
@@ -418,7 +409,11 @@ onMounted(async () => {
                   <button
                     type="button"
                     class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-black transition cursor-pointer"
-                    :class="(viewMode as string) === 'shops' ? 'bg-emerald-700 text-white shadow-xs' : 'text-[#786B62] hover:text-[#332820]'"
+                    :class="
+                      (viewMode as string) === 'shops'
+                        ? 'bg-emerald-700 text-white shadow-xs'
+                        : 'text-[#786B62] hover:text-[#332820]'
+                    "
                     @click="viewMode = 'shops'"
                   >
                     <i class="mdi mdi-storefront-outline text-base"></i>
@@ -427,7 +422,11 @@ onMounted(async () => {
                   <button
                     type="button"
                     class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-black transition cursor-pointer"
-                    :class="(viewMode as string) === 'map' ? 'bg-emerald-700 text-white shadow-xs' : 'text-[#786B62] hover:text-[#332820]'"
+                    :class="
+                      (viewMode as string) === 'map'
+                        ? 'bg-emerald-700 text-white shadow-xs'
+                        : 'text-[#786B62] hover:text-[#332820]'
+                    "
                     @click="viewMode = 'map'"
                   >
                     <i class="mdi mdi-map-marker-radius text-base"></i>

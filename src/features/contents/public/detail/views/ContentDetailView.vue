@@ -43,9 +43,41 @@
             </p>
           </section>
 
-          <!-- 3. Schedules & Events (Only if schedule exists) -->
+          <!-- 2.5 SPECIAL CATEGORY INFO CARD (ตามข้อกำหนด 8 หมวดหมู่) -->
           <section
-            v-if="schedules.length"
+            v-if="categoryRule.specialFields.length"
+            class="rounded-3xl border-2 border-[#D96C2C]/30 bg-[#FFF9F2] p-6 sm:p-7 shadow-md space-y-4 relative overflow-hidden"
+          >
+            <div class="flex items-center gap-3 border-b-2 border-[#E8D9C9] pb-3">
+              <div class="h-9 w-9 rounded-xl bg-[#D96C2C] text-white flex items-center justify-center font-bold shadow-xs shrink-0">
+                <i class="mdi mdi-information-outline text-xl text-white"></i>
+              </div>
+              <div>
+                <h3 class="text-xl sm:text-2xl font-bold text-[#332820]">{{ categoryRule.specialInfoTitle }}</h3>
+                <p class="text-xs sm:text-sm text-[#4A3E35] font-medium">ข้อมูลไฮไลท์เฉพาะสำหรับหมวดหมู่ {{ content.contentCategoryName }}</p>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5 pt-1">
+              <div
+                v-for="field in categoryRule.specialFields"
+                :key="field.key"
+                class="rounded-2xl border-2 border-[#E8D9C9] bg-[#F7F0E6] p-3.5 space-y-1 shadow-2xs hover:border-[#D96C2C] transition"
+              >
+                <span class="text-xs font-bold text-[#D96C2C] flex items-center gap-1.5 uppercase tracking-wide">
+                  <i class="mdi" :class="field.icon"></i>
+                  {{ field.label }}
+                </span>
+                <p class="text-sm font-bold text-[#332820] line-clamp-2">
+                  {{ getSpecialFieldValue(field.key) }}
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <!-- 3. Schedules & Events (ซ่อนเมื่อหมวดหมู่ระบุให้ซ่อน) -->
+          <section
+            v-if="shouldShowSchedule"
             class="rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9] p-6 sm:p-8 shadow-xs space-y-6"
           >
             <div class="flex items-center justify-between border-b-2 border-[#E8D9C9] pb-4">
@@ -235,6 +267,8 @@ import { useSwal } from '@/plugins/sweetalert'
 import { getApiErrorMessage } from '@/features/auth/api/getApiErrorMessage'
 import { useAuthStore } from '@/features/auth/stores/auth'
 
+import { getCategoryRule } from '@/features/contents/constants/categoryRules'
+
 import ContentDetailHero from '../components/ContentDetailHero.vue'
 import ContentDetailReviews from '../components/ContentDetailReviews.vue'
 import ContentDetailSidebar from '../components/ContentDetailSidebar.vue'
@@ -253,6 +287,69 @@ const relatedShops = ref<Shop[]>([])
 const relatedContents = ref<PublicContent[]>([])
 const isFavorite = ref(false)
 const changingFavorite = ref(false)
+
+const categoryRule = computed(() => getCategoryRule(content.value?.contentCategoryName))
+
+const shouldShowSchedule = computed(() => {
+  if (categoryRule.value.hasSchedule === false) return false
+  return schedules.value.length > 0
+})
+
+function getSpecialFieldValue(key: string): string {
+  if (!content.value) return '-'
+  const sch = schedules.value[0]
+
+  switch (key) {
+    case 'eventDate':
+      return sch?.startDateTime ? formatDate(sch.startDateTime) : 'ตามช่วงเทศกาลที่กำหนด'
+    case 'eventTime':
+    case 'showDateTime':
+    case 'openHours':
+      return sch?.title || (sch?.startDateTime ? formatDate(sch.startDateTime) : 'โปรดตรวจสอบรอบจัดงาน')
+    case 'location':
+    case 'areaName':
+      return (
+        sch?.address ||
+        [content.value.subDistrictName, content.value.districtName].filter(Boolean).join(' ') ||
+        'สังขละบุรี กาญจนบุรี'
+      )
+    case 'openingHours':
+      return sch?.title || 'เปิดให้บริการทุกวัน (08:30 - 16:30 น.)'
+    case 'entranceFee':
+      return 'เข้าชมฟรี / ตามอัตราที่ระบุ ณ จุดบริการ'
+    case 'locationMap':
+      return content.value.latitude && content.value.longitude
+        ? `GPS: ${content.value.latitude.toFixed(4)}, ${content.value.longitude.toFixed(4)}`
+        : [content.value.subDistrictName, content.value.districtName].filter(Boolean).join(' ') ||
+            'กาญจนบุรี'
+    case 'communityName':
+      return content.value.districtName
+        ? `กลุ่มวิถีชีวิต ${content.value.districtName}`
+        : 'ชุมชนท้องถิ่นกาญจนบุรี'
+    case 'informant':
+    case 'instructor':
+      return content.value.shopName
+        ? `ศูนย์เรียนรู้ ${content.value.shopName}`
+        : 'ปราชญ์ชาวบ้านและวิทยากรในพื้นที่'
+    case 'producer':
+      return content.value.shopName
+        ? `กลุ่มหัตถกรรม ${content.value.shopName}`
+        : 'กลุ่มช่างฝีมือและหัตถกรรมท้องถิ่น'
+    case 'relatedShop':
+      return (
+        content.value.shopName ||
+        (relatedShops.value[0]?.shopName ?? 'ร้านค้าและวิสาหกิจชุมชน')
+      )
+    case 'relatedProducts':
+      return products.value.length
+        ? `${products.value.length} รายการสินค้าแนะนำ`
+        : 'สินค้าภูมิปัญญาท้องถิ่น'
+    case 'openDays':
+      return sch?.title || 'เปิดทำการวันจันทร์ - เสาร์'
+    default:
+      return '-'
+  }
+}
 
 const reviewData = ref<ContentReviews>({ totalCount: 0, reviews: [] })
 const myReview = ref<ContentReview | null>(null)

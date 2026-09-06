@@ -104,7 +104,10 @@ async function addToCart() {
       message: `เพิ่ม ${product.value.productName} จำนวน ${quantity.value} ชิ้น เรียบร้อยแล้ว`,
     })
   } catch (error) {
-    push.error({ title: 'เพิ่มสินค้าไม่สำเร็จ', message: getApiErrorMessage(error, 'กรุณาลองใหม่อีกครั้ง') })
+    push.error({
+      title: 'เพิ่มสินค้าไม่สำเร็จ',
+      message: getApiErrorMessage(error, 'กรุณาลองใหม่อีกครั้ง'),
+    })
   } finally {
     adding.value = false
   }
@@ -121,7 +124,10 @@ async function buyNow() {
     await cartStore.add(product.value.productId, quantity.value)
     await router.push('/cart')
   } catch (error) {
-    push.error({ title: 'ไม่สามารถดำเนินการได้', message: getApiErrorMessage(error, 'กรุณาลองใหม่อีกครั้ง') })
+    push.error({
+      title: 'ไม่สามารถดำเนินการได้',
+      message: getApiErrorMessage(error, 'กรุณาลองใหม่อีกครั้ง'),
+    })
   } finally {
     buyingNow.value = false
   }

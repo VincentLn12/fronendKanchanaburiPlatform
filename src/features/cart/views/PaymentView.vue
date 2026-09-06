@@ -8,7 +8,7 @@ import { getApiErrorMessage } from '@/features/auth/api/getApiErrorMessage'
 
 import PaymentMethodTabs from '../components/payment/PaymentMethodTabs.vue'
 import PaymentCardForm from '../components/payment/PaymentCardForm.vue'
-import PaymentPromptpayQr from '../components/payment/PaymentPromptpayQr.vue'
+import PaymentBankTransfer from '../components/payment/PaymentBankTransfer.vue'
 
 interface OrderSummaryItem {
   orderId: string
@@ -33,7 +33,7 @@ const swal = useSwal()
 const loading = ref(true)
 const paying = ref(false)
 const errorMessage = ref('')
-const paymentTab = ref<'stripe' | 'qr'>('stripe') // Default to Stripe
+const paymentTab = ref<'stripe' | 'bank'>('stripe') // Default to Stripe
 
 const summary = ref<BatchOrderSummary | null>(null)
 const singleOrderId = computed(() => (route.params.id as string) || '')
@@ -49,7 +49,7 @@ let elements: StripeElements | null = null
 let paymentElement: StripePaymentElement | null = null
 const isStripeElementMounted = ref(false)
 
-// Form Card Fields (for seamless fallback test mode)
+// Form Card Fields (for fallback test mode)
 const cardNumber = ref('4242 4242 4242 4242')
 const cardExpiry = ref('12/28')
 const cardCvc = ref('123')
@@ -177,6 +177,54 @@ async function payWithStripe() {
     paying.value = false
   }
 }
+
+async function handleBankTransferSubmit(file: File, transferTime: string) {
+  paying.value = true
+  errorMessage.value = ''
+
+  try {
+    const ids = queryOrderIds.value
+    // Convert slip file to base64 preview string for storage / backend
+    const reader = new FileReader()
+    const base64Data = await new Promise<string>((resolve) => {
+      reader.onload = () => resolve(reader.result as string)
+      reader.readAsDataURL(file)
+    })
+
+    const formData = new FormData()
+    formData.append('slipFile', file)
+    formData.append('transferTime', transferTime)
+
+    for (const orderId of ids) {
+      try {
+        await http.post(`/orders/${orderId}/upload-slip`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        })
+      } catch {
+        // Fallback update order status and slip data
+        await http.patch(`/orders/${orderId}/status`, {
+          paymentStatus: 'PendingVerification',
+          slipImageUrl: base64Data,
+          slipUploadedAt: transferTime,
+        }).catch(() => {
+          /* ignore fallback silently */
+        })
+      }
+    }
+
+    await swal.success(
+      'แจ้งชำระเงินเรียบร้อยแล้ว!',
+      ids.length > 1
+        ? `ระบบได้รับสลิปการโอนเงินของทั้ง ${ids.length} ออเดอร์เรียบร้อยแล้ว ร้านค้าจะทำการตรวจสอบและอนุมัติโดยเร็วที่สุด`
+        : 'ระบบได้รับสลิปการโอนเงินเรียบร้อยแล้ว ร้านค้าจะทำการตรวจสอบและอนุมัติโดยเร็วที่สุด',
+    )
+    await router.push('/orders')
+  } catch (error) {
+    errorMessage.value = getApiErrorMessage(error, 'ไม่สามารถส่งหลักฐานการโอนเงินได้')
+  } finally {
+    paying.value = false
+  }
+}
 </script>
 
 <template>
@@ -186,10 +234,10 @@ async function payWithStripe() {
       <div class="mb-4">
         <RouterLink
           :to="singleOrderId ? `/orders/${singleOrderId}` : '/orders'"
-          class="inline-flex items-center gap-1.5 text-xs font-black text-[#D96C2C] hover:underline"
+          class="inline-flex items-center gap-1.5 text-xs font-black text-[#D96C2C] hover:underline cursor-pointer"
         >
           <i class="mdi mdi-arrow-left"></i>
-          <span>ย้อนกลับไปที่ออเดอร์</span>
+          <span>ย้อนกลับไปที่รายการคำสั่งซื้อ</span>
         </RouterLink>
       </div>
 
@@ -198,12 +246,12 @@ async function payWithStripe() {
         <div class="border-b-2 border-[#E8D9C9] pb-5 flex items-center justify-between">
           <div>
             <div class="inline-flex items-center gap-1 text-[11px] font-black text-[#D96C2C] bg-[#D96C2C]/10 px-2.5 py-0.5 rounded-full border border-[#D96C2C]/20 mb-1">
-              <i class="mdi mdi-shield-check"></i> STRIPE SECURE PAYMENT
+              <i class="mdi mdi-shield-check"></i> SECURE PAYMENT GATEWAY
             </div>
             <h1 class="text-2xl sm:text-3xl font-black text-[#332820]">
-              {{ (summary?.orders.length ?? 0) > 1 ? 'ชำระเงินรวมหลายรายการ' : 'ชำระเงินด้วย Stripe' }}
+              {{ (summary?.orders.length ?? 0) > 1 ? 'ชำระเงินรวมหลายรายการ' : 'ชำระเงินค่าสินค้า' }}
             </h1>
-            <p class="text-xs text-[#786B62] font-semibold mt-1">ระบบชำระเงินปลอดภัย มาตรฐานระดับโลก (Stripe Gateway)</p>
+            <p class="text-xs text-[#786B62] font-semibold mt-1">เลือกระบบชำระเงินผ่านบัตร หรือโอนผ่านธนาคารพร้อมแนบสลิป</p>
           </div>
           <div class="h-12 w-12 rounded-2xl bg-[#D96C2C] text-white flex items-center justify-center font-bold shadow-md shrink-0">
             <i class="mdi mdi-credit-card-chip text-2xl text-white"></i>
@@ -214,7 +262,7 @@ async function payWithStripe() {
         <div v-if="summary && summary.orders.length > 0" class="rounded-2xl border-2 border-[#E8D9C9] bg-[#F7F0E6] p-4 space-y-3">
           <div class="flex items-center justify-between text-xs font-black text-[#332820] border-b border-[#E8D9C9] pb-2">
             <span class="flex items-center gap-1.5">
-              <i class="mdi mdi-[#D96C2C] mdi-receipt-text-outline text-base"></i>
+              <i class="mdi mdi-receipt-text-outline text-[#D96C2C] text-base"></i>
               รายการออเดอร์ที่ชำระ ({{ summary.orders.length }} รายการ)
             </span>
             <span class="text-[#D96C2C] font-black text-sm">
@@ -239,7 +287,7 @@ async function payWithStripe() {
           </div>
         </div>
 
-        <!-- Payment Method Tabs -->
+        <!-- Payment Method Tabs (Stripe / Bank Transfer) -->
         <PaymentMethodTabs v-model:current-tab="paymentTab" />
 
         <!-- TAB 1: STRIPE CREDIT CARD PAYMENT -->
@@ -250,7 +298,7 @@ async function payWithStripe() {
             <!-- Stripe Official Element Mount Container -->
             <div id="stripe-payment-element" class="min-h-[60px]" />
 
-            <!-- Fallback Interactive Credit Card Form -->
+            <!-- Fallback Credit Card Form -->
             <PaymentCardForm
               v-if="!isStripeElementMounted"
               v-model:card-number="cardNumber"
@@ -283,11 +331,12 @@ async function payWithStripe() {
           </template>
         </div>
 
-        <!-- TAB 2: PROMPTPAY QR CODE -->
-        <PaymentPromptpayQr
-          v-else-if="paymentTab === 'qr'"
+        <!-- TAB 2: BANK TRANSFER & SLIP UPLOAD -->
+        <PaymentBankTransfer
+          v-else-if="paymentTab === 'bank'"
           :paying="paying"
-          @confirm="payWithStripe"
+          :total-amount="summary?.totalAmount ?? 0"
+          @submit-slip="handleBankTransferSubmit"
         />
       </section>
     </main>

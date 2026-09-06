@@ -284,10 +284,10 @@ function clearFilters() {
 }
 
 function applyQueryParams() {
-  if (typeof route.query.categoryId === 'string') categoryId.value = route.query.categoryId
-  if (typeof route.query.districtId === 'string') districtId.value = route.query.districtId
-  if (typeof route.query.tagId === 'string') tagId.value = route.query.tagId
-  if (typeof route.query.search === 'string') search.value = route.query.search
+  if (route.query.categoryId) categoryId.value = String(route.query.categoryId)
+  if (route.query.districtId) districtId.value = String(route.query.districtId)
+  if (route.query.tagId) tagId.value = String(route.query.tagId)
+  if (route.query.search) search.value = String(route.query.search)
 }
 
 watch(viewMode, (mode) => {

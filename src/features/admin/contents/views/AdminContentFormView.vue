@@ -47,7 +47,7 @@ const form = reactive<ContentFormData>({
   latitude: null,
   longitude: null,
   youtubeUrl: '',
-  status: 'Draft',
+  status: 'Published',
 })
 const statusOptions = [
   { value: 'Draft', label: 'ฉบับร่าง' },
