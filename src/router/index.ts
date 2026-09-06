@@ -152,7 +152,12 @@ const router = createRouter({
       children: [
         {
           path: '',
-          name: 'my-shop',
+          name: 'my-shop-dashboard',
+          component: () => import('@/features/shops/merchant/dashboard/views/MerchantDashboardView.vue'),
+        },
+        {
+          path: 'info',
+          name: 'my-shop-info',
           component: () => import('@/features/shops/merchant/shop/MyShopView.vue'),
         },
         {

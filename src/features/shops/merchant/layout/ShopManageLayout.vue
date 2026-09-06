@@ -133,12 +133,34 @@ onMounted(async () => {
           เมนูจัดการร้านค้า
         </div>
 
-        <!-- My Shop Info -->
+        <!-- Dashboard -->
         <RouterLink
           to="/my-shop"
           class="group flex items-center gap-4 rounded-2xl px-4 py-3.5 text-sm font-bold transition-all duration-200"
           :class="
-            active('/my-shop')
+            route.path === '/my-shop'
+              ? 'bg-[#D96C2C] !text-white font-black shadow-lg shadow-[#D96C2C]/40 ring-1 ring-white/20'
+              : 'text-slate-200 hover:bg-white/10 hover:text-white'
+          "
+          @click="closeMenu"
+        >
+          <i
+            class="mdi mdi-view-dashboard-outline text-2xl transition-transform group-hover:scale-110 shrink-0"
+            :class="route.path === '/my-shop' ? 'text-white' : 'text-[#F2A65A]'"
+          ></i>
+          <span
+            :class="route.path === '/my-shop' ? 'font-black text-white' : 'text-slate-100'"
+            class="text-sm sm:text-base leading-snug"
+            >แดชบอร์ดภาพรวมร้านค้า</span
+          >
+        </RouterLink>
+
+        <!-- My Shop Info -->
+        <RouterLink
+          to="/my-shop/info"
+          class="group flex items-center gap-4 rounded-2xl px-4 py-3.5 text-sm font-bold transition-all duration-200"
+          :class="
+            active('/my-shop/info')
               ? 'bg-[#D96C2C] !text-white font-black shadow-lg shadow-[#D96C2C]/40 ring-1 ring-white/20'
               : 'text-slate-200 hover:bg-white/10 hover:text-white'
           "
@@ -146,10 +168,10 @@ onMounted(async () => {
         >
           <i
             class="mdi mdi-store-cog-outline text-2xl transition-transform group-hover:scale-110 shrink-0"
-            :class="active('/my-shop') ? 'text-white' : 'text-[#F2A65A]'"
+            :class="active('/my-shop/info') ? 'text-white' : 'text-[#F2A65A]'"
           ></i>
           <span
-            :class="active('/my-shop') ? 'font-black text-white' : 'text-slate-100'"
+            :class="active('/my-shop/info') ? 'font-black text-white' : 'text-slate-100'"
             class="text-sm sm:text-base leading-snug"
             >ข้อมูลและตั้งค่าร้านค้า</span
           >

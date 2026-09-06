@@ -160,3 +160,73 @@ export async function uploadShopBackgroundImage(id: string, file: File) {
   const { data } = await http.post<Shop>(`/shops/${id}/background-image`, formData)
   return data
 }
+
+export interface MerchantDashboardReport {
+  summary: {
+    totalRevenue: number
+    todayRevenue: number
+    monthRevenue: number
+    totalOrders: number
+    pendingSlipOrdersCount: number
+    pendingShipmentOrdersCount: number
+    completedOrdersCount: number
+    totalProducts: number
+    lowStockProductsCount: number
+    totalContents: number
+  }
+  recentOrders: {
+    orderId: string
+    orderNumber: string
+    receiverName?: string
+    totalAmount: number
+    orderStatus: string
+    paymentStatus: string
+    slipImageUrl?: string
+    slipUploadedAt?: string
+    createdAt: string
+    itemsCount: number
+  }[]
+  topProducts: {
+    productId: string
+    productName: string
+    imageUrl?: string
+    price: number
+    stockQuantity: number
+    totalUnitsSold: number
+    totalRevenue: number
+  }[]
+  salesTrend: {
+    date: string
+    dailyRevenue: number
+    ordersCount: number
+  }[]
+  lowStockProducts: {
+    productId: string
+    productName: string
+    imageUrl?: string
+    price: number
+    quantity: number
+  }[]
+  fulfillment: {
+    deliveryOrdersCount: number
+    pickupOrdersCount: number
+    averageOrderValue: number
+  }
+  reviewsSummary: {
+    averageRating: number
+    totalReviews: number
+    recentReviews: {
+      reviewId: string
+      userName: string
+      rating: number
+      comment: string
+      reply?: string | null
+      createdAt: string
+    }[]
+  }
+}
+
+export async function getMerchantDashboardReport() {
+  const { data } = await http.get<MerchantDashboardReport>('/shops/mine/dashboard')
+  return data
+}
