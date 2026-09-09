@@ -394,8 +394,9 @@ async function load() {
     relatedShops.value = 'items' in shops ? shops.items : (shops as Shop[])
     relatedContents.value = (relatedData.items || []).filter((item) => item.contentId !== id.value)
 
+    void recordContentView(id.value)
+
     if (auth.isLoggedIn) {
-      void recordContentView(id.value)
       void getContentFavoriteStatus(id.value)
         .then((value) => {
           isFavorite.value = value

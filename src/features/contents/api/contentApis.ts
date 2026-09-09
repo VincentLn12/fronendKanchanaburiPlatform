@@ -91,6 +91,7 @@ export interface PublicContent {
   publishedAt?: string
   createdAt: string
   updatedAt?: string
+  viewCount?: number
   tags: ContentTag[]
 }
 

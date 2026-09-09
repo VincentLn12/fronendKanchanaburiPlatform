@@ -195,6 +195,11 @@ const router = createRouter({
           name: 'my-shop-content-edit',
           component: () => import('@/features/shops/merchant/contents/MerchantContentFormView.vue'),
         },
+        {
+          path: 'payouts',
+          name: 'my-shop-payouts',
+          component: () => import('@/features/shops/merchant/payouts/views/MerchantPayoutsView.vue'),
+        },
       ],
     },
     {
@@ -316,6 +321,16 @@ const router = createRouter({
           path: 'reports',
           name: 'admin-reports',
           component: () => import('@/features/admin/reports/views/AdminReportsView.vue'),
+        },
+        {
+          path: 'orders',
+          name: 'admin-orders',
+          component: () => import('@/features/admin/orders/views/AdminOrdersView.vue'),
+        },
+        {
+          path: 'payouts',
+          name: 'admin-payouts',
+          component: () => import('@/features/admin/payouts/views/AdminPayoutsView.vue'),
         },
       ],
     },

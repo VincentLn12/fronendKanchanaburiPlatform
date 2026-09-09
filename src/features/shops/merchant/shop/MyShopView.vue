@@ -53,6 +53,10 @@ const form = ref<ShopFormData>({
   closingTime: '',
   latitude: null,
   longitude: null,
+  bankName: '',
+  bankAccountName: '',
+  bankAccountNumber: '',
+  promptPay: '',
 })
 
 function applyShop(data: Shop) {
@@ -70,6 +74,10 @@ function applyShop(data: Shop) {
     closingTime: data.closingTime ?? '',
     latitude: data.latitude ?? null,
     longitude: data.longitude ?? null,
+    bankName: data.bankName ?? '',
+    bankAccountName: data.bankAccountName ?? '',
+    bankAccountNumber: data.bankAccountNumber ?? '',
+    promptPay: data.promptPay ?? '',
   }
 }
 
@@ -480,6 +488,48 @@ onMounted(async () => {
             <div class="grid gap-6 sm:grid-cols-2">
               <AppTextField v-model="form.openingTime" label="เวลาเปิด" type="time" />
               <AppTextField v-model="form.closingTime" label="เวลาปิด" type="time" />
+            </div>
+          </div>
+
+          <!-- Bank Account Info for Merchant Payouts -->
+          <div class="space-y-6 pt-4">
+            <div class="flex items-center justify-between border-b-2 border-[#E8D9C9] pb-3">
+              <div class="flex items-center gap-2">
+                <i class="mdi mdi-bank-outline text-[#D96C2C] text-xl"></i>
+                <div>
+                  <h2 class="text-lg font-black text-[#332820]">ข้อมูลบัญชีธนาคารสำหรับรับเงินยอดขาย</h2>
+                  <p class="text-xs text-[#786B62]">ระบุข้อมูลธนาคารของคุณสำหรับให้แอดมินโอนเงินส่วนแบ่ง/ยอดขายคืนร้านค้า</p>
+                </div>
+              </div>
+              <span class="text-xs font-bold text-amber-700 bg-amber-50 px-3 py-1 rounded-xl border border-amber-200">
+                <i class="mdi mdi-shield-check-outline"></i> แอดมินใช้โอนเงินคืนร้านค้า
+              </span>
+            </div>
+
+            <div class="grid gap-6 sm:grid-cols-2">
+              <AppTextField
+                v-model="form.bankName"
+                label="ชื่อธนาคาร"
+                placeholder="เช่น ธนาคารกสิกรไทย, ธนาคารไทยพาณิชย์"
+              />
+              <AppTextField
+                v-model="form.bankAccountName"
+                label="ชื่อบัญชีธนาคาร"
+                placeholder="เช่น นาย สมชาย ใจดี"
+              />
+            </div>
+
+            <div class="grid gap-6 sm:grid-cols-2">
+              <AppTextField
+                v-model="form.bankAccountNumber"
+                label="เลขที่บัญชีธนาคาร"
+                placeholder="เช่น 123-4-56789-0"
+              />
+              <AppTextField
+                v-model="form.promptPay"
+                label="เบอร์พร้อมเพย์ (PromptPay)"
+                placeholder="เช่น 0812345678"
+              />
             </div>
           </div>
 

@@ -133,6 +133,24 @@ async function buyNow() {
   }
 }
 
+function getRatingPercent(star: number) {
+  if (!reviewData.value.totalCount || !reviewData.value.ratingCounts) return 0
+  const count = reviewData.value.ratingCounts[star] || 0
+  return Math.round((count / reviewData.value.totalCount) * 100)
+}
+
+function formatDate(dateStr: string) {
+  try {
+    return new Date(dateStr).toLocaleDateString('th-TH', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    })
+  } catch {
+    return dateStr
+  }
+}
+
 onMounted(async () => {
   try {
     product.value = await getPublicProduct(String(route.params.id))
@@ -143,6 +161,7 @@ onMounted(async () => {
       getProductReviews(currentProduct.productId).catch(() => ({
         totalCount: 0,
         averageRating: 0,
+        ratingCounts: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
         reviews: [],
       })),
     ])
@@ -259,10 +278,11 @@ onMounted(async () => {
     <!-- MAIN BODY CONTAINER -->
     <main class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-8 pb-12 space-y-8">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        <!-- LEFT COLUMN: SPECS, DESCRIPTION & RECOMMENDED -->
+        <!-- LEFT COLUMN: SPECS, DESCRIPTION & REVIEWS -->
         <div class="lg:col-span-8 space-y-8">
           <!-- SECTION 1: รายละเอียดสินค้า -->
           <section
+            v-if="activeTab === 'details'"
             class="rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9] p-6 sm:p-7 shadow-md space-y-6"
           >
             <div class="flex items-center gap-2.5 border-b-2 border-[#E8D9C9] pb-4">
@@ -313,6 +333,137 @@ onMounted(async () => {
                   <li><strong>บริการจัดส่ง:</strong> พัสดุด่วน EMS / Flash Express</li>
                 </ul>
               </div>
+            </div>
+          </section>
+
+          <!-- SECTION 2: รีวิวสินค้า -->
+          <section
+            v-if="activeTab === 'reviews'"
+            class="rounded-3xl bg-[#FFF9F2] border-2 border-[#E8D9C9] p-6 sm:p-7 shadow-md space-y-6"
+          >
+            <div class="flex items-center gap-2.5 border-b-2 border-[#E8D9C9] pb-4">
+              <div
+                class="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#D96C2C] text-white shadow-md font-bold"
+              >
+                <i class="mdi mdi-star-face text-xl text-white"></i>
+              </div>
+              <div>
+                <h2 class="text-xl font-black text-[#332820]">รีวิวและคะแนนสินค้าจากผู้ซื้อจริง</h2>
+                <p class="text-xs text-[#786B62]">ความคิดเห็นจากลูกค้าที่สั่งซื้อสินค้าและจัดส่งสำเร็จ</p>
+              </div>
+            </div>
+
+            <!-- Rating Summary Card -->
+            <div
+              class="grid grid-cols-1 sm:grid-cols-12 gap-6 rounded-2xl bg-[#F7F0E6] p-6 border-2 border-[#E8D9C9] items-center"
+            >
+              <!-- Left: Big Score -->
+              <div class="sm:col-span-5 flex flex-col items-center justify-center text-center space-y-2 border-b sm:border-b-0 sm:border-r border-[#E8D9C9] pb-4 sm:pb-0 sm:pr-4">
+                <span class="text-4xl sm:text-5xl font-black text-[#D96C2C]">
+                  {{ reviewData.averageRating > 0 ? reviewData.averageRating : '0.0' }}
+                </span>
+                <div class="flex items-center gap-1">
+                  <i
+                    v-for="star in 5"
+                    :key="star"
+                    :class="[
+                      'mdi text-lg sm:text-xl',
+                      star <= Math.round(reviewData.averageRating)
+                        ? 'mdi-star text-amber-400'
+                        : 'mdi-star-outline text-slate-300',
+                    ]"
+                  ></i>
+                </div>
+                <span class="text-xs font-bold text-[#786B62]">
+                  จากทั้งหมด {{ reviewData.totalCount }} รีวิว
+                </span>
+              </div>
+
+              <!-- Right: Rating Breakdown Bars -->
+              <div class="sm:col-span-7 space-y-2 text-xs font-bold text-[#332820]">
+                <div v-for="star in [5, 4, 3, 2, 1]" :key="star" class="flex items-center gap-3">
+                  <span class="w-12 flex items-center gap-1 shrink-0 font-black">
+                    {{ star }} <i class="mdi mdi-star text-amber-400 text-sm"></i>
+                  </span>
+                  <div class="h-2.5 flex-1 rounded-full bg-white border border-[#E8D9C9] overflow-hidden">
+                    <div
+                      class="h-full rounded-full bg-[#D96C2C] transition-all duration-500"
+                      :style="{ width: `${getRatingPercent(star)}%` }"
+                    ></div>
+                  </div>
+                  <span class="w-10 text-right text-xs text-[#786B62]">
+                    {{ reviewData.ratingCounts?.[star] || 0 }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Reviews List -->
+            <div v-if="reviewData.reviews.length" class="space-y-4 pt-2">
+              <div
+                v-for="rev in reviewData.reviews"
+                :key="rev.reviewId"
+                class="rounded-2xl bg-white p-5 border-2 border-[#E8D9C9] space-y-3 shadow-2xs"
+              >
+                <!-- Reviewer Header -->
+                <div class="flex items-center justify-between gap-3">
+                  <div class="flex items-center gap-3">
+                    <div
+                      class="flex h-9 w-9 items-center justify-center rounded-full bg-[#D96C2C]/15 text-[#D96C2C] font-black text-sm border border-[#D96C2C]/30 uppercase"
+                    >
+                      {{ rev.userName ? rev.userName.charAt(0) : 'U' }}
+                    </div>
+                    <div>
+                      <h4 class="font-black text-[#332820] text-sm">
+                        {{ rev.userName }}
+                      </h4>
+                      <p class="text-2xs text-[#786B62] font-semibold">
+                        {{ formatDate(rev.createdAt) }}
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- Stars -->
+                  <div class="flex items-center gap-0.5">
+                    <i
+                      v-for="star in 5"
+                      :key="star"
+                      :class="[
+                        'mdi text-sm',
+                        star <= rev.rating ? 'mdi-star text-amber-400' : 'mdi-star-outline text-slate-300',
+                      ]"
+                    ></i>
+                  </div>
+                </div>
+
+                <!-- Review Content -->
+                <p class="text-xs sm:text-sm text-[#786B62] leading-relaxed font-semibold pl-1">
+                  {{ rev.comment }}
+                </p>
+
+                <!-- Merchant Reply if any -->
+                <div
+                  v-if="rev.reply"
+                  class="mt-3 rounded-xl bg-[#F7F0E6] p-3.5 border border-[#E8D9C9] text-xs space-y-1"
+                >
+                  <span class="font-black text-[#D96C2C] flex items-center gap-1">
+                    <i class="mdi mdi-reply"></i> ตอบกลับจากร้านค้า:
+                  </span>
+                  <p class="text-[#332820] font-semibold">{{ rev.reply }}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Empty Reviews State -->
+            <div
+              v-else
+              class="rounded-2xl bg-white p-10 border-2 border-dashed border-[#E8D9C9] text-center space-y-3"
+            >
+              <i class="mdi mdi-star-face text-5xl text-[#D96C2C]/50 block"></i>
+              <h3 class="font-black text-[#332820] text-base">ยังไม่มีรีวิวสำหรับสินค้านี้</h3>
+              <p class="text-xs text-[#786B62] max-w-sm mx-auto font-semibold">
+                สั่งซื้อสินค้านี้และรอรับสินค้า แล้วมาร่วมแชร์ความประทับใจของคุณได้เป็นคนแรก!
+              </p>
             </div>
           </section>
 

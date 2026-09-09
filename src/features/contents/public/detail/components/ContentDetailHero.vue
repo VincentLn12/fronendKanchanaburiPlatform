@@ -142,7 +142,7 @@ function formatDate(value?: string) {
           </span>
           <span class="flex items-center gap-1 text-[#D96C2C] font-bold">
             <i class="mdi mdi-eye-outline text-[#D96C2C]"></i>
-            1,280 เข้าชม
+            {{ (content.viewCount || 0).toLocaleString('th-TH') }} เข้าชม
           </span>
           <span v-if="content.shopName" class="flex items-center gap-1 text-[#332820]">
             <i class="mdi mdi-account-circle-outline text-[#D96C2C]"></i>

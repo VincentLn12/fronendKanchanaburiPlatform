@@ -25,6 +25,10 @@ export interface Shop {
   categoryName?: string
   districtName?: string
   subDistrictName?: string
+  bankName?: string
+  bankAccountName?: string
+  bankAccountNumber?: string
+  promptPay?: string
 }
 
 export interface ShopCategory {
@@ -59,6 +63,10 @@ export interface ShopFormData {
   closingTime: string
   latitude: number | null
   longitude: number | null
+  bankName?: string
+  bankAccountName?: string
+  bankAccountNumber?: string
+  promptPay?: string
 }
 
 export interface ShopReview {

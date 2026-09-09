@@ -14,9 +14,11 @@ function logout() {
 
 const navGroups = [
   {
-    title: 'การจัดการร้านค้า & สินค้า',
+    title: 'การจัดการร้านค้า & คำสั่งซื้อ',
     items: [
       { to: '/admin/shops', label: 'จัดการร้านค้าทั้งหมด', icon: 'mdi-storefront-outline' },
+      { to: '/admin/orders', label: 'ตรวจสอบสลิปชำระเงิน', icon: 'mdi-file-document-check-outline' },
+      { to: '/admin/payouts', label: 'เคลียร์เงินคืนร้านค้า (Payouts)', icon: 'mdi-cash-refund' },
       { to: '/admin/categories', label: 'หมวดหมู่ร้านค้า', icon: 'mdi-shape-outline' },
       { to: '/admin/product-categories', label: 'หมวดหมู่สินค้า', icon: 'mdi-package-variant-closed' },
     ],

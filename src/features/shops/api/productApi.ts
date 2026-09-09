@@ -46,7 +46,14 @@ export interface ProductReview {
 export interface ProductReviews {
   totalCount: number
   averageRating: number
+  ratingCounts?: Record<number, number>
   reviews: ProductReview[]
+}
+
+export interface CreateProductReviewData {
+  productId: string
+  rating: number
+  comment: string
 }
 
 // ==========================================
@@ -75,6 +82,16 @@ export async function getPublicProduct(id: string) {
 
 export async function getProductReviews(productId: string) {
   const { data } = await http.get<ProductReviews>(`/product-reviews/${productId}`)
+  return data
+}
+
+export async function createProductReview(reviewData: CreateProductReviewData) {
+  const { data } = await http.post<ProductReview>('/product-reviews', reviewData)
+  return data
+}
+
+export async function getMyReviewedProducts() {
+  const { data } = await http.get<string[]>('/product-reviews/my-reviews')
   return data
 }
 

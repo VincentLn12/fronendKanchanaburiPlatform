@@ -73,7 +73,7 @@ const showSearchInput = computed(() => {
 })
 
 function updatePosition() {
-  if (!containerRef.value || !isOpen.value) return
+  if (!containerRef.value) return
   const rect = containerRef.value.getBoundingClientRect()
   const spaceBelow = window.innerHeight - rect.bottom
   const spaceAbove = rect.top
@@ -105,6 +105,9 @@ function updatePosition() {
 
 function toggleDropdown() {
   if (props.disabled || props.readonly) return
+  if (!isOpen.value) {
+    updatePosition()
+  }
   isOpen.value = !isOpen.value
 }
 
@@ -140,10 +143,11 @@ function onScrollOrResize() {
 
 watch(isOpen, (newVal) => {
   if (newVal) {
+    updatePosition()
     void nextTick(() => {
       updatePosition()
       if (showSearchInput.value) {
-        searchInputRef.value?.focus()
+        searchInputRef.value?.focus({ preventScroll: true })
       }
     })
     window.addEventListener('scroll', onScrollOrResize, true)

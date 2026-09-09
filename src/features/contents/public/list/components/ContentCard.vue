@@ -98,10 +98,16 @@ function formatPublishedDate(value?: string) {
     <div
       class="px-5 py-3.5 bg-[#F7F0E6] border-t-2 border-[#E8D9C9] flex items-center justify-between text-sm font-semibold"
     >
-      <span class="flex items-center gap-1.5 text-[#786B62]">
-        <i class="mdi mdi-calendar-blank-outline text-[#D96C2C] text-base"></i>
-        {{ formatPublishedDate(item.publishedAt ?? item.createdAt) }}
-      </span>
+      <div class="flex items-center gap-3 text-[#786B62]">
+        <span class="flex items-center gap-1.5">
+          <i class="mdi mdi-calendar-blank-outline text-[#D96C2C] text-base"></i>
+          {{ formatPublishedDate(item.publishedAt ?? item.createdAt) }}
+        </span>
+        <span class="flex items-center gap-1 text-[#D96C2C] font-bold">
+          <i class="mdi mdi-eye-outline text-base"></i>
+          {{ (item.viewCount || 0).toLocaleString('th-TH') }}
+        </span>
+      </div>
 
       <div
         class="flex items-center gap-1 font-bold text-[#D96C2C] group-hover:text-[#BF5720] transition"
@@ -169,10 +175,16 @@ function formatPublishedDate(value?: string) {
       <div
         class="flex items-center justify-between text-sm text-[#786B62] border-t-2 border-[#E8D9C9] pt-3 font-semibold"
       >
-        <span class="flex items-center gap-1.5 text-[#786B62]">
-          <i class="mdi mdi-calendar-blank-outline text-[#D96C2C]"></i>
-          {{ formatPublishedDate(item.publishedAt ?? item.createdAt) }}
-        </span>
+        <div class="flex items-center gap-3">
+          <span class="flex items-center gap-1.5 text-[#786B62]">
+            <i class="mdi mdi-calendar-blank-outline text-[#D96C2C]"></i>
+            {{ formatPublishedDate(item.publishedAt ?? item.createdAt) }}
+          </span>
+          <span class="flex items-center gap-1 text-[#D96C2C] font-bold">
+            <i class="mdi mdi-eye-outline text-[#D96C2C]"></i>
+            {{ (item.viewCount || 0).toLocaleString('th-TH') }} เข้าชม
+          </span>
+        </div>
         <div
           class="flex items-center gap-1 font-bold text-[#D96C2C] group-hover:text-[#BF5720] transition"
         >

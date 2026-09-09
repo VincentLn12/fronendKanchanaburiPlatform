@@ -12,6 +12,8 @@ import OrderItemsList, { type OrderItem } from '../components/order-detail/Order
 import OrderShippingInfo, { type Shipment } from '../components/order-detail/OrderShippingInfo.vue'
 import OrderCostSummary from '../components/order-detail/OrderCostSummary.vue'
 
+import { getMyReviewedProducts } from '@/features/shops/api/productApi'
+
 interface Order {
   orderId: string
   orderNumber: string
@@ -31,6 +33,7 @@ interface Order {
 
 const route = useRoute()
 const order = ref<Order | null>(null)
+const reviewedProductIds = ref<string[]>([])
 const loading = ref(true)
 const swal = useSwal()
 
@@ -52,9 +55,20 @@ const canPay = computed(
   () => order.value?.paymentStatus !== 'Paid' && order.value?.orderStatus !== 'Cancelled',
 )
 
+async function fetchMyReviewedProducts() {
+  try {
+    reviewedProductIds.value = await getMyReviewedProducts()
+  } catch {
+    reviewedProductIds.value = []
+  }
+}
+
 onMounted(async () => {
   try {
-    const { data } = await http.get<Order>(`/orders/${route.params.id}`)
+    const [{ data }] = await Promise.all([
+      http.get<Order>(`/orders/${route.params.id}`),
+      fetchMyReviewedProducts(),
+    ])
     order.value = data
   } catch (error) {
     await swal.error('ไม่พบออเดอร์', getApiErrorMessage(error, 'คำสั่งซื้อนี้อาจไม่มีอยู่ในระบบ'))
@@ -110,6 +124,9 @@ onMounted(async () => {
             <OrderItemsList
               :items="order.items"
               :total-items="totalItems"
+              :order-status="order.orderStatus"
+              :reviewed-product-ids="reviewedProductIds"
+              @review-added="fetchMyReviewedProducts"
             />
 
             <!-- Shipping & Delivery Address Info -->
